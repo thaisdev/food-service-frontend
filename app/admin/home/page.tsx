@@ -6,7 +6,7 @@ import { Card, CardContent } from "@/components/ui/card"
 
 export default function AdminHomePage() {
   return (
-    <main className="flex min-h-[calc(100svh-73px)] px-6 py-10">
+    <main className="flex min-h-[calc(100svh-73px)] bg-[image:var(--page-gradient)] px-6 py-10">
       <div className="mx-auto flex w-full max-w-[1800px]">
         <Card className="max-w-xl rounded-3xl border border-border/70 p-4 shadow-sm">
           <CardContent className="flex min-w-0 flex-col gap-4 p-4 text-sm leading-loose">

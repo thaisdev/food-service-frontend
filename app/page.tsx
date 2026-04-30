@@ -58,10 +58,12 @@ export default function Page() {
   }
 
   return (
-    <main className="min-h-[calc(100svh-73px)] bg-gradient-to-b from-background via-background to-muted/40 px-6 py-10">
+    <main className="min-h-[calc(100svh-73px)] bg-[image:var(--page-gradient)] px-6 py-10">
       <div className="mx-auto flex w-full max-w-[1800px] flex-col gap-8">
         <section className="max-w-3xl space-y-4">
-          <Badge className="bg-primary/10 text-primary">Escolha o módulo</Badge>
+          <Badge className="bg-primary text-primary-foreground">
+            Escolha o módulo
+          </Badge>
           <h1 className="font-heading text-4xl font-semibold tracking-tight md:text-5xl">
             Acesse como administrador ou cliente
           </h1>
@@ -73,7 +75,7 @@ export default function Page() {
         </section>
 
         <section className="grid gap-6 xl:grid-cols-2">
-          <Card className="rounded-3xl border border-border/70 p-4 shadow-sm">
+          <Card className="rounded-3xl border border-primary/20 bg-card/95 p-4 shadow-sm shadow-primary/5">
             <CardHeader className="space-y-2 px-4">
               <Badge className="bg-primary/10 text-primary">
                 Administrador
@@ -126,9 +128,9 @@ export default function Page() {
             </CardContent>
           </Card>
 
-          <Card className="rounded-3xl border border-border/70 p-4 shadow-sm">
+          <Card className="rounded-3xl border border-success/20 bg-card/95 p-4 shadow-sm shadow-success/5">
             <CardHeader className="space-y-2 px-4">
-              <Badge variant="secondary">Cliente</Badge>
+              <Badge className="bg-success-muted text-success">Cliente</Badge>
               <CardTitle className="text-2xl font-semibold tracking-tight">
                 Acesso ao cardápio
               </CardTitle>
@@ -171,7 +173,10 @@ export default function Page() {
                   />
                 </div>
 
-                <Button type="submit" className="w-full sm:w-auto">
+                <Button
+                  type="submit"
+                  className="w-full bg-success text-success-foreground hover:bg-green/90 sm:w-auto"
+                >
                   Entrar como cliente
                 </Button>
               </form>

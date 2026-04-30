@@ -1,6 +1,6 @@
 export function RouteLoading() {
   return (
-    <main className="min-h-[calc(100svh-73px)] bg-gradient-to-b from-background via-background to-muted/40 px-6 py-10">
+    <main className="min-h-[calc(100svh-73px)] bg-[image:var(--page-gradient)] px-6 py-10">
       <div className="mx-auto flex w-full max-w-[1800px] flex-col gap-8">
         <section className="rounded-3xl border border-border/70 bg-card/80 p-8 shadow-sm">
           <div className="h-5 w-36 animate-pulse rounded-full bg-muted" />

@@ -1,5 +1,13 @@
 "use client"
 
+import {
+  RiCheckboxCircleLine,
+  RiMotorbikeLine,
+  RiRestaurant2Line,
+  RiTimeLine,
+  RiTimerLine,
+} from "@remixicon/react"
+
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import {
@@ -35,6 +43,27 @@ function getStatusClasses(status: string) {
   }
 }
 
+function getStatusIcon(status: string) {
+  switch (status) {
+    case "Pronto":
+      return <RiCheckboxCircleLine aria-hidden className="size-3" />
+    case "Em preparo":
+      return <RiRestaurant2Line aria-hidden className="size-3" />
+    case "Saiu para entrega":
+      return <RiMotorbikeLine aria-hidden className="size-3" />
+    case "Finalizado":
+      return <RiCheckboxCircleLine aria-hidden className="size-3" />
+    default:
+      return <RiTimeLine aria-hidden className="size-3" />
+  }
+}
+
+const metricColors = [
+  "border-info/25 bg-info-muted/65 shadow-info/5",
+  "border-success/25 bg-success-muted/65 shadow-success/5",
+  "border-warning/20 bg-warning-muted/45 shadow-warning/5",
+]
+
 export default function AdminOrdersPage() {
   const orders = useOrders()
   const activeOrders = orders.filter(
@@ -56,14 +85,37 @@ export default function AdminOrdersPage() {
       detail: "Da cozinha até a entrega",
     },
   ]
+  const quickSummary = [
+    {
+      title: "Pedidos em preparo",
+      description: "8 pedidos ativos na cozinha",
+      badge: "Agora",
+      icon: RiRestaurant2Line,
+      className: "border-warning/25 bg-warning-muted/45 text-warning",
+    },
+    {
+      title: "Entregas em rota",
+      description: "3 entregadores com pedido em andamento",
+      badge: "Logística",
+      icon: RiMotorbikeLine,
+      className: "border-info/25 bg-info-muted/55 text-info",
+    },
+    {
+      title: "Tempo médio de espera",
+      description: "18 minutos nos últimos 30 pedidos",
+      badge: "SLA",
+      icon: RiTimerLine,
+      className: "border-primary/25 bg-primary-muted/55 text-primary",
+    },
+  ]
 
   return (
-    <main className="min-h-svh bg-gradient-to-b from-background via-background to-muted/40 px-6 py-10">
+    <main className="min-h-svh bg-[image:var(--page-gradient)] px-6 py-10">
       <div className="mx-auto flex w-full max-w-[1800px] flex-col gap-8">
-        <section className="flex flex-col gap-4 rounded-3xl border border-border/70 bg-card/80 p-8 shadow-sm backdrop-blur">
+        <section className="flex flex-col gap-4 rounded-3xl border border-info/20 bg-card/85 p-8 shadow-sm shadow-info/5 backdrop-blur">
           <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
             <div className="max-w-2xl space-y-2">
-              <span className="inline-flex w-fit rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary">
+              <span className="inline-flex w-fit rounded-full bg-info px-3 py-1 text-xs font-medium text-info-foreground">
                 Painel administrativo
               </span>
               <h1 className="font-heading text-3xl font-semibold tracking-tight md:text-4xl">
@@ -82,10 +134,10 @@ export default function AdminOrdersPage() {
         </section>
 
         <section className="grid gap-4 md:grid-cols-3">
-          {metrics.map((item) => (
+          {metrics.map((item, index) => (
             <Card
               key={item.label}
-              className="rounded-2xl border border-border/70 p-2 shadow-sm"
+              className={`rounded-2xl border p-2 shadow-sm ${metricColors[index]}`}
             >
               <CardContent className="p-4">
                 <p className="text-sm text-muted-foreground">{item.label}</p>
@@ -100,8 +152,8 @@ export default function AdminOrdersPage() {
           ))}
         </section>
 
-        <Card className="rounded-3xl border border-border/70 p-0 shadow-sm">
-          <CardHeader className="flex flex-col gap-4 border-b border-border/70 p-6 md:flex-row md:items-center md:justify-between">
+        <Card className="rounded-3xl border border-info/15 p-0 shadow-sm">
+          <CardHeader className="flex flex-col gap-4 border-b border-info/15 bg-info-muted/45 p-6 md:flex-row md:items-center md:justify-between">
             <div>
               <CardTitle className="text-lg font-semibold">
                 Pedidos cadastrados
@@ -162,6 +214,7 @@ export default function AdminOrdersPage() {
                     <TableCell className="font-medium">{order.total}</TableCell>
                     <TableCell>
                       <Badge className={getStatusClasses(order.status)}>
+                        {getStatusIcon(order.status)}
                         {order.status}
                       </Badge>
                     </TableCell>
@@ -179,7 +232,7 @@ export default function AdminOrdersPage() {
         </Card>
 
         <section className="grid gap-4 lg:grid-cols-[1fr_1fr]">
-          <Card className="rounded-3xl border border-border/70 p-2 shadow-sm">
+          <Card className="rounded-3xl border border-info/20 bg-card/95 p-2 shadow-sm shadow-info/5">
             <CardHeader>
               <CardTitle className="text-lg font-semibold">
                 Resumo rápido
@@ -190,36 +243,35 @@ export default function AdminOrdersPage() {
             </CardHeader>
 
             <CardContent className="space-y-3">
-              {[
-                ["Pedidos em preparo", "8 pedidos ativos na cozinha", "Agora"],
-                [
-                  "Entregas em rota",
-                  "3 entregadores com pedido em andamento",
-                  "Logística",
-                ],
-                [
-                  "Tempo médio de espera",
-                  "18 minutos nos últimos 30 pedidos",
-                  "SLA",
-                ],
-              ].map(([title, description, badge]) => (
-                <div
-                  key={title}
-                  className="flex flex-col gap-3 rounded-2xl border border-border/60 bg-background/70 p-4 md:flex-row md:items-center md:justify-between"
-                >
-                  <div>
-                    <h3 className="font-medium">{title}</h3>
-                    <p className="text-sm text-muted-foreground">
-                      {description}
-                    </p>
+              {quickSummary.map((item) => {
+                const Icon = item.icon
+
+                return (
+                  <div
+                    key={item.title}
+                    className={`flex flex-col gap-3 rounded-2xl border p-4 md:flex-row md:items-center md:justify-between ${item.className}`}
+                  >
+                    <div className="flex items-start gap-3">
+                      <span className="mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-full bg-card/80">
+                        <Icon aria-hidden className="size-4" />
+                      </span>
+                      <div>
+                        <h3 className="font-medium text-foreground">
+                          {item.title}
+                        </h3>
+                        <p className="text-sm text-current/80">
+                          {item.description}
+                        </p>
+                      </div>
+                    </div>
+                    <Badge variant="secondary">{item.badge}</Badge>
                   </div>
-                  <Badge variant="secondary">{badge}</Badge>
-                </div>
-              ))}
+                )
+              })}
             </CardContent>
           </Card>
 
-          <Card className="rounded-3xl border border-border/70 p-2 shadow-sm">
+          <Card className="rounded-3xl border border-warning/20 bg-card/95 p-2 shadow-sm shadow-warning/5">
             <CardHeader>
               <CardTitle className="text-lg font-semibold">
                 Próximas ações
@@ -238,7 +290,7 @@ export default function AdminOrdersPage() {
               ].map((task) => (
                 <label
                   key={task}
-                  className="flex items-center gap-3 rounded-2xl border border-border/60 bg-background/70 p-4 text-sm"
+                  className="flex items-center gap-3 rounded-2xl border border-warning/20 bg-warning-muted/35 p-4 text-sm"
                 >
                   <Checkbox />
                   <span>{task}</span>

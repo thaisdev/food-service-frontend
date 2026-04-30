@@ -37,6 +37,18 @@ function getBadgeClasses(value: string) {
   }
 }
 
+const metricColors = [
+  "border-success/25 bg-success-muted/65 shadow-success/5",
+  "border-primary/25 bg-primary-muted/70 shadow-primary/5",
+  "border-warning/20 bg-warning-muted/45 shadow-warning/5",
+]
+
+const stockInsightColors = [
+  "border-destructive/25 bg-destructive-muted/60 text-destructive",
+  "border-success/25 bg-success-muted/65 text-success",
+  "border-warning/25 bg-warning-muted/65 text-warning",
+]
+
 export default function AdminProductsPage() {
   const products = useProducts()
   const activeProducts = products.filter(
@@ -65,12 +77,12 @@ export default function AdminProductsPage() {
   ]
 
   return (
-    <main className="min-h-svh bg-gradient-to-b from-background via-background to-muted/40 px-6 py-10">
+    <main className="min-h-svh bg-[image:var(--page-gradient)] px-6 py-10">
       <div className="mx-auto flex w-full max-w-[1800px] flex-col gap-8">
-        <section className="flex flex-col gap-4 rounded-3xl border border-border/70 bg-card/80 p-8 shadow-sm backdrop-blur">
+        <section className="flex flex-col gap-4 rounded-3xl border border-primary/20 bg-card/85 p-8 shadow-sm shadow-primary/5 backdrop-blur">
           <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
             <div className="max-w-2xl space-y-2">
-              <span className="inline-flex w-fit rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary">
+              <span className="inline-flex w-fit rounded-full bg-primary px-3 py-1 text-xs font-medium text-primary-foreground">
                 Catálogo administrativo
               </span>
               <h1 className="font-heading text-3xl font-semibold tracking-tight md:text-4xl">
@@ -89,10 +101,10 @@ export default function AdminProductsPage() {
         </section>
 
         <section className="grid gap-4 md:grid-cols-3">
-          {metrics.map((item) => (
+          {metrics.map((item, index) => (
             <Card
               key={item.label}
-              className="rounded-2xl border border-border/70 p-2 shadow-sm"
+              className={`rounded-2xl border p-2 shadow-sm ${metricColors[index]}`}
             >
               <CardContent className="p-4">
                 <p className="text-sm text-muted-foreground">{item.label}</p>
@@ -107,8 +119,8 @@ export default function AdminProductsPage() {
           ))}
         </section>
 
-        <Card className="rounded-3xl border border-border/70 p-0 shadow-sm">
-          <CardHeader className="flex flex-col gap-4 border-b border-border/70 p-6 md:flex-row md:items-center md:justify-between">
+        <Card className="rounded-3xl border border-primary/15 p-0 shadow-sm">
+          <CardHeader className="flex flex-col gap-4 border-b border-primary/15 bg-primary-muted/45 p-6 md:flex-row md:items-center md:justify-between">
             <div>
               <CardTitle className="text-lg font-semibold">
                 Produtos cadastrados
@@ -196,7 +208,7 @@ export default function AdminProductsPage() {
         </Card>
 
         <section className="grid gap-4 lg:grid-cols-[1fr_1fr]">
-          <Card className="rounded-3xl border border-border/70 p-2 shadow-sm">
+          <Card className="rounded-3xl border border-warning/20 bg-card/95 p-2 shadow-sm shadow-warning/5">
             <CardHeader>
               <CardTitle className="text-lg font-semibold">
                 Visão de estoque
@@ -211,21 +223,19 @@ export default function AdminProductsPage() {
                 ["Produtos em baixa", "6 itens com estoque abaixo do ideal"],
                 ["Mais vendidos", "Smash Burger lidera nas últimas 24 horas"],
                 ["Itens pausados", "2 produtos temporariamente indisponíveis"],
-              ].map(([title, description]) => (
+              ].map(([title, description], index) => (
                 <div
                   key={title}
-                  className="rounded-2xl border border-border/60 bg-background/70 p-4"
+                  className={`rounded-2xl border p-4 ${stockInsightColors[index]}`}
                 >
-                  <h3 className="font-medium">{title}</h3>
-                  <p className="mt-1 text-sm text-muted-foreground">
-                    {description}
-                  </p>
+                  <h3 className="font-medium text-foreground">{title}</h3>
+                  <p className="mt-1 text-sm text-current/80">{description}</p>
                 </div>
               ))}
             </CardContent>
           </Card>
 
-          <Card className="rounded-3xl border border-border/70 p-2 shadow-sm">
+          <Card className="rounded-3xl border border-success/20 bg-card/95 p-2 shadow-sm shadow-success/5">
             <CardHeader>
               <CardTitle className="text-lg font-semibold">
                 Ações rápidas
@@ -244,7 +254,7 @@ export default function AdminProductsPage() {
               ].map((task) => (
                 <label
                   key={task}
-                  className="flex items-center gap-3 rounded-2xl border border-border/60 bg-background/70 p-4 text-sm"
+                  className="flex items-center gap-3 rounded-2xl border border-success/25 bg-success-muted/55 p-4 text-sm"
                 >
                   <Checkbox />
                   <span>{task}</span>

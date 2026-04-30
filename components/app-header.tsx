@@ -46,7 +46,7 @@ export function AppHeader() {
   }
 
   return (
-    <header className="sticky top-0 z-50 border-b border-border/70 bg-white/95 backdrop-blur dark:bg-card/95">
+    <header className="sticky top-0 z-50 border-b border-primary/20 bg-white/95 shadow-[0_1px_0_color-mix(in_srgb,var(--brand-bright)_18%,transparent)] backdrop-blur dark:bg-card/95">
       <div className="mx-auto flex w-full max-w-[1800px] items-center justify-between gap-4 px-6 py-4">
         <div className="flex items-center gap-6">
           <Link href={homeHref} className="flex items-center gap-3">
@@ -62,7 +62,7 @@ export function AppHeader() {
               <strong className="font-heading text-base font-semibold tracking-tight">
                 Food Service
               </strong>
-              <span className="mt-1 text-[11px] font-medium tracking-[0.24em] text-muted-foreground uppercase">
+              <span className="mt-1 text-[11px] font-medium tracking-[0.24em] text-brand-muted uppercase">
                 {subtitle}
               </span>
             </span>
@@ -80,8 +80,9 @@ export function AppHeader() {
                   key={link.href}
                   href={link.href}
                   className={cn(
-                    "rounded-full px-3 py-2 text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground",
-                    isActive && "bg-primary/10 font-medium text-primary"
+                    "rounded-full px-3 py-2 text-sm text-muted-foreground transition-colors hover:bg-primary-muted hover:text-primary",
+                    isActive &&
+                      "bg-primary text-primary-foreground shadow-sm shadow-primary/20"
                   )}
                 >
                   {link.label}
@@ -93,7 +94,14 @@ export function AppHeader() {
 
         <div className="flex items-center gap-2">
           {(isAdmin || isCustomers) && (
-            <Button type="button" variant="ghost" onClick={handleSignOut}>
+            <Button
+              type="button"
+              variant="ghost"
+              className={cn(
+                isCustomers && "text-rose hover:bg-destructive-muted"
+              )}
+              onClick={handleSignOut}
+            >
               {isAdmin ? "Sair" : "Pedir a conta"}
             </Button>
           )}
