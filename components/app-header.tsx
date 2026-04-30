@@ -92,9 +92,9 @@ export function AppHeader() {
         </div>
 
         <div className="flex items-center gap-2">
-          {isAdmin && (
+          {(isAdmin || isCustomers) && (
             <Button type="button" variant="ghost" onClick={handleSignOut}>
-              Sair
+              {isAdmin ? "Sair" : "Pedir a conta"}
             </Button>
           )}
 
