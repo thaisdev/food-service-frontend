@@ -14,9 +14,7 @@ const adminLinks = [
   { href: "/admin/products", label: "Produtos" },
 ]
 
-const customerLinks = [
-  { href: "/customers/menu", label: "Card\u00e1pio" },
-]
+const customerLinks = [{ href: "/customers/menu", label: "Card\u00e1pio" }]
 
 export function AppHeader() {
   const pathname = usePathname()
@@ -27,9 +25,13 @@ export function AppHeader() {
   const isCustomers = pathname.startsWith("/customers")
   const logoSrc = isDark
     ? "/branding/food-service-logo-app-icon-primary.svg"
-    : "/branding/food-service-logo-simbolo.svg"
+    : "/branding/food-service-logo-app-icon-light.svg"
   const links = isAdmin ? adminLinks : isCustomers ? customerLinks : []
-  const homeHref = isAdmin ? "/admin/home" : isCustomers ? "/customers/menu" : "/"
+  const homeHref = isAdmin
+    ? "/admin/home"
+    : isCustomers
+      ? "/customers/menu"
+      : "/"
   const subtitle = isAdmin
     ? "Painel administrativo"
     : isCustomers
@@ -41,16 +43,14 @@ export function AppHeader() {
       <div className="mx-auto flex w-full max-w-[1800px] items-center justify-between gap-4 py-4">
         <div className="flex items-center gap-6">
           <Link href={homeHref} className="flex items-center gap-3">
-            <span className="relative flex h-10 w-10 items-center justify-center overflow-hidden rounded-2xl bg-card shadow-sm ring-1 ring-border/70">
-              <Image
-                src={logoSrc}
-                alt="Food Service"
-                width={32}
-                height={32}
-                className="h-8 w-8 object-contain"
-                priority
-              />
-            </span>
+            <Image
+              src={logoSrc}
+              alt="Food Service"
+              width={32}
+              height={32}
+              className="h-8 w-8 object-contain"
+              priority
+            />
             <span className="hidden sm:flex sm:flex-col sm:leading-none">
               <strong className="font-heading text-base font-semibold tracking-tight">
                 Food Service

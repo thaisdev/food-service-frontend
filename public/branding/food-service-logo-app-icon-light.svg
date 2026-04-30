@@ -1,1 +1,12 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256" fill="none"><rect width="256" height="256" rx="56" fill="#ffffff"/><path d="M76 58H172C190 58 204 72 204 90V183C204 201 190 215 172 215H84C66 215 52 201 52 183V90C52 72 66 58 76 58Z" stroke="oklch(0.52 0.105 223.128)" stroke-width="12" stroke-linecap="round"/><path d="M74 185H182" stroke="oklch(0.52 0.105 223.128)" stroke-width="12" stroke-linecap="round"/><path d="M111 206H145" stroke="oklch(0.52 0.105 223.128)" stroke-width="8" stroke-linecap="round"/><path d="M91 128C94 99 116 86 128 86C140 86 162 99 165 128" fill="oklch(0.52 0.105 223.128)"/><path d="M87 133H169" stroke="oklch(0.52 0.105 223.128)" stroke-width="10" stroke-linecap="round"/><path d="M128 75V86" stroke="oklch(0.52 0.105 223.128)" stroke-width="8" stroke-linecap="round"/><circle cx="88" cy="154" r="7" fill="oklch(0.52 0.105 223.128)"/><path d="M109 154H158" stroke="oklch(0.52 0.105 223.128)" stroke-width="9" stroke-linecap="round"/><circle cx="88" cy="176" r="7" fill="oklch(0.52 0.105 223.128)"/><path d="M109 176H149" stroke="oklch(0.52 0.105 223.128)" stroke-width="9" stroke-linecap="round"/></svg>
+<svg width="158" height="158" viewBox="0 0 158 158" fill="none" xmlns="http://www.w3.org/2000/svg">
+<rect width="158" height="158" rx="20" fill="#007595"/>
+<rect x="9" y="9" width="140" height="140" rx="13" fill="white"/>
+<rect x="21" y="81" width="115" height="6" rx="3" fill="#007595"/>
+<rect x="28" y="81" width="101" height="11" rx="5.5" fill="#007595"/>
+<ellipse cx="6.84102" cy="6.53089" rx="6.84102" ry="6.53089" transform="matrix(0.969231 0.246155 -0.272037 0.962287 73.7523 17)" fill="#007595"/>
+<path d="M78.5 30C106.002 30 128.328 50.9968 128.611 77H28.3887C28.6716 50.9968 50.9985 30 78.5 30Z" fill="#007595"/>
+<circle cx="46.2579" cy="113.258" r="7.55902" transform="rotate(15 46.2579 113.258)" fill="#007595"/>
+<rect x="59.545" y="109" width="62" height="8" rx="4" fill="#007595"/>
+<rect x="59.545" y="131" width="62" height="8" rx="4" fill="#007595"/>
+<circle cx="46.2579" cy="135.258" r="7.55902" transform="rotate(15 46.2579 135.258)" fill="#007595"/>
+</svg>
