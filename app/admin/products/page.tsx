@@ -11,10 +11,10 @@ const metrics = [
   {
     label: "Categorias",
     value: "8",
-    detail: "Card\u00e1pio principal e sazonais",
+    detail: "Cardápio principal e sazonais",
   },
   {
-    label: "Ticket m\u00e9dio",
+    label: "Ticket médio",
     value: "R$ 57,40",
     detail: "+8% nesta semana",
   },
@@ -27,16 +27,16 @@ const products = [
     name: "Smash Burger",
     category: "Lanches",
     price: "R$ 28,90",
-    stock: "Dispon\u00edvel",
+    stock: "Disponível",
     status: "Ativo",
   },
   {
     id: "PRD-002",
     image: "/branding/product-placeholder.png",
     name: "Bowl Fit",
-    category: "Saud\u00e1vel",
+    category: "Saudável",
     price: "R$ 24,50",
-    stock: "Dispon\u00edvel",
+    stock: "Disponível",
     status: "Ativo",
   },
   {
@@ -54,7 +54,7 @@ const products = [
     name: "Brownie da Casa",
     category: "Sobremesas",
     price: "R$ 12,00",
-    stock: "Dispon\u00edvel",
+    stock: "Disponível",
     status: "Ativo",
   },
   {
@@ -63,7 +63,7 @@ const products = [
     name: "Suco Verde",
     category: "Bebidas",
     price: "R$ 9,50",
-    stock: "Indispon\u00edvel",
+    stock: "Indisponível",
     status: "Inativo",
   },
 ]
@@ -71,12 +71,12 @@ const products = [
 function getBadgeClasses(value: string) {
   switch (value) {
     case "Ativo":
-    case "Dispon\u00edvel":
+    case "Disponível":
       return "bg-emerald-500/12 text-emerald-700 dark:text-emerald-300"
     case "Baixo":
       return "bg-amber-500/12 text-amber-700 dark:text-amber-300"
     case "Inativo":
-    case "Indispon\u00edvel":
+    case "Indisponível":
       return "bg-rose-500/12 text-rose-700 dark:text-rose-300"
     default:
       return "bg-muted text-muted-foreground"
@@ -91,19 +91,18 @@ export default function AdminProductsPage() {
           <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
             <div className="max-w-2xl space-y-2">
               <span className="inline-flex w-fit rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary">
-                {"Cat\u00e1logo administrativo"}
+                Catálogo administrativo
               </span>
               <h1 className="font-heading text-3xl font-semibold tracking-tight md:text-4xl">
-                {"Gerencie os produtos do card\u00e1pio"}
+                Gerencie os produtos do cardápio
               </h1>
               <p className="text-sm leading-6 text-muted-foreground md:text-base">
-                {
-                  "Consulte itens cadastrados, acompanhe a disponibilidade e ajuste o cat\u00e1logo da opera\u00e7\u00e3o com rapidez."
-                }
+                Consulte itens cadastrados, acompanhe a disponibilidade e
+                ajuste o catálogo da operação com rapidez.
               </p>
             </div>
             <div className="flex gap-3">
-              <Button variant="outline">{"Importar cat\u00e1logo"}</Button>
+              <Button variant="outline">Importar catálogo</Button>
               <Button>Novo produto</Button>
             </div>
           </div>
@@ -129,7 +128,7 @@ export default function AdminProductsPage() {
             <div>
               <h2 className="text-lg font-semibold">Produtos cadastrados</h2>
               <p className="text-sm text-muted-foreground">
-                {"Visualize e acompanhe os itens dispon\u00edveis no sistema."}
+                Visualize e acompanhe os itens disponíveis no sistema.
               </p>
             </div>
             <div className="flex flex-wrap gap-2">
@@ -147,10 +146,10 @@ export default function AdminProductsPage() {
           </div>
 
           <div className="hidden grid-cols-[0.9fr_2fr_1fr_0.9fr_1fr_1fr] gap-4 px-6 py-4 text-xs font-medium uppercase tracking-wide text-muted-foreground md:grid">
-            <span>{"C\u00f3digo"}</span>
+            <span>Código</span>
             <span>Produto</span>
             <span>Categoria</span>
-            <span>{"Pre\u00e7o"}</span>
+            <span>Preço</span>
             <span>Estoque</span>
             <span>Status</span>
           </div>
@@ -218,23 +217,18 @@ export default function AdminProductsPage() {
 
         <section className="grid gap-4 lg:grid-cols-[1fr_1fr]">
           <article className="rounded-3xl border border-border/70 bg-card p-6 shadow-sm">
-            <h2 className="text-lg font-semibold">{"Vis\u00e3o de estoque"}</h2>
+            <h2 className="text-lg font-semibold">Visão de estoque</h2>
             <p className="mt-1 text-sm text-muted-foreground">
-              {
-                "Itens que pedem aten\u00e7\u00e3o do time administrativo."
-              }
+              Itens que pedem atenção do time administrativo.
             </p>
 
             <div className="mt-6 space-y-3">
               {[
                 ["Produtos em baixa", "6 itens com estoque abaixo do ideal"],
-                [
-                  "Mais vendidos",
-                  "Smash Burger lidera nas \u00faltimas 24 horas",
-                ],
+                ["Mais vendidos", "Smash Burger lidera nas últimas 24 horas"],
                 [
                   "Itens pausados",
-                  "2 produtos temporariamente indispon\u00edveis",
+                  "2 produtos temporariamente indisponíveis",
                 ],
               ].map(([title, description]) => (
                 <div
@@ -251,19 +245,17 @@ export default function AdminProductsPage() {
           </article>
 
           <aside className="rounded-3xl border border-border/70 bg-card p-6 shadow-sm">
-            <h2 className="text-lg font-semibold">{"A\u00e7\u00f5es r\u00e1pidas"}</h2>
+            <h2 className="text-lg font-semibold">Ações rápidas</h2>
             <p className="mt-1 text-sm text-muted-foreground">
-              {
-                "Tarefas comuns para manuten\u00e7\u00e3o do cat\u00e1logo."
-              }
+              Tarefas comuns para manutenção do catálogo.
             </p>
 
             <div className="mt-6 space-y-3">
               {[
                 "Cadastrar novo item promocional",
-                "Atualizar pre\u00e7o dos combos",
-                "Revisar produtos indispon\u00edveis",
-                "Ajustar categorias do card\u00e1pio",
+                "Atualizar preço dos combos",
+                "Revisar produtos indisponíveis",
+                "Ajustar categorias do cardápio",
               ].map((task) => (
                 <label
                   key={task}

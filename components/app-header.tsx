@@ -9,12 +9,12 @@ import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 
 const adminLinks = [
-  { href: "/admin/home", label: "In\u00edcio" },
+  { href: "/admin/home", label: "Início" },
   { href: "/admin/orders", label: "Pedidos" },
   { href: "/admin/products", label: "Produtos" },
 ]
 
-const customerLinks = [{ href: "/customers/menu", label: "Card\u00e1pio" }]
+const customerLinks = [{ href: "/customers/menu", label: "Cardápio" }]
 
 export function AppHeader() {
   const pathname = usePathname()
@@ -35,8 +35,8 @@ export function AppHeader() {
   const subtitle = isAdmin
     ? "Painel administrativo"
     : isCustomers
-      ? "M\u00f3dulo do cliente"
-      : "Sele\u00e7\u00e3o de m\u00f3dulos"
+      ? "Módulo do cliente"
+      : "Seleção de módulos"
 
   return (
     <header className="sticky top-0 z-50 border-b border-border/70 bg-white/95 backdrop-blur dark:bg-card/95">
@@ -55,7 +55,7 @@ export function AppHeader() {
               <strong className="font-heading text-base font-semibold tracking-tight">
                 Food Service
               </strong>
-              <span className="mt-1 text-[11px] font-medium tracking-[0.24em] text-muted-foreground uppercase">
+              <span className="mt-1 text-[11px] font-medium uppercase tracking-[0.24em] text-muted-foreground">
                 {subtitle}
               </span>
             </span>

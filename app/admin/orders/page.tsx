@@ -11,7 +11,7 @@ const orders = [
     id: "#1028",
     customer: "Mariana Costa",
     channel: "Delivery",
-    items: "2x Smash Burger, 1x Batata Rustica",
+    items: "2x Smash Burger, 1x Batata Rústica",
     total: "R$ 86,90",
     status: "Em preparo",
     time: "12:40",

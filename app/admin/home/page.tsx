@@ -8,15 +8,14 @@ export default function AdminHomePage() {
       <div className="mx-auto flex w-full max-w-[1800px]">
         <div className="flex max-w-xl min-w-0 flex-col gap-4 text-sm leading-loose">
           <span className="inline-flex w-fit rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary">
-            {"Painel em constru\u00e7\u00e3o"}
+            Painel em construção
           </span>
           <h1 className="font-heading text-4xl font-semibold tracking-tight">
             Gerencie pedidos e produtos com mais clareza
           </h1>
           <p className="text-base text-muted-foreground">
-            {
-              "Use o cabe\u00e7alho para navegar entre as \u00e1reas administrativas e altere o tema da interface pelo bot\u00e3o no topo."
-            }
+            Use o cabeçalho para navegar entre as áreas administrativas e altere
+            o tema da interface pelo botão no topo.
           </p>
           <div className="flex gap-3">
             <Button asChild>
