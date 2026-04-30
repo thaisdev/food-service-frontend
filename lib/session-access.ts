@@ -79,6 +79,10 @@ export function setSessionAccess(access: SessionAccess) {
   window.sessionStorage.setItem(SESSION_ACCESS_KEY, JSON.stringify(access))
 }
 
+export function clearSessionAccess() {
+  window.sessionStorage.removeItem(SESSION_ACCESS_KEY)
+}
+
 export function getModuleHome(module: SessionAccess["module"]) {
   return module === "admin" ? "/admin/home" : "/customers/menu"
 }

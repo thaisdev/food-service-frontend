@@ -2,10 +2,11 @@
 
 import Image from "next/image"
 import Link from "next/link"
-import { usePathname } from "next/navigation"
+import { usePathname, useRouter } from "next/navigation"
 import { useTheme } from "next-themes"
 
 import { Button } from "@/components/ui/button"
+import { clearSessionAccess } from "@/lib/session-access"
 import { cn } from "@/lib/utils"
 
 const adminLinks = [
@@ -17,6 +18,7 @@ const adminLinks = [
 const customerLinks = [{ href: "/customers/menu", label: "Cardápio" }]
 
 export function AppHeader() {
+  const router = useRouter()
   const pathname = usePathname()
   const { resolvedTheme, setTheme } = useTheme()
 
@@ -37,6 +39,11 @@ export function AppHeader() {
     : isCustomers
       ? "Módulo do cliente"
       : "Seleção de módulos"
+
+  function handleSignOut() {
+    clearSessionAccess()
+    router.push("/")
+  }
 
   return (
     <header className="sticky top-0 z-50 border-b border-border/70 bg-white/95 backdrop-blur dark:bg-card/95">
@@ -84,13 +91,21 @@ export function AppHeader() {
           </nav>
         </div>
 
-        <Button
-          type="button"
-          variant="outline"
-          onClick={() => setTheme(isDark ? "light" : "dark")}
-        >
-          {isDark ? "Modo claro" : "Modo escuro"}
-        </Button>
+        <div className="flex items-center gap-2">
+          {isAdmin && (
+            <Button type="button" variant="ghost" onClick={handleSignOut}>
+              Sair
+            </Button>
+          )}
+
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => setTheme(isDark ? "light" : "dark")}
+          >
+            {isDark ? "Modo claro" : "Modo escuro"}
+          </Button>
+        </div>
       </div>
     </header>
   )
