@@ -1,4 +1,21 @@
+import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card"
+import { Checkbox } from "@/components/ui/checkbox"
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table"
 
 const metrics = [
   { label: "Pedidos ativos", value: "24", detail: "6 aguardando preparo" },
@@ -96,107 +113,113 @@ export default function AdminOrdersPage() {
 
         <section className="grid gap-4 md:grid-cols-3">
           {metrics.map((item) => (
-            <article
+            <Card
               key={item.label}
-              className="rounded-2xl border border-border/70 bg-card p-6 shadow-sm"
+              className="rounded-2xl border border-border/70 p-2 shadow-sm"
             >
-              <p className="text-sm text-muted-foreground">{item.label}</p>
-              <strong className="mt-3 block text-3xl font-semibold tracking-tight">
-                {item.value}
-              </strong>
-              <p className="mt-2 text-sm text-muted-foreground">{item.detail}</p>
-            </article>
+              <CardContent className="p-4">
+                <p className="text-sm text-muted-foreground">{item.label}</p>
+                <strong className="mt-3 block text-3xl font-semibold tracking-tight">
+                  {item.value}
+                </strong>
+                <p className="mt-2 text-sm text-muted-foreground">
+                  {item.detail}
+                </p>
+              </CardContent>
+            </Card>
           ))}
         </section>
 
-        <section className="rounded-3xl border border-border/70 bg-card shadow-sm">
-          <div className="flex flex-col gap-4 border-b border-border/70 p-6 md:flex-row md:items-center md:justify-between">
+        <Card className="rounded-3xl border border-border/70 p-0 shadow-sm">
+          <CardHeader className="flex flex-col gap-4 border-b border-border/70 p-6 md:flex-row md:items-center md:justify-between">
             <div>
-              <h2 className="text-lg font-semibold">Pedidos cadastrados</h2>
-              <p className="text-sm text-muted-foreground">
+              <CardTitle className="text-lg font-semibold">
+                Pedidos cadastrados
+              </CardTitle>
+              <CardDescription className="text-sm">
                 Lista operacional com os pedidos mais recentes do sistema.
-              </p>
+              </CardDescription>
             </div>
             <div className="flex flex-wrap gap-2">
-              {["Todos", "Aguardando", "Em preparo", "Pronto", "Finalizado"].map(
-                (filter) => (
-                  <Button
-                    key={filter}
-                    variant={filter === "Todos" ? "default" : "outline"}
-                  >
-                    {filter}
-                  </Button>
-                )
-              )}
+              {[
+                "Todos",
+                "Aguardando",
+                "Em preparo",
+                "Pronto",
+                "Finalizado",
+              ].map((filter) => (
+                <Button
+                  key={filter}
+                  variant={filter === "Todos" ? "default" : "outline"}
+                >
+                  {filter}
+                </Button>
+              ))}
             </div>
-          </div>
+          </CardHeader>
 
-          <div className="hidden grid-cols-[0.9fr_1.2fr_2fr_0.9fr_1fr_0.8fr] gap-4 px-6 py-4 text-xs font-medium uppercase tracking-wide text-muted-foreground md:grid">
-            <span>Pedido</span>
-            <span>Cliente</span>
-            <span>Itens</span>
-            <span>Total</span>
-            <span>Status</span>
-            <span>Hora</span>
-          </div>
-
-          <div className="divide-y divide-border/70">
-            {orders.map((order) => (
-              <article
-                key={order.id}
-                className="grid gap-4 px-6 py-5 md:grid-cols-[0.9fr_1.2fr_2fr_0.9fr_1fr_0.8fr] md:items-center"
-              >
-                <div>
-                  <p className="font-medium">{order.id}</p>
-                  <p className="text-xs text-muted-foreground">{order.channel}</p>
-                </div>
-
-                <div>
-                  <p className="font-medium">{order.customer}</p>
-                  <p className="text-xs text-muted-foreground">
-                    Canal: {order.channel}
-                  </p>
-                </div>
-
-                <div>
-                  <p className="text-sm leading-6">{order.items}</p>
-                </div>
-
-                <div>
-                  <p className="font-medium">{order.total}</p>
-                </div>
-
-                <div>
-                  <span
-                    className={`inline-flex rounded-full px-3 py-1 text-xs font-medium ${getStatusClasses(order.status)}`}
-                  >
-                    {order.status}
-                  </span>
-                </div>
-
-                <div className="flex items-center justify-between gap-3 md:block">
-                  <p className="font-medium">{order.time}</p>
-                  <Button variant="ghost" size="sm">
-                    Ver
-                  </Button>
-                </div>
-              </article>
-            ))}
-          </div>
-        </section>
+          <CardContent className="p-0">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="px-6">Pedido</TableHead>
+                  <TableHead>Cliente</TableHead>
+                  <TableHead>Itens</TableHead>
+                  <TableHead>Total</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>Hora</TableHead>
+                  <TableHead className="px-6 text-right">Ações</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {orders.map((order) => (
+                  <TableRow key={order.id}>
+                    <TableCell className="px-6">
+                      <p className="font-medium">{order.id}</p>
+                      <p className="text-xs text-muted-foreground">
+                        {order.channel}
+                      </p>
+                    </TableCell>
+                    <TableCell>
+                      <p className="font-medium">{order.customer}</p>
+                      <p className="text-xs text-muted-foreground">
+                        Canal: {order.channel}
+                      </p>
+                    </TableCell>
+                    <TableCell className="min-w-72">
+                      <p className="text-sm leading-6">{order.items}</p>
+                    </TableCell>
+                    <TableCell className="font-medium">{order.total}</TableCell>
+                    <TableCell>
+                      <Badge className={getStatusClasses(order.status)}>
+                        {order.status}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="font-medium">{order.time}</TableCell>
+                    <TableCell className="px-6 text-right">
+                      <Button variant="ghost" size="sm">
+                        Ver
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </CardContent>
+        </Card>
 
         <section className="grid gap-4 lg:grid-cols-[1fr_1fr]">
-          <article className="rounded-3xl border border-border/70 bg-card p-6 shadow-sm">
-            <div className="flex items-center justify-between gap-4">
-              <div>
-                <h2 className="text-lg font-semibold">Resumo rápido</h2>
-                <p className="text-sm text-muted-foreground">
-                  Indicadores úteis para acompanhar a fila atual.
-                </p>
-              </div>
-            </div>
+          <Card className="rounded-3xl border border-border/70 p-2 shadow-sm">
+            <CardHeader>
+              <CardTitle className="text-lg font-semibold">
+                Resumo rápido
+              </CardTitle>
+              <CardDescription className="text-sm">
+                Indicadores úteis para acompanhar a fila atual.
+              </CardDescription>
+            </CardHeader>
 
-            <div className="mt-6 space-y-3">
+            <CardContent className="space-y-3">
               {[
                 ["Pedidos em preparo", "8 pedidos ativos na cozinha", "Agora"],
                 [
@@ -220,21 +243,23 @@ export default function AdminOrdersPage() {
                       {description}
                     </p>
                   </div>
-                  <span className="inline-flex w-fit rounded-full bg-secondary px-3 py-1 text-xs font-medium text-secondary-foreground">
-                    {badge}
-                  </span>
+                  <Badge variant="secondary">{badge}</Badge>
                 </div>
               ))}
-            </div>
-          </article>
+            </CardContent>
+          </Card>
 
-          <aside className="rounded-3xl border border-border/70 bg-card p-6 shadow-sm">
-            <h2 className="text-lg font-semibold">Próximas ações</h2>
-            <p className="mt-1 text-sm text-muted-foreground">
-              Sugestões para o operador administrativo neste turno.
-            </p>
+          <Card className="rounded-3xl border border-border/70 p-2 shadow-sm">
+            <CardHeader>
+              <CardTitle className="text-lg font-semibold">
+                Próximas ações
+              </CardTitle>
+              <CardDescription className="text-sm">
+                Sugestões para o operador administrativo neste turno.
+              </CardDescription>
+            </CardHeader>
 
-            <div className="mt-6 space-y-3">
+            <CardContent className="space-y-3">
               {[
                 "Confirmar pedidos aguardando aprovação",
                 "Despachar pedidos prontos para retirada",
@@ -245,15 +270,12 @@ export default function AdminOrdersPage() {
                   key={task}
                   className="flex items-center gap-3 rounded-2xl border border-border/60 bg-background/70 p-4 text-sm"
                 >
-                  <input
-                    type="checkbox"
-                    className="h-4 w-4 rounded border-input accent-primary"
-                  />
+                  <Checkbox />
                   <span>{task}</span>
                 </label>
               ))}
-            </div>
-          </aside>
+            </CardContent>
+          </Card>
         </section>
       </div>
     </main>

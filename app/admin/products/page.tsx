@@ -1,6 +1,23 @@
 import Image from "next/image"
 
+import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card"
+import { Checkbox } from "@/components/ui/checkbox"
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table"
 
 const metrics = [
   {
@@ -97,8 +114,8 @@ export default function AdminProductsPage() {
                 Gerencie os produtos do cardápio
               </h1>
               <p className="text-sm leading-6 text-muted-foreground md:text-base">
-                Consulte itens cadastrados, acompanhe a disponibilidade e
-                ajuste o catálogo da operação com rapidez.
+                Consulte itens cadastrados, acompanhe a disponibilidade e ajuste
+                o catálogo da operação com rapidez.
               </p>
             </div>
             <div className="flex gap-3">
@@ -110,26 +127,32 @@ export default function AdminProductsPage() {
 
         <section className="grid gap-4 md:grid-cols-3">
           {metrics.map((item) => (
-            <article
+            <Card
               key={item.label}
-              className="rounded-2xl border border-border/70 bg-card p-6 shadow-sm"
+              className="rounded-2xl border border-border/70 p-2 shadow-sm"
             >
-              <p className="text-sm text-muted-foreground">{item.label}</p>
-              <strong className="mt-3 block text-3xl font-semibold tracking-tight">
-                {item.value}
-              </strong>
-              <p className="mt-2 text-sm text-muted-foreground">{item.detail}</p>
-            </article>
+              <CardContent className="p-4">
+                <p className="text-sm text-muted-foreground">{item.label}</p>
+                <strong className="mt-3 block text-3xl font-semibold tracking-tight">
+                  {item.value}
+                </strong>
+                <p className="mt-2 text-sm text-muted-foreground">
+                  {item.detail}
+                </p>
+              </CardContent>
+            </Card>
           ))}
         </section>
 
-        <section className="rounded-3xl border border-border/70 bg-card shadow-sm">
-          <div className="flex flex-col gap-4 border-b border-border/70 p-6 md:flex-row md:items-center md:justify-between">
+        <Card className="rounded-3xl border border-border/70 p-0 shadow-sm">
+          <CardHeader className="flex flex-col gap-4 border-b border-border/70 p-6 md:flex-row md:items-center md:justify-between">
             <div>
-              <h2 className="text-lg font-semibold">Produtos cadastrados</h2>
-              <p className="text-sm text-muted-foreground">
+              <CardTitle className="text-lg font-semibold">
+                Produtos cadastrados
+              </CardTitle>
+              <CardDescription className="text-sm">
                 Visualize e acompanhe os itens disponíveis no sistema.
-              </p>
+              </CardDescription>
             </div>
             <div className="flex flex-wrap gap-2">
               {["Todos", "Ativos", "Inativos", "Baixo estoque"].map(
@@ -143,93 +166,88 @@ export default function AdminProductsPage() {
                 )
               )}
             </div>
-          </div>
+          </CardHeader>
 
-          <div className="hidden grid-cols-[0.9fr_2fr_1fr_0.9fr_1fr_1fr] gap-4 px-6 py-4 text-xs font-medium uppercase tracking-wide text-muted-foreground md:grid">
-            <span>Código</span>
-            <span>Produto</span>
-            <span>Categoria</span>
-            <span>Preço</span>
-            <span>Estoque</span>
-            <span>Status</span>
-          </div>
-
-          <div className="divide-y divide-border/70">
-            {products.map((product) => (
-              <article
-                key={product.id}
-                className="grid gap-4 px-6 py-5 md:grid-cols-[0.9fr_2fr_1fr_0.9fr_1fr_1fr] md:items-center"
-              >
-                <div>
-                  <p className="font-medium">{product.id}</p>
-                </div>
-
-                <div className="flex items-center justify-between gap-3">
-                  <div className="flex min-w-0 items-center gap-3">
-                    <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-2xl border border-border/60 bg-muted/40">
-                      <Image
-                        src={product.image}
-                        alt={product.name}
-                        fill
-                        className="object-cover"
-                        sizes="56px"
-                      />
-                    </div>
-                    <div className="min-w-0">
-                      <p className="font-medium">{product.name}</p>
-                      <p className="text-xs text-muted-foreground">
-                        Categoria: {product.category}
-                      </p>
-                    </div>
-                  </div>
-                  <Button variant="ghost" size="sm">
-                    Editar
-                  </Button>
-                </div>
-
-                <div>
-                  <p className="text-sm">{product.category}</p>
-                </div>
-
-                <div>
-                  <p className="font-medium">{product.price}</p>
-                </div>
-
-                <div>
-                  <span
-                    className={`inline-flex rounded-full px-3 py-1 text-xs font-medium ${getBadgeClasses(product.stock)}`}
-                  >
-                    {product.stock}
-                  </span>
-                </div>
-
-                <div>
-                  <span
-                    className={`inline-flex rounded-full px-3 py-1 text-xs font-medium ${getBadgeClasses(product.status)}`}
-                  >
-                    {product.status}
-                  </span>
-                </div>
-              </article>
-            ))}
-          </div>
-        </section>
+          <CardContent className="p-0">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="px-6">Código</TableHead>
+                  <TableHead>Produto</TableHead>
+                  <TableHead>Categoria</TableHead>
+                  <TableHead>Preço</TableHead>
+                  <TableHead>Estoque</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead className="px-6 text-right">Ações</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {products.map((product) => (
+                  <TableRow key={product.id}>
+                    <TableCell className="px-6 font-medium">
+                      {product.id}
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex min-w-56 items-center gap-3">
+                        <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-2xl border border-border/60 bg-muted/40">
+                          <Image
+                            src={product.image}
+                            alt={product.name}
+                            fill
+                            className="object-cover"
+                            sizes="56px"
+                          />
+                        </div>
+                        <div className="min-w-0">
+                          <p className="font-medium">{product.name}</p>
+                          <p className="text-xs text-muted-foreground">
+                            Categoria: {product.category}
+                          </p>
+                        </div>
+                      </div>
+                    </TableCell>
+                    <TableCell>{product.category}</TableCell>
+                    <TableCell className="font-medium">
+                      {product.price}
+                    </TableCell>
+                    <TableCell>
+                      <Badge className={getBadgeClasses(product.stock)}>
+                        {product.stock}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>
+                      <Badge className={getBadgeClasses(product.status)}>
+                        {product.status}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="px-6 text-right">
+                      <Button variant="ghost" size="sm">
+                        Editar
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </CardContent>
+        </Card>
 
         <section className="grid gap-4 lg:grid-cols-[1fr_1fr]">
-          <article className="rounded-3xl border border-border/70 bg-card p-6 shadow-sm">
-            <h2 className="text-lg font-semibold">Visão de estoque</h2>
-            <p className="mt-1 text-sm text-muted-foreground">
-              Itens que pedem atenção do time administrativo.
-            </p>
+          <Card className="rounded-3xl border border-border/70 p-2 shadow-sm">
+            <CardHeader>
+              <CardTitle className="text-lg font-semibold">
+                Visão de estoque
+              </CardTitle>
+              <CardDescription className="text-sm">
+                Itens que pedem atenção do time administrativo.
+              </CardDescription>
+            </CardHeader>
 
-            <div className="mt-6 space-y-3">
+            <CardContent className="space-y-3">
               {[
                 ["Produtos em baixa", "6 itens com estoque abaixo do ideal"],
                 ["Mais vendidos", "Smash Burger lidera nas últimas 24 horas"],
-                [
-                  "Itens pausados",
-                  "2 produtos temporariamente indisponíveis",
-                ],
+                ["Itens pausados", "2 produtos temporariamente indisponíveis"],
               ].map(([title, description]) => (
                 <div
                   key={title}
@@ -241,16 +259,20 @@ export default function AdminProductsPage() {
                   </p>
                 </div>
               ))}
-            </div>
-          </article>
+            </CardContent>
+          </Card>
 
-          <aside className="rounded-3xl border border-border/70 bg-card p-6 shadow-sm">
-            <h2 className="text-lg font-semibold">Ações rápidas</h2>
-            <p className="mt-1 text-sm text-muted-foreground">
-              Tarefas comuns para manutenção do catálogo.
-            </p>
+          <Card className="rounded-3xl border border-border/70 p-2 shadow-sm">
+            <CardHeader>
+              <CardTitle className="text-lg font-semibold">
+                Ações rápidas
+              </CardTitle>
+              <CardDescription className="text-sm">
+                Tarefas comuns para manutenção do catálogo.
+              </CardDescription>
+            </CardHeader>
 
-            <div className="mt-6 space-y-3">
+            <CardContent className="space-y-3">
               {[
                 "Cadastrar novo item promocional",
                 "Atualizar preço dos combos",
@@ -261,15 +283,12 @@ export default function AdminProductsPage() {
                   key={task}
                   className="flex items-center gap-3 rounded-2xl border border-border/60 bg-background/70 p-4 text-sm"
                 >
-                  <input
-                    type="checkbox"
-                    className="h-4 w-4 rounded border-input accent-primary"
-                  />
+                  <Checkbox />
                   <span>{task}</span>
                 </label>
               ))}
-            </div>
-          </aside>
+            </CardContent>
+          </Card>
         </section>
       </div>
     </main>

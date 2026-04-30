@@ -55,7 +55,7 @@ export function AppHeader() {
               <strong className="font-heading text-base font-semibold tracking-tight">
                 Food Service
               </strong>
-              <span className="mt-1 text-[11px] font-medium uppercase tracking-[0.24em] text-muted-foreground">
+              <span className="mt-1 text-[11px] font-medium tracking-[0.24em] text-muted-foreground uppercase">
                 {subtitle}
               </span>
             </span>

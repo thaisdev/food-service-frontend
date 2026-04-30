@@ -1,14 +1,14 @@
 import type { Metadata } from "next"
-import { Geist, Geist_Mono, Noto_Sans, Inter } from "next/font/google"
+import { Geist_Mono, Inter, Noto_Sans } from "next/font/google"
 
 import "./globals.css"
 import { AppHeader } from "@/components/app-header"
 import { ThemeProvider } from "@/components/theme-provider"
-import { cn } from "@/lib/utils";
+import { cn } from "@/lib/utils"
 
-const interHeading = Inter({subsets:['latin'],variable:'--font-heading'});
+const interHeading = Inter({ subsets: ["latin"], variable: "--font-heading" })
 
-const notoSans = Noto_Sans({subsets:['latin'],variable:'--font-sans'})
+const notoSans = Noto_Sans({ subsets: ["latin"], variable: "--font-sans" })
 
 const fontMono = Geist_Mono({
   subsets: ["latin"],
@@ -34,7 +34,13 @@ export default function RootLayout({
     <html
       lang="pt-BR"
       suppressHydrationWarning
-      className={cn("antialiased", fontMono.variable, "font-sans", notoSans.variable, interHeading.variable)}
+      className={cn(
+        "antialiased",
+        fontMono.variable,
+        "font-sans",
+        notoSans.variable,
+        interHeading.variable
+      )}
     >
       <body>
         <ThemeProvider>
