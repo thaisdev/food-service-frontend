@@ -1,3 +1,5 @@
+"use client"
+
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import {
@@ -16,60 +18,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
-
-const metrics = [
-  { label: "Pedidos ativos", value: "24", detail: "6 aguardando preparo" },
-  { label: "Receita do dia", value: "R$ 3.480", detail: "+12% vs. ontem" },
-  { label: "Tempo médio", value: "18 min", detail: "Da cozinha até a entrega" },
-]
-
-const orders = [
-  {
-    id: "#1028",
-    customer: "Mariana Costa",
-    channel: "Delivery",
-    items: "2x Smash Burger, 1x Batata Rústica",
-    total: "R$ 86,90",
-    status: "Em preparo",
-    time: "12:40",
-  },
-  {
-    id: "#1027",
-    customer: "Lucas Almeida",
-    channel: "Balcão",
-    items: "1x Bowl Fit, 1x Suco Verde",
-    total: "R$ 41,50",
-    status: "Pronto",
-    time: "12:32",
-  },
-  {
-    id: "#1026",
-    customer: "Fernanda Rocha",
-    channel: "Mesa 08",
-    items: "3x Taco de Frango, 2x Refrigerante",
-    total: "R$ 73,00",
-    status: "Aguardando",
-    time: "12:25",
-  },
-  {
-    id: "#1025",
-    customer: "Rafael Souza",
-    channel: "Delivery",
-    items: "1x Pizza Marguerita, 1x Brownie",
-    total: "R$ 64,90",
-    status: "Saiu para entrega",
-    time: "12:18",
-  },
-  {
-    id: "#1024",
-    customer: "Carla Mendes",
-    channel: "Mesa 03",
-    items: "2x Prato Executivo, 2x Água com gás",
-    total: "R$ 92,00",
-    status: "Finalizado",
-    time: "12:05",
-  },
-]
+import { useOrders } from "@/hooks/use-local-storage-data"
 
 function getStatusClasses(status: string) {
   switch (status) {
@@ -87,6 +36,27 @@ function getStatusClasses(status: string) {
 }
 
 export default function AdminOrdersPage() {
+  const orders = useOrders()
+  const activeOrders = orders.filter(
+    (order) => order.status !== "Finalizado"
+  ).length
+  const pendingOrders = orders.filter(
+    (order) => order.status === "Aguardando"
+  ).length
+  const metrics = [
+    {
+      label: "Pedidos ativos",
+      value: String(activeOrders),
+      detail: `${pendingOrders} aguardando preparo`,
+    },
+    { label: "Receita do dia", value: "R$ 3.480", detail: "+12% vs. ontem" },
+    {
+      label: "Tempo médio",
+      value: "18 min",
+      detail: "Da cozinha até a entrega",
+    },
+  ]
+
   return (
     <main className="min-h-svh bg-gradient-to-b from-background via-background to-muted/40 px-6 py-10">
       <div className="mx-auto flex w-full max-w-[1800px] flex-col gap-8">

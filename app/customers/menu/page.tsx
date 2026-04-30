@@ -11,45 +11,15 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
+import { useProducts } from "@/hooks/use-local-storage-data"
 import { useSessionAccess } from "@/hooks/use-session-access"
-
-const menuItems = [
-  {
-    id: "MENU-001",
-    image: "/branding/product-placeholder.png",
-    name: "Smash Burger",
-    description: "Pão brioche, burger artesanal, queijo e molho da casa.",
-    price: "R$ 28,90",
-    category: "Lanches",
-  },
-  {
-    id: "MENU-002",
-    image: "/branding/product-placeholder.png",
-    name: "Bowl Fit",
-    description: "Frango grelhado, arroz integral, legumes e molho leve.",
-    price: "R$ 24,50",
-    category: "Saudável",
-  },
-  {
-    id: "MENU-003",
-    image: "/branding/product-placeholder.png",
-    name: "Pizza Marguerita",
-    description: "Molho artesanal, muçarela, tomate fresco e manjericão.",
-    price: "R$ 52,00",
-    category: "Pizzas",
-  },
-  {
-    id: "MENU-004",
-    image: "/branding/product-placeholder.png",
-    name: "Brownie da Casa",
-    description: "Brownie macio com calda e finalização especial.",
-    price: "R$ 12,00",
-    category: "Sobremesas",
-  },
-]
 
 export default function CustomersMenuPage() {
   const access = useSessionAccess()
+  const products = useProducts()
+  const menuItems = products.filter(
+    (product) => product.status === "Ativo" && product.stock !== "Indisponível"
+  )
   const customerName = access?.module === "customers" ? access.name : "Cliente"
   const tableNumber = access?.module === "customers" ? access.table : "--"
 

@@ -1,3 +1,5 @@
+"use client"
+
 import Image from "next/image"
 
 import { Badge } from "@/components/ui/badge"
@@ -18,72 +20,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
-
-const metrics = [
-  {
-    label: "Produtos ativos",
-    value: "48",
-    detail: "6 com estoque baixo",
-  },
-  {
-    label: "Categorias",
-    value: "8",
-    detail: "Cardápio principal e sazonais",
-  },
-  {
-    label: "Ticket médio",
-    value: "R$ 57,40",
-    detail: "+8% nesta semana",
-  },
-]
-
-const products = [
-  {
-    id: "PRD-001",
-    image: "/branding/product-placeholder.png",
-    name: "Smash Burger",
-    category: "Lanches",
-    price: "R$ 28,90",
-    stock: "Disponível",
-    status: "Ativo",
-  },
-  {
-    id: "PRD-002",
-    image: "/branding/product-placeholder.png",
-    name: "Bowl Fit",
-    category: "Saudável",
-    price: "R$ 24,50",
-    stock: "Disponível",
-    status: "Ativo",
-  },
-  {
-    id: "PRD-003",
-    image: "/branding/product-placeholder.png",
-    name: "Pizza Marguerita",
-    category: "Pizzas",
-    price: "R$ 52,00",
-    stock: "Baixo",
-    status: "Ativo",
-  },
-  {
-    id: "PRD-004",
-    image: "/branding/product-placeholder.png",
-    name: "Brownie da Casa",
-    category: "Sobremesas",
-    price: "R$ 12,00",
-    stock: "Disponível",
-    status: "Ativo",
-  },
-  {
-    id: "PRD-005",
-    image: "/branding/product-placeholder.png",
-    name: "Suco Verde",
-    category: "Bebidas",
-    price: "R$ 9,50",
-    stock: "Indisponível",
-    status: "Inativo",
-  },
-]
+import { useProducts } from "@/hooks/use-local-storage-data"
 
 function getBadgeClasses(value: string) {
   switch (value) {
@@ -101,6 +38,32 @@ function getBadgeClasses(value: string) {
 }
 
 export default function AdminProductsPage() {
+  const products = useProducts()
+  const activeProducts = products.filter(
+    (product) => product.status === "Ativo"
+  ).length
+  const lowStockProducts = products.filter(
+    (product) => product.stock === "Baixo"
+  ).length
+  const categories = new Set(products.map((product) => product.category)).size
+  const metrics = [
+    {
+      label: "Produtos ativos",
+      value: String(activeProducts),
+      detail: `${lowStockProducts} com estoque baixo`,
+    },
+    {
+      label: "Categorias",
+      value: String(categories),
+      detail: "Cardápio principal e sazonais",
+    },
+    {
+      label: "Ticket médio",
+      value: "R$ 57,40",
+      detail: "+8% nesta semana",
+    },
+  ]
+
   return (
     <main className="min-h-svh bg-gradient-to-b from-background via-background to-muted/40 px-6 py-10">
       <div className="mx-auto flex w-full max-w-[1800px] flex-col gap-8">
