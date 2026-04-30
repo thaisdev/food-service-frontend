@@ -1,3 +1,5 @@
+"use client"
+
 import Image from "next/image"
 
 import { Badge } from "@/components/ui/badge"
@@ -9,6 +11,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
+import { useSessionAccess } from "@/hooks/use-session-access"
 
 const menuItems = [
   {
@@ -45,19 +48,10 @@ const menuItems = [
   },
 ]
 
-type CustomersMenuPageProps = {
-  searchParams?: Promise<{
-    name?: string
-    table?: string
-  }>
-}
-
-export default async function CustomersMenuPage({
-  searchParams,
-}: CustomersMenuPageProps) {
-  const params = (await searchParams) ?? {}
-  const customerName = params.name?.trim() || "Cliente"
-  const tableNumber = params.table?.trim() || "--"
+export default function CustomersMenuPage() {
+  const access = useSessionAccess()
+  const customerName = access?.module === "customers" ? access.name : "Cliente"
+  const tableNumber = access?.module === "customers" ? access.table : "--"
 
   return (
     <main className="min-h-[calc(100svh-73px)] bg-gradient-to-b from-background via-background to-muted/40 px-6 py-10">
