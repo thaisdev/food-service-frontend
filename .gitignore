@@ -34,3 +34,7 @@ pnpm-debug.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# runtime JSON data
+/data/runtime/*.json
+!/data/runtime/.gitkeep

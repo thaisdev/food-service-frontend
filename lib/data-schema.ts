@@ -1,7 +1,3 @@
-export const PRODUCTS_STORAGE_KEY = "food-service:products"
-export const ORDERS_STORAGE_KEY = "food-service:orders"
-export const LOCAL_DATA_CHANGE_EVENT = "food-service:local-data-change"
-
 export type Product = {
   id: string
   image: string
@@ -186,24 +182,4 @@ export function parseProducts(rawData: string | null) {
 
 export function parseOrders(rawData: string | null) {
   return parseArray(rawData, isOrder)
-}
-
-function writeLocalData<T>(key: string, data: T[]) {
-  window.localStorage.setItem(key, JSON.stringify(data))
-  window.dispatchEvent(new Event(LOCAL_DATA_CHANGE_EVENT))
-}
-
-export function seedLocalStorageData() {
-  const products = parseProducts(
-    window.localStorage.getItem(PRODUCTS_STORAGE_KEY)
-  )
-  const orders = parseOrders(window.localStorage.getItem(ORDERS_STORAGE_KEY))
-
-  if (!products) {
-    writeLocalData(PRODUCTS_STORAGE_KEY, mockProducts)
-  }
-
-  if (!orders) {
-    writeLocalData(ORDERS_STORAGE_KEY, mockOrders)
-  }
 }

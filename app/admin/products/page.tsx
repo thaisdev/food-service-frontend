@@ -20,7 +20,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
-import { useProducts } from "@/hooks/use-local-storage-data"
+import { useProducts } from "@/hooks/use-api-data"
 
 function getBadgeClasses(value: string) {
   switch (value) {

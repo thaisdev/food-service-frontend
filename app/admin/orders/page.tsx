@@ -18,7 +18,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
-import { useOrders } from "@/hooks/use-local-storage-data"
+import { useOrders } from "@/hooks/use-api-data"
 
 function getStatusClasses(status: string) {
   switch (status) {

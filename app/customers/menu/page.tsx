@@ -11,7 +11,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
-import { useProducts } from "@/hooks/use-local-storage-data"
+import { useProducts } from "@/hooks/use-api-data"
 import { useSessionAccess } from "@/hooks/use-session-access"
 
 export default function CustomersMenuPage() {

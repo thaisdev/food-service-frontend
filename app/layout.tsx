@@ -3,7 +3,6 @@ import { Geist_Mono, Inter, Noto_Sans } from "next/font/google"
 
 import "./globals.css"
 import { AppHeader } from "@/components/app-header"
-import { LocalStorageDataSeeder } from "@/components/local-storage-data-seeder"
 import { ThemeProvider } from "@/components/theme-provider"
 import { cn } from "@/lib/utils"
 
@@ -46,7 +45,6 @@ export default function RootLayout({
       <body>
         <ThemeProvider>
           <div className="min-h-svh bg-background text-foreground">
-            <LocalStorageDataSeeder />
             <AppHeader />
             {children}
           </div>
