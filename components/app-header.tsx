@@ -24,7 +24,7 @@ export function AppHeader() {
     : "/branding/food-service-logo-simbolo.svg"
 
   return (
-    <header className="sticky top-0 z-50 border-b border-border/70 bg-background/90 backdrop-blur">
+    <header className="sticky top-0 z-50 border-b border-border/70 bg-white/95 backdrop-blur dark:bg-card/95">
       <div className="mx-auto flex w-full max-w-[1800px] items-center justify-between gap-4 py-4">
         <div className="flex items-center gap-6">
           <Link href="/admin/home" className="flex items-center gap-3">
