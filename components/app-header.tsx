@@ -47,7 +47,7 @@ export function AppHeader() {
 
   return (
     <header className="sticky top-0 z-50 border-b border-border/70 bg-white/95 backdrop-blur dark:bg-card/95">
-      <div className="mx-auto flex w-full max-w-[1800px] items-center justify-between gap-4 py-4">
+      <div className="mx-auto flex w-full max-w-[1800px] items-center justify-between gap-4 px-6 py-4">
         <div className="flex items-center gap-6">
           <Link href={homeHref} className="flex items-center gap-3">
             <Image

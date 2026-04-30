@@ -26,12 +26,12 @@ function getBadgeClasses(value: string) {
   switch (value) {
     case "Ativo":
     case "Disponível":
-      return "bg-emerald-500/12 text-emerald-700 dark:text-emerald-300"
+      return "bg-success-muted text-success"
     case "Baixo":
-      return "bg-amber-500/12 text-amber-700 dark:text-amber-300"
+      return "bg-warning-muted text-warning"
     case "Inativo":
     case "Indisponível":
-      return "bg-rose-500/12 text-rose-700 dark:text-rose-300"
+      return "bg-destructive-muted text-destructive"
     default:
       return "bg-muted text-muted-foreground"
   }
