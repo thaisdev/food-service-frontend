@@ -8,10 +8,14 @@ import { useTheme } from "next-themes"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 
-const links = [
+const adminLinks = [
   { href: "/admin/home", label: "In\u00edcio" },
   { href: "/admin/orders", label: "Pedidos" },
   { href: "/admin/products", label: "Produtos" },
+]
+
+const customerLinks = [
+  { href: "/customers/menu", label: "Card\u00e1pio" },
 ]
 
 export function AppHeader() {
@@ -19,15 +23,24 @@ export function AppHeader() {
   const { resolvedTheme, setTheme } = useTheme()
 
   const isDark = resolvedTheme === "dark"
+  const isAdmin = pathname.startsWith("/admin")
+  const isCustomers = pathname.startsWith("/customers")
   const logoSrc = isDark
     ? "/branding/food-service-logo-app-icon-primary.svg"
     : "/branding/food-service-logo-simbolo.svg"
+  const links = isAdmin ? adminLinks : isCustomers ? customerLinks : []
+  const homeHref = isAdmin ? "/admin/home" : isCustomers ? "/customers/menu" : "/"
+  const subtitle = isAdmin
+    ? "Painel administrativo"
+    : isCustomers
+      ? "M\u00f3dulo do cliente"
+      : "Sele\u00e7\u00e3o de m\u00f3dulos"
 
   return (
     <header className="sticky top-0 z-50 border-b border-border/70 bg-white/95 backdrop-blur dark:bg-card/95">
       <div className="mx-auto flex w-full max-w-[1800px] items-center justify-between gap-4 py-4">
         <div className="flex items-center gap-6">
-          <Link href="/admin/home" className="flex items-center gap-3">
+          <Link href={homeHref} className="flex items-center gap-3">
             <span className="relative flex h-10 w-10 items-center justify-center overflow-hidden rounded-2xl bg-card shadow-sm ring-1 ring-border/70">
               <Image
                 src={logoSrc}
@@ -43,7 +56,7 @@ export function AppHeader() {
                 Food Service
               </strong>
               <span className="mt-1 text-[11px] font-medium tracking-[0.24em] text-muted-foreground uppercase">
-                Painel administrativo
+                {subtitle}
               </span>
             </span>
           </Link>
@@ -52,7 +65,8 @@ export function AppHeader() {
             {links.map((link) => {
               const isActive =
                 pathname === link.href ||
-                (link.href !== "/admin/home" && pathname.startsWith(link.href))
+                (!["/admin/home", "/customers/menu"].includes(link.href) &&
+                  pathname.startsWith(link.href))
 
               return (
                 <Link
