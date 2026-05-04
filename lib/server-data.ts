@@ -3,8 +3,12 @@ import {
   mockProducts,
   parseOrders,
   parseProducts,
+  type Product,
 } from "@/lib/data-schema"
-import { readServerJsonStore } from "@/lib/server-json-store"
+import {
+  readServerJsonStore,
+  writeServerJsonStore,
+} from "@/lib/server-json-store"
 
 export function getProducts() {
   return readServerJsonStore({
@@ -13,6 +17,10 @@ export function getProducts() {
     parse: parseProducts,
     runtimeFile: "products.json",
   })
+}
+
+export function saveProducts(products: Product[]) {
+  return writeServerJsonStore("products.json", products)
 }
 
 export function getOrders() {
