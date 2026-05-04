@@ -1,20 +1,14 @@
 import { NextResponse } from "next/server"
 
 import { delay } from "@/lib/api-delay"
-import { mockOrders, parseOrders } from "@/lib/data-schema"
-import { readServerJsonStore } from "@/lib/server-json-store"
+import { getOrders } from "@/lib/server-data"
 
 export const runtime = "nodejs"
 
 export async function GET() {
   await delay()
 
-  const orders = await readServerJsonStore({
-    exampleFile: "orders.example.json",
-    fallbackData: mockOrders,
-    parse: parseOrders,
-    runtimeFile: "orders.json",
-  })
+  const orders = await getOrders()
 
   return NextResponse.json(orders)
 }

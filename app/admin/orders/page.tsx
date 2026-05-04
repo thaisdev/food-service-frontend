@@ -1,5 +1,3 @@
-"use client"
-
 import {
   RiCheckboxCircleLine,
   RiMotorbikeLine,
@@ -26,34 +24,35 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
-import { useOrders } from "@/hooks/use-api-data"
+import { OrderStatus } from "@/lib/data-schema"
+import { getOrders } from "@/lib/server-data"
 
-function getStatusClasses(status: string) {
+function getStatusClasses(status: OrderStatus) {
   switch (status) {
-    case "Pronto":
+    case OrderStatus.Ready:
       return "bg-success-muted text-success"
-    case "Em preparo":
+    case OrderStatus.Preparing:
       return "bg-warning-muted text-warning"
-    case "Saiu para entrega":
+    case OrderStatus.OutForDelivery:
       return "bg-info-muted text-info"
-    case "Finalizado":
+    case OrderStatus.Finished:
       return "bg-muted text-muted-foreground"
-    default:
+    case OrderStatus.Waiting:
       return "bg-destructive-muted text-destructive"
   }
 }
 
-function getStatusIcon(status: string) {
+function getStatusIcon(status: OrderStatus) {
   switch (status) {
-    case "Pronto":
+    case OrderStatus.Ready:
       return <RiCheckboxCircleLine aria-hidden className="size-3" />
-    case "Em preparo":
+    case OrderStatus.Preparing:
       return <RiRestaurant2Line aria-hidden className="size-3" />
-    case "Saiu para entrega":
+    case OrderStatus.OutForDelivery:
       return <RiMotorbikeLine aria-hidden className="size-3" />
-    case "Finalizado":
+    case OrderStatus.Finished:
       return <RiCheckboxCircleLine aria-hidden className="size-3" />
-    default:
+    case OrderStatus.Waiting:
       return <RiTimeLine aria-hidden className="size-3" />
   }
 }
@@ -64,13 +63,13 @@ const metricColors = [
   "border-warning/20 bg-warning-muted/45 shadow-warning/5",
 ]
 
-export default function AdminOrdersPage() {
-  const orders = useOrders()
+export default async function AdminOrdersPage() {
+  const orders = await getOrders()
   const activeOrders = orders.filter(
-    (order) => order.status !== "Finalizado"
+    (order) => order.status !== OrderStatus.Finished
   ).length
   const pendingOrders = orders.filter(
-    (order) => order.status === "Aguardando"
+    (order) => order.status === OrderStatus.Waiting
   ).length
   const metrics = [
     {

@@ -1,12 +1,17 @@
 export const SESSION_ACCESS_KEY = "food-service:access"
 
+export enum SessionModule {
+  Admin = "admin",
+  Customers = "customers",
+}
+
 export type SessionAccess =
   | {
-      module: "admin"
+      module: SessionModule.Admin
       email: string
     }
   | {
-      module: "customers"
+      module: SessionModule.Customers
       name: string
       table: string
     }
@@ -30,25 +35,25 @@ export function parseSessionAccess(
     }
 
     if (
-      access.module === "admin" &&
+      access.module === SessionModule.Admin &&
       typeof access.email === "string" &&
       access.email.trim()
     ) {
       return {
-        module: "admin",
+        module: SessionModule.Admin,
         email: access.email.trim(),
       }
     }
 
     if (
-      access.module === "customers" &&
+      access.module === SessionModule.Customers &&
       typeof access.name === "string" &&
       typeof access.table === "string" &&
       access.name.trim() &&
       access.table.trim()
     ) {
       return {
-        module: "customers",
+        module: SessionModule.Customers,
         name: access.name.trim(),
         table: access.table.trim(),
       }
@@ -84,5 +89,5 @@ export function clearSessionAccess() {
 }
 
 export function getModuleHome(module: SessionAccess["module"]) {
-  return module === "admin" ? "/admin/home" : "/customers/menu"
+  return module === SessionModule.Admin ? "/admin/home" : "/customers/menu"
 }

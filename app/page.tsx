@@ -14,7 +14,7 @@ import {
 } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { setSessionAccess } from "@/lib/session-access"
+import { SessionModule, setSessionAccess } from "@/lib/session-access"
 
 export default function Page() {
   const router = useRouter()
@@ -31,7 +31,7 @@ export default function Page() {
     }
 
     setSessionAccess({
-      module: "admin",
+      module: SessionModule.Admin,
       email: adminEmail.trim(),
     })
 
@@ -49,7 +49,7 @@ export default function Page() {
     }
 
     setSessionAccess({
-      module: "customers",
+      module: SessionModule.Customers,
       name,
       table,
     })

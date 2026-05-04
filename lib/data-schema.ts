@@ -1,3 +1,22 @@
+export enum ProductStock {
+  Available = "Disponível",
+  Low = "Baixo",
+  Unavailable = "Indisponível",
+}
+
+export enum ProductStatus {
+  Active = "Ativo",
+  Inactive = "Inativo",
+}
+
+export enum OrderStatus {
+  Waiting = "Aguardando",
+  Preparing = "Em preparo",
+  Ready = "Pronto",
+  OutForDelivery = "Saiu para entrega",
+  Finished = "Finalizado",
+}
+
 export type Product = {
   id: string
   image: string
@@ -5,8 +24,8 @@ export type Product = {
   description: string
   category: string
   price: string
-  stock: string
-  status: string
+  stock: ProductStock
+  status: ProductStatus
 }
 
 export type Order = {
@@ -15,7 +34,7 @@ export type Order = {
   channel: string
   items: string
   total: string
-  status: string
+  status: OrderStatus
   time: string
 }
 
@@ -27,8 +46,8 @@ export const mockProducts: Product[] = [
     description: "Pão brioche, burger artesanal, queijo e molho da casa.",
     category: "Lanches",
     price: "R$ 28,90",
-    stock: "Disponível",
-    status: "Ativo",
+    stock: ProductStock.Available,
+    status: ProductStatus.Active,
   },
   {
     id: "PRD-002",
@@ -37,8 +56,8 @@ export const mockProducts: Product[] = [
     description: "Frango grelhado, arroz integral, legumes e molho leve.",
     category: "Saudável",
     price: "R$ 24,50",
-    stock: "Disponível",
-    status: "Ativo",
+    stock: ProductStock.Available,
+    status: ProductStatus.Active,
   },
   {
     id: "PRD-003",
@@ -47,8 +66,8 @@ export const mockProducts: Product[] = [
     description: "Molho artesanal, muçarela, tomate fresco e manjericão.",
     category: "Pizzas",
     price: "R$ 52,00",
-    stock: "Baixo",
-    status: "Ativo",
+    stock: ProductStock.Low,
+    status: ProductStatus.Active,
   },
   {
     id: "PRD-004",
@@ -57,8 +76,8 @@ export const mockProducts: Product[] = [
     description: "Brownie macio com calda e finalização especial.",
     category: "Sobremesas",
     price: "R$ 12,00",
-    stock: "Disponível",
-    status: "Ativo",
+    stock: ProductStock.Available,
+    status: ProductStatus.Active,
   },
   {
     id: "PRD-005",
@@ -67,8 +86,8 @@ export const mockProducts: Product[] = [
     description: "Suco natural com couve, limão, maçã e gengibre.",
     category: "Bebidas",
     price: "R$ 9,50",
-    stock: "Indisponível",
-    status: "Inativo",
+    stock: ProductStock.Unavailable,
+    status: ProductStatus.Inactive,
   },
 ]
 
@@ -79,7 +98,7 @@ export const mockOrders: Order[] = [
     channel: "Delivery",
     items: "2x Smash Burger, 1x Batata Rústica",
     total: "R$ 86,90",
-    status: "Em preparo",
+    status: OrderStatus.Preparing,
     time: "12:40",
   },
   {
@@ -88,7 +107,7 @@ export const mockOrders: Order[] = [
     channel: "Balcão",
     items: "1x Bowl Fit, 1x Suco Verde",
     total: "R$ 41,50",
-    status: "Pronto",
+    status: OrderStatus.Ready,
     time: "12:32",
   },
   {
@@ -97,7 +116,7 @@ export const mockOrders: Order[] = [
     channel: "Mesa 08",
     items: "3x Taco de Frango, 2x Refrigerante",
     total: "R$ 73,00",
-    status: "Aguardando",
+    status: OrderStatus.Waiting,
     time: "12:25",
   },
   {
@@ -106,7 +125,7 @@ export const mockOrders: Order[] = [
     channel: "Delivery",
     items: "1x Pizza Marguerita, 1x Brownie",
     total: "R$ 64,90",
-    status: "Saiu para entrega",
+    status: OrderStatus.OutForDelivery,
     time: "12:18",
   },
   {
@@ -115,7 +134,7 @@ export const mockOrders: Order[] = [
     channel: "Mesa 03",
     items: "2x Prato Executivo, 2x Água com gás",
     total: "R$ 92,00",
-    status: "Finalizado",
+    status: OrderStatus.Finished,
     time: "12:05",
   },
 ]
@@ -124,35 +143,48 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null
 }
 
-function hasStringFields(value: unknown, fields: string[]) {
+function hasStringFields(
+  value: unknown,
+  fields: string[]
+): value is Record<string, string> {
   return (
     isRecord(value) && fields.every((field) => typeof value[field] === "string")
   )
 }
 
+function isOneOf<T extends string>(
+  value: unknown,
+  values: readonly T[]
+): value is T {
+  return typeof value === "string" && values.includes(value as T)
+}
+
 function isProduct(value: unknown): value is Product {
-  return hasStringFields(value, [
-    "id",
-    "image",
-    "name",
-    "description",
-    "category",
-    "price",
-    "stock",
-    "status",
-  ])
+  return (
+    hasStringFields(value, [
+      "id",
+      "image",
+      "name",
+      "description",
+      "category",
+      "price",
+    ]) &&
+    isOneOf(value.stock, Object.values(ProductStock)) &&
+    isOneOf(value.status, Object.values(ProductStatus))
+  )
 }
 
 function isOrder(value: unknown): value is Order {
-  return hasStringFields(value, [
-    "id",
-    "customer",
-    "channel",
-    "items",
-    "total",
-    "status",
-    "time",
-  ])
+  return (
+    hasStringFields(value, [
+      "id",
+      "customer",
+      "channel",
+      "items",
+      "total",
+      "time",
+    ]) && isOneOf(value.status, Object.values(OrderStatus))
+  )
 }
 
 function parseArray<T>(

@@ -13,15 +13,21 @@ import {
 } from "@/components/ui/card"
 import { useProducts } from "@/hooks/use-api-data"
 import { useSessionAccess } from "@/hooks/use-session-access"
+import { ProductStatus, ProductStock } from "@/lib/data-schema"
+import { SessionModule } from "@/lib/session-access"
 
 export default function CustomersMenuPage() {
   const access = useSessionAccess()
   const products = useProducts()
   const menuItems = products.filter(
-    (product) => product.status === "Ativo" && product.stock !== "Indisponível"
+    (product) =>
+      product.status === ProductStatus.Active &&
+      product.stock !== ProductStock.Unavailable
   )
-  const customerName = access?.module === "customers" ? access.name : "Cliente"
-  const tableNumber = access?.module === "customers" ? access.table : "--"
+  const customerName =
+    access?.module === SessionModule.Customers ? access.name : "Cliente"
+  const tableNumber =
+    access?.module === SessionModule.Customers ? access.table : "--"
 
   return (
     <main className="min-h-[calc(100svh-73px)] bg-[image:var(--page-gradient)] px-6 py-10">

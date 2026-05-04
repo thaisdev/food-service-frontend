@@ -1,5 +1,3 @@
-"use client"
-
 import Image from "next/image"
 
 import { Badge } from "@/components/ui/badge"
@@ -20,20 +18,19 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
-import { useProducts } from "@/hooks/use-api-data"
+import { ProductStatus, ProductStock } from "@/lib/data-schema"
+import { getProducts } from "@/lib/server-data"
 
-function getBadgeClasses(value: string) {
+function getBadgeClasses(value: ProductStatus | ProductStock) {
   switch (value) {
-    case "Ativo":
-    case "Disponível":
+    case ProductStatus.Active:
+    case ProductStock.Available:
       return "bg-success-muted text-success"
-    case "Baixo":
+    case ProductStock.Low:
       return "bg-warning-muted text-warning"
-    case "Inativo":
-    case "Indisponível":
+    case ProductStatus.Inactive:
+    case ProductStock.Unavailable:
       return "bg-destructive-muted text-destructive"
-    default:
-      return "bg-muted text-muted-foreground"
   }
 }
 
@@ -49,13 +46,13 @@ const stockInsightColors = [
   "border-warning/25 bg-warning-muted/65 text-warning",
 ]
 
-export default function AdminProductsPage() {
-  const products = useProducts()
+export default async function AdminProductsPage() {
+  const products = await getProducts()
   const activeProducts = products.filter(
-    (product) => product.status === "Ativo"
+    (product) => product.status === ProductStatus.Active
   ).length
   const lowStockProducts = products.filter(
-    (product) => product.stock === "Baixo"
+    (product) => product.stock === ProductStock.Low
   ).length
   const categories = new Set(products.map((product) => product.category)).size
   const metrics = [
