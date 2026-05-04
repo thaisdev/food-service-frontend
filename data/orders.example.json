@@ -1,0 +1,47 @@
+[
+  {
+    "id": "#1028",
+    "customer": "Mariana Costa",
+    "channel": "Delivery",
+    "items": "2x Smash Burger, 1x Batata Rústica",
+    "total": "R$ 86,90",
+    "status": "Em preparo",
+    "time": "12:40"
+  },
+  {
+    "id": "#1027",
+    "customer": "Lucas Almeida",
+    "channel": "Balcão",
+    "items": "1x Bowl Fit, 1x Suco Verde",
+    "total": "R$ 41,50",
+    "status": "Pronto",
+    "time": "12:32"
+  },
+  {
+    "id": "#1026",
+    "customer": "Fernanda Rocha",
+    "channel": "Mesa 08",
+    "items": "3x Taco de Frango, 2x Refrigerante",
+    "total": "R$ 73,00",
+    "status": "Aguardando",
+    "time": "12:25"
+  },
+  {
+    "id": "#1025",
+    "customer": "Rafael Souza",
+    "channel": "Delivery",
+    "items": "1x Pizza Marguerita, 1x Brownie",
+    "total": "R$ 64,90",
+    "status": "Saiu para entrega",
+    "time": "12:18"
+  },
+  {
+    "id": "#1024",
+    "customer": "Carla Mendes",
+    "channel": "Mesa 03",
+    "items": "2x Prato Executivo, 2x Água com gás",
+    "total": "R$ 92,00",
+    "status": "Finalizado",
+    "time": "12:05"
+  }
+]

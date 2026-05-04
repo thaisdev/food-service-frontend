@@ -1,17 +1,29 @@
-import { Geist, Geist_Mono, Noto_Sans, Inter } from "next/font/google"
+import type { Metadata } from "next"
+import { Geist_Mono, Inter, Noto_Sans } from "next/font/google"
 
 import "./globals.css"
+import { AppHeader } from "@/components/app-header"
 import { ThemeProvider } from "@/components/theme-provider"
-import { cn } from "@/lib/utils";
+import { cn } from "@/lib/utils"
 
-const interHeading = Inter({subsets:['latin'],variable:'--font-heading'});
+const interHeading = Inter({ subsets: ["latin"], variable: "--font-heading" })
 
-const notoSans = Noto_Sans({subsets:['latin'],variable:'--font-sans'})
+const notoSans = Noto_Sans({ subsets: ["latin"], variable: "--font-sans" })
 
 const fontMono = Geist_Mono({
   subsets: ["latin"],
   variable: "--font-mono",
 })
+
+export const metadata: Metadata = {
+  title: "Food Service",
+  description: "Painel administrativo do Food Service.",
+  icons: {
+    icon: "/branding/food-service-logo-app-icon-primary.svg",
+    shortcut: "/branding/food-service-logo-app-icon-primary.svg",
+    apple: "/branding/food-service-logo-app-icon-light.svg",
+  },
+}
 
 export default function RootLayout({
   children,
@@ -20,12 +32,23 @@ export default function RootLayout({
 }>) {
   return (
     <html
-      lang="en"
+      lang="pt-BR"
       suppressHydrationWarning
-      className={cn("antialiased", fontMono.variable, "font-sans", notoSans.variable, interHeading.variable)}
+      className={cn(
+        "antialiased",
+        fontMono.variable,
+        "font-sans",
+        notoSans.variable,
+        interHeading.variable
+      )}
     >
       <body>
-        <ThemeProvider>{children}</ThemeProvider>
+        <ThemeProvider>
+          <div className="min-h-svh bg-background text-foreground">
+            <AppHeader />
+            {children}
+          </div>
+        </ThemeProvider>
       </body>
     </html>
   )
