@@ -3,7 +3,7 @@
 import Image from "next/image"
 import Link from "next/link"
 import { RiAddLine, RiDeleteBinLine, RiEditLine } from "@remixicon/react"
-import { useMemo, useState, useTransition } from "react"
+import { useEffect, useMemo, useState, useTransition } from "react"
 
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -91,6 +91,21 @@ export function AdminProductsCrud({ initialProducts }: AdminProductsCrudProps) {
   const [filter, setFilter] = useState<ProductFilter>("Todos")
   const [message, setMessage] = useState<string | null>(null)
   const [isPending, startTransition] = useTransition()
+
+  useEffect(() => {
+    function updateProducts(event: Event) {
+      const productEvent = event as CustomEvent<Product[]>
+
+      setProducts(productEvent.detail)
+      setMessage(null)
+    }
+
+    window.addEventListener("admin-products:changed", updateProducts)
+
+    return () => {
+      window.removeEventListener("admin-products:changed", updateProducts)
+    }
+  }, [])
 
   const filteredProducts = useMemo(() => {
     switch (filter) {

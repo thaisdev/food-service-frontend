@@ -17,6 +17,7 @@ import { Input } from "@/components/ui/input"
 import {
   ProductStatus,
   ProductStock,
+  parseProducts,
   type Product,
 } from "@/lib/data-schema"
 
@@ -53,6 +54,8 @@ async function requestProductSave(payload: ProductFormData | Product) {
 
     throw new Error(message)
   }
+
+  return parseProducts(JSON.stringify(await response.json()))
 }
 
 export function AdminProductFormModal({
@@ -87,8 +90,17 @@ export function AdminProductFormModal({
 
     startTransition(async () => {
       try {
-        await requestProductSave(payload)
-        router.push("/admin/products")
+        const nextProducts = await requestProductSave(payload)
+
+        if (nextProducts) {
+          window.dispatchEvent(
+            new CustomEvent<Product[]>("admin-products:changed", {
+              detail: nextProducts,
+            })
+          )
+        }
+
+        router.replace("/admin/products")
         router.refresh()
       } catch (error) {
         setMessage(error instanceof Error ? error.message : "Erro inesperado.")
