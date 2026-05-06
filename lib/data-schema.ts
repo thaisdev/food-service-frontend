@@ -23,7 +23,7 @@ export type Product = {
   name: string
   description: string
   category: string
-  price: string
+  price: number
   stock: ProductStock
   status: ProductStatus
   deletedAt?: string
@@ -46,7 +46,7 @@ export const mockProducts: Product[] = [
     name: "Smash Burger",
     description: "Pão brioche, burger artesanal, queijo e molho da casa.",
     category: "Lanches",
-    price: "R$ 28,90",
+    price: 28.9,
     stock: ProductStock.Available,
     status: ProductStatus.Active,
   },
@@ -56,7 +56,7 @@ export const mockProducts: Product[] = [
     name: "Bowl Fit",
     description: "Frango grelhado, arroz integral, legumes e molho leve.",
     category: "Saudável",
-    price: "R$ 24,50",
+    price: 24.5,
     stock: ProductStock.Available,
     status: ProductStatus.Active,
   },
@@ -66,7 +66,7 @@ export const mockProducts: Product[] = [
     name: "Pizza Marguerita",
     description: "Molho artesanal, muçarela, tomate fresco e manjericão.",
     category: "Pizzas",
-    price: "R$ 52,00",
+    price: 52,
     stock: ProductStock.Low,
     status: ProductStatus.Active,
   },
@@ -76,7 +76,7 @@ export const mockProducts: Product[] = [
     name: "Brownie da Casa",
     description: "Brownie macio com calda e finalização especial.",
     category: "Sobremesas",
-    price: "R$ 12,00",
+    price: 12,
     stock: ProductStock.Available,
     status: ProductStatus.Active,
   },
@@ -86,7 +86,7 @@ export const mockProducts: Product[] = [
     name: "Suco Verde",
     description: "Suco natural com couve, limão, maçã e gengibre.",
     category: "Bebidas",
-    price: "R$ 9,50",
+    price: 9.5,
     stock: ProductStock.Unavailable,
     status: ProductStatus.Inactive,
   },
@@ -160,6 +160,37 @@ function isOneOf<T extends string>(
   return typeof value === "string" && values.includes(value as T)
 }
 
+export function parseProductPrice(value: unknown) {
+  if (typeof value === "number") {
+    return Number.isFinite(value) && value >= 0 ? value : null
+  }
+
+  if (typeof value !== "string") {
+    return null
+  }
+
+  const sanitizedValue = value
+    .replace(/[^\d,.-]/g, "")
+    .replace(/\.(?=\d{3}(?:\D|$))/g, "")
+    .replace(",", ".")
+
+  if (!sanitizedValue) {
+    return null
+  }
+
+  const price = Number(sanitizedValue)
+
+  return Number.isFinite(price) && price >= 0 ? price : null
+}
+
+export function formatProductPrice(price: number) {
+  return new Intl.NumberFormat("pt-BR", {
+    currency: "BRL",
+    minimumFractionDigits: 2,
+    style: "currency",
+  }).format(price)
+}
+
 function isProduct(value: unknown): value is Product {
   return (
     hasStringFields(value, [
@@ -168,14 +199,25 @@ function isProduct(value: unknown): value is Product {
       "name",
       "description",
       "category",
-      "price",
     ]) &&
+    parseProductPrice(value.price) !== null &&
     isOneOf(value.stock, Object.values(ProductStock)) &&
     isOneOf(value.status, Object.values(ProductStatus)) &&
     (!isRecord(value) ||
       value.deletedAt === undefined ||
       typeof value.deletedAt === "string")
   )
+}
+
+function normalizeProduct(value: unknown): Product | null {
+  if (!isProduct(value)) {
+    return null
+  }
+
+  return {
+    ...value,
+    price: parseProductPrice(value.price) ?? 0,
+  }
 }
 
 function isOrder(value: unknown): value is Order {
@@ -213,7 +255,25 @@ function parseArray<T>(
 }
 
 export function parseProducts(rawData: string | null) {
-  return parseArray(rawData, isProduct)
+  if (!rawData) {
+    return null
+  }
+
+  try {
+    const data = JSON.parse(rawData) as unknown
+
+    if (!Array.isArray(data)) {
+      return null
+    }
+
+    const products = data
+      .map((item) => normalizeProduct(item))
+      .filter((item): item is Product => item !== null)
+
+    return products.length === data.length ? products : null
+  } catch {
+    return null
+  }
 }
 
 export function parseOrders(rawData: string | null) {

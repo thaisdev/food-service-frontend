@@ -4,6 +4,7 @@ import { delay } from "@/lib/api-delay"
 import {
   ProductStatus,
   ProductStock,
+  parseProductPrice,
   parseProducts,
   type Product,
 } from "@/lib/data-schema"
@@ -37,6 +38,7 @@ function createProductId(products: Product[]) {
 }
 
 function createProductFromBody(body: Partial<Product>, id: string): Product {
+  const price = parseProductPrice(body.price)
   const stock: ProductStock = Object.values(ProductStock).includes(
     body.stock as ProductStock
   )
@@ -54,7 +56,7 @@ function createProductFromBody(body: Partial<Product>, id: string): Product {
     name: body.name?.trim() ?? "",
     description: body.description?.trim() ?? "",
     category: body.category?.trim() ?? "",
-    price: body.price?.trim() ?? "",
+    price: price ?? Number.NaN,
     stock,
     status,
   }

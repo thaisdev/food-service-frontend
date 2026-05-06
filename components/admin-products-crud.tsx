@@ -25,6 +25,7 @@ import {
 import {
   ProductStatus,
   ProductStock,
+  formatProductPrice,
   parseProducts,
   type Product,
 } from "@/lib/data-schema"
@@ -290,7 +291,7 @@ export function AdminProductsCrud({ initialProducts }: AdminProductsCrudProps) {
                       </TableCell>
                       <TableCell>{product.category}</TableCell>
                       <TableCell className="font-medium">
-                        {product.price}
+                        {formatProductPrice(product.price)}
                       </TableCell>
                       <TableCell>
                         <Badge className={getBadgeClasses(product.stock)}>

@@ -17,11 +17,15 @@ import { Input } from "@/components/ui/input"
 import {
   ProductStatus,
   ProductStock,
+  parseProductPrice,
   parseProducts,
   type Product,
 } from "@/lib/data-schema"
 
-type ProductFormData = Omit<Product, "id">
+type ProductFormData = Omit<Product, "id" | "price"> & {
+  price: string
+}
+type ProductSavePayload = Omit<Product, "id"> | Product
 
 type AdminProductFormModalProps = {
   product?: Product
@@ -37,7 +41,7 @@ const emptyForm: ProductFormData = {
   status: ProductStatus.Active,
 }
 
-async function requestProductSave(payload: ProductFormData | Product) {
+async function requestProductSave(payload: ProductSavePayload) {
   const isEditing = "id" in payload
   const response = await fetch("/api/products", {
     body: JSON.stringify(payload),
@@ -58,9 +62,7 @@ async function requestProductSave(payload: ProductFormData | Product) {
   return parseProducts(JSON.stringify(await response.json()))
 }
 
-export function AdminProductFormModal({
-  product,
-}: AdminProductFormModalProps) {
+export function AdminProductFormModal({ product }: AdminProductFormModalProps) {
   const router = useRouter()
   const [formData, setFormData] = useState<ProductFormData>(
     product
@@ -69,7 +71,7 @@ export function AdminProductFormModal({
           name: product.name,
           description: product.description,
           category: product.category,
-          price: product.price,
+          price: product.price.toFixed(2),
           stock: product.stock,
           status: product.status,
         }
@@ -86,7 +88,18 @@ export function AdminProductFormModal({
     event.preventDefault()
     setMessage(null)
 
-    const payload = product ? { id: product.id, ...formData } : formData
+    const price = parseProductPrice(formData.price)
+
+    if (price === null) {
+      setMessage("Informe um preço válido.")
+      return
+    }
+
+    const productData = {
+      ...formData,
+      price,
+    }
+    const payload = product ? { id: product.id, ...productData } : productData
 
     startTransition(async () => {
       try {
@@ -124,12 +137,7 @@ export function AdminProductFormModal({
               As alterações são enviadas para a API e gravadas no mock.
             </CardDescription>
           </div>
-          <Button
-            asChild
-            size="icon-sm"
-            title="Fechar modal"
-            variant="ghost"
-          >
+          <Button asChild size="icon-sm" title="Fechar modal" variant="ghost">
             <Link href="/admin/products">
               <RiCloseLine aria-hidden />
             </Link>
@@ -185,11 +193,21 @@ export function AdminProductFormModal({
                 </label>
                 <Input
                   id="price"
+                  min="0"
                   onChange={(event) =>
                     updateFormData("price", event.target.value)
                   }
-                  placeholder="R$ 0,00"
+                  onBlur={(event) => {
+                    const price = parseProductPrice(event.target.value)
+
+                    if (price !== null) {
+                      updateFormData("price", price.toFixed(2))
+                    }
+                  }}
+                  placeholder="0,00"
                   required
+                  step="0.01"
+                  type="number"
                   value={formData.price}
                 />
               </div>
