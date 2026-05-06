@@ -13,11 +13,7 @@ import {
 } from "@/components/ui/card"
 import { useProducts } from "@/hooks/use-api-data"
 import { useSessionAccess } from "@/hooks/use-session-access"
-import {
-  ProductStatus,
-  ProductStock,
-  formatProductPrice,
-} from "@/lib/data-schema"
+import { ProductStatus, ProductStock } from "@/lib/data-schema"
 import { SessionModule } from "@/lib/session-access"
 
 export default function CustomersMenuPage() {
@@ -104,7 +100,7 @@ export default function CustomersMenuPage() {
 
                 <div className="flex items-center justify-between gap-3">
                   <strong className="text-lg font-semibold">
-                    {formatProductPrice(item.price)}
+                    {item.price}
                   </strong>
                   <Button className="bg-success text-success-foreground hover:bg-green/90">
                     Adicionar

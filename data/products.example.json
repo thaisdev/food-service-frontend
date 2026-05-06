@@ -5,7 +5,7 @@
     "name": "Smash Burger",
     "description": "Pão brioche, burger artesanal, queijo e molho da casa.",
     "category": "Lanches",
-    "price": 28.9,
+    "price": "R$ 28,90",
     "stock": "Disponível",
     "status": "Ativo"
   },
@@ -15,7 +15,7 @@
     "name": "Bowl Fit",
     "description": "Frango grelhado, arroz integral, legumes e molho leve.",
     "category": "Saudável",
-    "price": 24.5,
+    "price": "R$ 24,50",
     "stock": "Disponível",
     "status": "Ativo"
   },
@@ -25,7 +25,7 @@
     "name": "Pizza Marguerita",
     "description": "Molho artesanal, muçarela, tomate fresco e manjericão.",
     "category": "Pizzas",
-    "price": 52,
+    "price": "R$ 52,00",
     "stock": "Baixo",
     "status": "Ativo"
   },
@@ -35,7 +35,7 @@
     "name": "Brownie da Casa",
     "description": "Brownie macio com calda e finalização especial.",
     "category": "Sobremesas",
-    "price": 12,
+    "price": "R$ 12,00",
     "stock": "Disponível",
     "status": "Ativo"
   },
@@ -45,7 +45,7 @@
     "name": "Suco Verde",
     "description": "Suco natural com couve, limão, maçã e gengibre.",
     "category": "Bebidas",
-    "price": 9.5,
+    "price": "R$ 9,50",
     "stock": "Indisponível",
     "status": "Inativo"
   }
