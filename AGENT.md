@@ -22,6 +22,7 @@ Este arquivo define as regras que agentes de IA devem seguir ao implementar, rev
 - Utilizar as cores e tokens definidos em `app/globals.css` como fonte principal para estilos.
 - Evitar estilos duplicados. Quando um padrão visual se repetir, extrair para componente, variante ou helper de classe.
 - Manter a interface consistente com os componentes e convenções já existentes no projeto.
+- Manter consistência visual entre componentes equivalentes, preservando padrões de espaçamento, bordas, cores, tipografia, estados, ícones e ações para fluxos semelhantes.
 
 ## TypeScript
 
@@ -60,5 +61,6 @@ Este arquivo define as regras que agentes de IA devem seguir ao implementar, rev
 - Verificar se não foi introduzido `any`.
 - Verificar se strings com valores previstos deveriam ser representadas por `enum`.
 - Verificar se há condições desnecessárias aumentando a complexidade cognitiva.
+- Verificar se os componentes novos ou alterados mantêm consistência visual com componentes equivalentes já existentes.
 - Verificar se textos exibidos para o usuário estão em português correto, com acentos e sem caracteres escapados.
 - Verificar se nomes de arquivos, componentes, variáveis e funções estão em inglês.

@@ -2,7 +2,12 @@
 
 import Image from "next/image"
 import Link from "next/link"
-import { RiAddLine, RiDeleteBinLine, RiEditLine } from "@remixicon/react"
+import {
+  RiAddLine,
+  RiCloseLine,
+  RiDeleteBinLine,
+  RiEditLine,
+} from "@remixicon/react"
 import { useEffect, useMemo, useState, useTransition } from "react"
 
 import { Badge } from "@/components/ui/badge"
@@ -91,6 +96,8 @@ export function AdminProductsCrud({ initialProducts }: AdminProductsCrudProps) {
   const [products, setProducts] = useState(initialProducts)
   const [filter, setFilter] = useState<ProductFilter>("Todos")
   const [message, setMessage] = useState<string | null>(null)
+  const [productPendingDelete, setProductPendingDelete] =
+    useState<Product | null>(null)
   const [isPending, startTransition] = useTransition()
 
   useEffect(() => {
@@ -153,8 +160,12 @@ export function AdminProductsCrud({ initialProducts }: AdminProductsCrudProps) {
     ]
   }, [products])
 
-  function deleteProduct(product: Product) {
+  function confirmProductDeletion(product: Product) {
     setMessage(null)
+    setProductPendingDelete(null)
+    setProducts((currentProducts) =>
+      currentProducts.filter((currentProduct) => currentProduct.id !== product.id)
+    )
 
     startTransition(async () => {
       try {
@@ -168,6 +179,7 @@ export function AdminProductsCrud({ initialProducts }: AdminProductsCrudProps) {
 
         setMessage("Produto ocultado.")
       } catch (error) {
+        setProducts(products)
         setMessage(error instanceof Error ? error.message : "Erro inesperado.")
       }
     })
@@ -317,7 +329,7 @@ export function AdminProductsCrud({ initialProducts }: AdminProductsCrudProps) {
                           </Button>
                           <Button
                             disabled={isPending}
-                            onClick={() => deleteProduct(product)}
+                            onClick={() => setProductPendingDelete(product)}
                             size="icon-sm"
                             title="Ocultar produto"
                             type="button"
@@ -398,6 +410,69 @@ export function AdminProductsCrud({ initialProducts }: AdminProductsCrudProps) {
           </Card>
         </section>
       </div>
+
+      {productPendingDelete ? (
+        <div
+          aria-modal="true"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-foreground/45 p-4 backdrop-blur-sm"
+          role="dialog"
+        >
+          <Card className="w-full max-w-md rounded-2xl border border-destructive/20 p-0 shadow-xl">
+            <CardHeader className="flex flex-row items-start justify-between gap-4 border-b border-destructive/15 bg-destructive-muted/45 p-6">
+              <div>
+                <CardTitle className="text-lg font-semibold">
+                  Confirmar exclusão
+                </CardTitle>
+                <CardDescription className="text-sm">
+                  O produto será ocultado do catálogo administrativo.
+                </CardDescription>
+              </div>
+              <Button
+                disabled={isPending}
+                onClick={() => setProductPendingDelete(null)}
+                size="icon-sm"
+                title="Fechar modal"
+                type="button"
+                variant="ghost"
+              >
+                <RiCloseLine aria-hidden />
+              </Button>
+            </CardHeader>
+
+            <CardContent className="space-y-4 p-6">
+              <div className="rounded-2xl border border-border/70 bg-muted/35 p-4">
+                <p className="text-sm font-medium">
+                  {productPendingDelete.name}
+                </p>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  {productPendingDelete.id} · {productPendingDelete.category}
+                </p>
+              </div>
+
+              <div className="flex flex-wrap justify-end gap-2">
+                <Button
+                  disabled={isPending}
+                  onClick={() => setProductPendingDelete(null)}
+                  type="button"
+                  variant="outline"
+                >
+                  <RiCloseLine aria-hidden />
+                  Cancelar
+                </Button>
+                <Button
+                  disabled={isPending}
+                  onClick={() => confirmProductDeletion(productPendingDelete)}
+                  type="button"
+                  variant="destructive"
+                >
+                  <RiDeleteBinLine aria-hidden />
+                  {isPending ? "Excluindo..." : "Excluir"}
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      ) : null}
     </main>
   )
 }
