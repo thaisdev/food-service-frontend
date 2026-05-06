@@ -13,6 +13,7 @@ const adminLinks = [
   { href: "/admin/home", label: "Início" },
   { href: "/admin/orders", label: "Pedidos" },
   { href: "/admin/products", label: "Produtos" },
+  { href: "/admin/categories", label: "Categorias" },
 ]
 
 const customerLinks = [{ href: "/customers/menu", label: "Cardápio" }]

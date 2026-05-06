@@ -2,7 +2,7 @@ import { redirect } from "next/navigation"
 
 import { AdminProductFormModal } from "@/components/admin-product-form-modal"
 import { AdminProductsCrud } from "@/components/admin-products-crud"
-import { getVisibleProducts } from "@/lib/server-data"
+import { getVisibleCategories, getVisibleProducts } from "@/lib/server-data"
 
 type EditProductPageProps = {
   params: Promise<{
@@ -14,7 +14,10 @@ export default async function EditProductPage({
   params,
 }: EditProductPageProps) {
   const { id } = await params
-  const products = await getVisibleProducts()
+  const [products, categories] = await Promise.all([
+    getVisibleProducts(),
+    getVisibleCategories(),
+  ])
   const product = products.find((currentProduct) => currentProduct.id === id)
 
   if (!product) {
@@ -23,8 +26,8 @@ export default async function EditProductPage({
 
   return (
     <>
-      <AdminProductsCrud initialProducts={products} />
-      <AdminProductFormModal product={product} />
+      <AdminProductsCrud categories={categories} initialProducts={products} />
+      <AdminProductFormModal categories={categories} product={product} />
     </>
   )
 }

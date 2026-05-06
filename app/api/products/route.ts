@@ -2,14 +2,15 @@ import { NextResponse } from "next/server"
 
 import { delay } from "@/lib/api-delay"
 import {
-  PRODUCT_CATEGORIES,
   ProductStatus,
   ProductStock,
   parseProductPrice,
   parseProducts,
+  type Category,
   type Product,
 } from "@/lib/data-schema"
 import {
+  getVisibleCategories,
   getProducts,
   getVisibleProducts,
   saveProducts,
@@ -38,15 +39,41 @@ function createProductId(products: Product[]) {
   return `PRD-${String(nextNumber).padStart(3, "0")}`
 }
 
-function createProductFromBody(body: Partial<Product>, id: string): Product {
+const defaultCategoryNames = [
+  "Lanches",
+  "Saudável",
+  "Pizzas",
+  "Sobremesas",
+  "Bebidas",
+  "Pratos",
+  "Combos",
+  "Acompanhamentos",
+]
+
+function getDefaultCategoryId(categories: Category[]) {
+  return categories[0]?.id ?? defaultCategoryNames[0]
+}
+
+function getCategoryId(body: Partial<Product>, categories: Category[]) {
+  const requestedCategoryId =
+    typeof body.categoryId === "string" && body.categoryId.trim()
+      ? body.categoryId.trim()
+      : ""
+
+  if (categories.some((category) => category.id === requestedCategoryId)) {
+    return requestedCategoryId
+  }
+
+  return getDefaultCategoryId(categories)
+}
+
+function createProductFromBody(
+  body: Partial<Product>,
+  id: string,
+  categories: Category[]
+): Product {
   const price = parseProductPrice(body.price)
-  const category =
-    typeof body.category === "string" &&
-    PRODUCT_CATEGORIES.includes(
-      body.category as (typeof PRODUCT_CATEGORIES)[number]
-    )
-      ? body.category
-      : PRODUCT_CATEGORIES[0]
+  const categoryId = getCategoryId(body, categories)
   const stock: ProductStock = Object.values(ProductStock).includes(
     body.stock as ProductStock
   )
@@ -63,7 +90,7 @@ function createProductFromBody(body: Partial<Product>, id: string): Product {
     image: body.image?.trim() || defaultProductImage,
     name: body.name?.trim() ?? "",
     description: body.description?.trim() ?? "",
-    category,
+    categoryId,
     price: price ?? Number.NaN,
     stock,
     status,
@@ -96,7 +123,12 @@ export async function POST(request: Request) {
   }
 
   const products = await getProducts()
-  const product = createProductFromBody(body, createProductId(products))
+  const categories = await getVisibleCategories()
+  const product = createProductFromBody(
+    body,
+    createProductId(products),
+    categories
+  )
 
   if (!isValidProduct(product)) {
     return NextResponse.json(
@@ -123,7 +155,8 @@ export async function PUT(request: Request) {
   }
 
   const products = await getProducts()
-  const product = createProductFromBody(body, body.id)
+  const categories = await getVisibleCategories()
+  const product = createProductFromBody(body, body.id, categories)
 
   if (!isValidProduct(product)) {
     return NextResponse.json(

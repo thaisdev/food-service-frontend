@@ -9,6 +9,11 @@ export enum ProductStatus {
   Inactive = "Inativo",
 }
 
+export enum CategoryStatus {
+  Active = "Ativa",
+  Inactive = "Inativa",
+}
+
 export const PRODUCT_CATEGORIES = [
   "Lanches",
   "Saudável",
@@ -21,6 +26,14 @@ export const PRODUCT_CATEGORIES = [
 ] as const
 
 export type ProductCategory = (typeof PRODUCT_CATEGORIES)[number]
+
+export type Category = {
+  id: string
+  name: string
+  description: string
+  status: CategoryStatus
+  deletedAt?: string
+}
 
 export enum OrderStatus {
   Waiting = "Aguardando",
@@ -35,7 +48,7 @@ export type Product = {
   image: string
   name: string
   description: string
-  category: string
+  categoryId: string
   price: number
   stock: ProductStock
   status: ProductStatus
@@ -58,7 +71,7 @@ export const mockProducts: Product[] = [
     image: "/branding/product-placeholder.png",
     name: "Smash Burger",
     description: "Pão brioche, burger artesanal, queijo e molho da casa.",
-    category: "Lanches",
+    categoryId: "CAT-001",
     price: 28.9,
     stock: ProductStock.Available,
     status: ProductStatus.Active,
@@ -68,7 +81,7 @@ export const mockProducts: Product[] = [
     image: "/branding/product-placeholder.png",
     name: "Bowl Fit",
     description: "Frango grelhado, arroz integral, legumes e molho leve.",
-    category: "Saudável",
+    categoryId: "CAT-002",
     price: 24.5,
     stock: ProductStock.Available,
     status: ProductStatus.Active,
@@ -78,7 +91,7 @@ export const mockProducts: Product[] = [
     image: "/branding/product-placeholder.png",
     name: "Pizza Marguerita",
     description: "Molho artesanal, muçarela, tomate fresco e manjericão.",
-    category: "Pizzas",
+    categoryId: "CAT-003",
     price: 52,
     stock: ProductStock.Low,
     status: ProductStatus.Active,
@@ -88,7 +101,7 @@ export const mockProducts: Product[] = [
     image: "/branding/product-placeholder.png",
     name: "Brownie da Casa",
     description: "Brownie macio com calda e finalização especial.",
-    category: "Sobremesas",
+    categoryId: "CAT-004",
     price: 12,
     stock: ProductStock.Available,
     status: ProductStatus.Active,
@@ -98,10 +111,61 @@ export const mockProducts: Product[] = [
     image: "/branding/product-placeholder.png",
     name: "Suco Verde",
     description: "Suco natural com couve, limão, maçã e gengibre.",
-    category: "Bebidas",
+    categoryId: "CAT-005",
     price: 9.5,
     stock: ProductStock.Unavailable,
     status: ProductStatus.Inactive,
+  },
+]
+
+export const mockCategories: Category[] = [
+  {
+    id: "CAT-001",
+    name: "Lanches",
+    description: "Hambúrgueres, sanduíches e opções rápidas.",
+    status: CategoryStatus.Active,
+  },
+  {
+    id: "CAT-002",
+    name: "Saudável",
+    description: "Pratos leves, bowls e combinações balanceadas.",
+    status: CategoryStatus.Active,
+  },
+  {
+    id: "CAT-003",
+    name: "Pizzas",
+    description: "Pizzas inteiras e sabores especiais.",
+    status: CategoryStatus.Active,
+  },
+  {
+    id: "CAT-004",
+    name: "Sobremesas",
+    description: "Doces, bolos e finalizações da casa.",
+    status: CategoryStatus.Active,
+  },
+  {
+    id: "CAT-005",
+    name: "Bebidas",
+    description: "Sucos, refrigerantes, águas e bebidas geladas.",
+    status: CategoryStatus.Active,
+  },
+  {
+    id: "CAT-006",
+    name: "Pratos",
+    description: "Refeições completas para salão e delivery.",
+    status: CategoryStatus.Active,
+  },
+  {
+    id: "CAT-007",
+    name: "Combos",
+    description: "Combinações promocionais e kits do cardápio.",
+    status: CategoryStatus.Active,
+  },
+  {
+    id: "CAT-008",
+    name: "Acompanhamentos",
+    description: "Porções extras, entradas e complementos.",
+    status: CategoryStatus.Active,
   },
 ]
 
@@ -204,6 +268,13 @@ export function formatProductPrice(price: number) {
   }).format(price)
 }
 
+function hasProductCategoryField(value: unknown) {
+  return (
+    isRecord(value) &&
+    (typeof value.categoryId === "string" || typeof value.category === "string")
+  )
+}
+
 function isProduct(value: unknown): value is Product {
   return (
     hasStringFields(value, [
@@ -211,11 +282,21 @@ function isProduct(value: unknown): value is Product {
       "image",
       "name",
       "description",
-      "category",
     ]) &&
+    hasProductCategoryField(value) &&
     parseProductPrice(value.price) !== null &&
     isOneOf(value.stock, Object.values(ProductStock)) &&
     isOneOf(value.status, Object.values(ProductStatus)) &&
+    (!isRecord(value) ||
+      value.deletedAt === undefined ||
+      typeof value.deletedAt === "string")
+  )
+}
+
+function isCategory(value: unknown): value is Category {
+  return (
+    hasStringFields(value, ["id", "name", "description"]) &&
+    isOneOf(value.status, Object.values(CategoryStatus)) &&
     (!isRecord(value) ||
       value.deletedAt === undefined ||
       typeof value.deletedAt === "string")
@@ -227,10 +308,51 @@ function normalizeProduct(value: unknown): Product | null {
     return null
   }
 
+  const categoryId =
+    "categoryId" in value && typeof value.categoryId === "string"
+      ? value.categoryId
+      : "category" in value && typeof value.category === "string"
+        ? value.category
+        : ""
+
   return {
-    ...value,
+    id: value.id,
+    image: value.image,
+    name: value.name,
+    description: value.description,
+    categoryId,
     price: parseProductPrice(value.price) ?? 0,
+    stock: value.stock,
+    status: value.status,
+    deletedAt: value.deletedAt,
   }
+}
+
+export function resolveProductCategoryId(
+  product: Product,
+  categories: Category[]
+) {
+  const category = categories.find(
+    (currentCategory) =>
+      currentCategory.id === product.categoryId ||
+      currentCategory.name === product.categoryId
+  )
+  const fallbackCategory = mockCategories.find(
+    (currentCategory) => currentCategory.name === product.categoryId
+  )
+
+  return category?.id ?? fallbackCategory?.id ?? product.categoryId
+}
+
+export function getProductCategoryName(
+  product: Product,
+  categories: Category[]
+) {
+  return (
+    categories.find((category) => category.id === product.categoryId)?.name ??
+    categories.find((category) => category.name === product.categoryId)?.name ??
+    product.categoryId
+  )
 }
 
 function isOrder(value: unknown): value is Order {
@@ -291,4 +413,8 @@ export function parseProducts(rawData: string | null) {
 
 export function parseOrders(rawData: string | null) {
   return parseArray(rawData, isOrder)
+}
+
+export function parseCategories(rawData: string | null) {
+  return parseArray(rawData, isCategory)
 }
