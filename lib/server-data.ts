@@ -3,12 +3,8 @@ import {
   mockProducts,
   parseOrders,
   parseProducts,
-  type Product,
 } from "@/lib/data-schema"
-import {
-  readServerJsonStore,
-  writeServerJsonStore,
-} from "@/lib/server-json-store"
+import { readServerJsonStore } from "@/lib/server-json-store"
 
 export function getProducts() {
   return readServerJsonStore({
@@ -17,16 +13,6 @@ export function getProducts() {
     parse: parseProducts,
     runtimeFile: "products.json",
   })
-}
-
-export function getVisibleProducts() {
-  return getProducts().then((products) =>
-    products.filter((product) => !product.deletedAt)
-  )
-}
-
-export function saveProducts(products: Product[]) {
-  return writeServerJsonStore("products.json", products)
 }
 
 export function getOrders() {

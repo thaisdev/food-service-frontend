@@ -9,19 +9,6 @@ export enum ProductStatus {
   Inactive = "Inativo",
 }
 
-export const PRODUCT_CATEGORIES = [
-  "Lanches",
-  "Saudável",
-  "Pizzas",
-  "Sobremesas",
-  "Bebidas",
-  "Pratos",
-  "Combos",
-  "Acompanhamentos",
-] as const
-
-export type ProductCategory = (typeof PRODUCT_CATEGORIES)[number]
-
 export enum OrderStatus {
   Waiting = "Aguardando",
   Preparing = "Em preparo",
@@ -36,10 +23,9 @@ export type Product = {
   name: string
   description: string
   category: string
-  price: number
+  price: string
   stock: ProductStock
   status: ProductStatus
-  deletedAt?: string
 }
 
 export type Order = {
@@ -59,7 +45,7 @@ export const mockProducts: Product[] = [
     name: "Smash Burger",
     description: "Pão brioche, burger artesanal, queijo e molho da casa.",
     category: "Lanches",
-    price: 28.9,
+    price: "R$ 28,90",
     stock: ProductStock.Available,
     status: ProductStatus.Active,
   },
@@ -69,7 +55,7 @@ export const mockProducts: Product[] = [
     name: "Bowl Fit",
     description: "Frango grelhado, arroz integral, legumes e molho leve.",
     category: "Saudável",
-    price: 24.5,
+    price: "R$ 24,50",
     stock: ProductStock.Available,
     status: ProductStatus.Active,
   },
@@ -79,7 +65,7 @@ export const mockProducts: Product[] = [
     name: "Pizza Marguerita",
     description: "Molho artesanal, muçarela, tomate fresco e manjericão.",
     category: "Pizzas",
-    price: 52,
+    price: "R$ 52,00",
     stock: ProductStock.Low,
     status: ProductStatus.Active,
   },
@@ -89,7 +75,7 @@ export const mockProducts: Product[] = [
     name: "Brownie da Casa",
     description: "Brownie macio com calda e finalização especial.",
     category: "Sobremesas",
-    price: 12,
+    price: "R$ 12,00",
     stock: ProductStock.Available,
     status: ProductStatus.Active,
   },
@@ -99,7 +85,7 @@ export const mockProducts: Product[] = [
     name: "Suco Verde",
     description: "Suco natural com couve, limão, maçã e gengibre.",
     category: "Bebidas",
-    price: 9.5,
+    price: "R$ 9,50",
     stock: ProductStock.Unavailable,
     status: ProductStatus.Inactive,
   },
@@ -173,37 +159,6 @@ function isOneOf<T extends string>(
   return typeof value === "string" && values.includes(value as T)
 }
 
-export function parseProductPrice(value: unknown) {
-  if (typeof value === "number") {
-    return Number.isFinite(value) && value >= 0 ? value : null
-  }
-
-  if (typeof value !== "string") {
-    return null
-  }
-
-  const sanitizedValue = value
-    .replace(/[^\d,.-]/g, "")
-    .replace(/\.(?=\d{3}(?:\D|$))/g, "")
-    .replace(",", ".")
-
-  if (!sanitizedValue) {
-    return null
-  }
-
-  const price = Number(sanitizedValue)
-
-  return Number.isFinite(price) && price >= 0 ? price : null
-}
-
-export function formatProductPrice(price: number) {
-  return new Intl.NumberFormat("pt-BR", {
-    currency: "BRL",
-    minimumFractionDigits: 2,
-    style: "currency",
-  }).format(price)
-}
-
 function isProduct(value: unknown): value is Product {
   return (
     hasStringFields(value, [
@@ -212,25 +167,11 @@ function isProduct(value: unknown): value is Product {
       "name",
       "description",
       "category",
+      "price",
     ]) &&
-    parseProductPrice(value.price) !== null &&
     isOneOf(value.stock, Object.values(ProductStock)) &&
-    isOneOf(value.status, Object.values(ProductStatus)) &&
-    (!isRecord(value) ||
-      value.deletedAt === undefined ||
-      typeof value.deletedAt === "string")
+    isOneOf(value.status, Object.values(ProductStatus))
   )
-}
-
-function normalizeProduct(value: unknown): Product | null {
-  if (!isProduct(value)) {
-    return null
-  }
-
-  return {
-    ...value,
-    price: parseProductPrice(value.price) ?? 0,
-  }
 }
 
 function isOrder(value: unknown): value is Order {
@@ -268,25 +209,7 @@ function parseArray<T>(
 }
 
 export function parseProducts(rawData: string | null) {
-  if (!rawData) {
-    return null
-  }
-
-  try {
-    const data = JSON.parse(rawData) as unknown
-
-    if (!Array.isArray(data)) {
-      return null
-    }
-
-    const products = data
-      .map((item) => normalizeProduct(item))
-      .filter((item): item is Product => item !== null)
-
-    return products.length === data.length ? products : null
-  } catch {
-    return null
-  }
+  return parseArray(rawData, isProduct)
 }
 
 export function parseOrders(rawData: string | null) {
