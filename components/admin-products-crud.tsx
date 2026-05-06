@@ -165,7 +165,7 @@ export function AdminProductsCrud({ initialProducts }: AdminProductsCrudProps) {
 
         setProducts(nextProducts)
 
-        setMessage("Produto removido.")
+        setMessage("Produto ocultado.")
       } catch (error) {
         setMessage(error instanceof Error ? error.message : "Erro inesperado.")
       }
@@ -318,7 +318,7 @@ export function AdminProductsCrud({ initialProducts }: AdminProductsCrudProps) {
                             disabled={isPending}
                             onClick={() => deleteProduct(product)}
                             size="icon-sm"
-                            title="Remover produto"
+                            title="Ocultar produto"
                             type="button"
                             variant="destructive"
                           >
@@ -384,7 +384,7 @@ export function AdminProductsCrud({ initialProducts }: AdminProductsCrudProps) {
                 "GET /api/products lista os produtos",
                 "POST /api/products cadastra um novo item",
                 "PUT /api/products edita um item existente",
-                "DELETE /api/products?id=PRD-001 remove um item",
+                "DELETE /api/products?id=PRD-001 oculta um item",
               ].map((task) => (
                 <div
                   key={task}

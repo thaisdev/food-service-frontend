@@ -7,11 +7,19 @@ import {
   parseProducts,
   type Product,
 } from "@/lib/data-schema"
-import { getProducts, saveProducts } from "@/lib/server-data"
+import {
+  getProducts,
+  getVisibleProducts,
+  saveProducts,
+} from "@/lib/server-data"
 
 export const runtime = "nodejs"
 
 const defaultProductImage = "/branding/product-placeholder.png"
+
+function filterVisibleProducts(products: Product[]) {
+  return products.filter((product) => !product.deletedAt)
+}
 
 function isValidProduct(product: Product) {
   return Boolean(parseProducts(JSON.stringify([product])))
@@ -63,7 +71,7 @@ async function readProductRequest(request: Request) {
 export async function GET() {
   await delay()
 
-  const products = await getProducts()
+  const products = await getVisibleProducts()
 
   return NextResponse.json(products)
 }
@@ -89,7 +97,7 @@ export async function POST(request: Request) {
 
   const nextProducts = await saveProducts([product, ...products])
 
-  return NextResponse.json(nextProducts, { status: 201 })
+  return NextResponse.json(filterVisibleProducts(nextProducts), { status: 201 })
 }
 
 export async function PUT(request: Request) {
@@ -122,7 +130,10 @@ export async function PUT(request: Request) {
 
     foundProduct = true
 
-    return product
+    return {
+      ...product,
+      deletedAt: currentProduct.deletedAt,
+    }
   })
 
   if (!foundProduct) {
@@ -132,7 +143,9 @@ export async function PUT(request: Request) {
     )
   }
 
-  return NextResponse.json(await saveProducts(nextProducts))
+  return NextResponse.json(
+    filterVisibleProducts(await saveProducts(nextProducts))
+  )
 }
 
 export async function DELETE(request: Request) {
@@ -149,14 +162,29 @@ export async function DELETE(request: Request) {
   }
 
   const products = await getProducts()
-  const nextProducts = products.filter((product) => product.id !== id)
+  let foundProduct = false
+  const deletedAt = new Date().toISOString()
+  const nextProducts = products.map((product) => {
+    if (product.id !== id || product.deletedAt) {
+      return product
+    }
 
-  if (nextProducts.length === products.length) {
+    foundProduct = true
+
+    return {
+      ...product,
+      deletedAt,
+    }
+  })
+
+  if (!foundProduct) {
     return NextResponse.json(
       { message: "Produto não encontrado." },
       { status: 404 }
     )
   }
 
-  return NextResponse.json(await saveProducts(nextProducts))
+  return NextResponse.json(
+    filterVisibleProducts(await saveProducts(nextProducts))
+  )
 }

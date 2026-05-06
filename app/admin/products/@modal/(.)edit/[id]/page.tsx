@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation"
 
 import { AdminProductFormModal } from "@/components/admin-product-form-modal"
-import { getProducts } from "@/lib/server-data"
+import { getVisibleProducts } from "@/lib/server-data"
 
 type EditProductModalPageProps = {
   params: Promise<{
@@ -13,7 +13,7 @@ export default async function EditProductModalPage({
   params,
 }: EditProductModalPageProps) {
   const { id } = await params
-  const products = await getProducts()
+  const products = await getVisibleProducts()
   const product = products.find((currentProduct) => currentProduct.id === id)
 
   if (!product) {

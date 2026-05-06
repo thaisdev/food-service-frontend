@@ -26,6 +26,7 @@ export type Product = {
   price: string
   stock: ProductStock
   status: ProductStatus
+  deletedAt?: string
 }
 
 export type Order = {
@@ -170,7 +171,10 @@ function isProduct(value: unknown): value is Product {
       "price",
     ]) &&
     isOneOf(value.stock, Object.values(ProductStock)) &&
-    isOneOf(value.status, Object.values(ProductStatus))
+    isOneOf(value.status, Object.values(ProductStatus)) &&
+    (!isRecord(value) ||
+      value.deletedAt === undefined ||
+      typeof value.deletedAt === "string")
   )
 }
 

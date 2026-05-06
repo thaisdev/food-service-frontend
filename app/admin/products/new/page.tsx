@@ -1,9 +1,9 @@
 import { AdminProductFormModal } from "@/components/admin-product-form-modal"
 import { AdminProductsCrud } from "@/components/admin-products-crud"
-import { getProducts } from "@/lib/server-data"
+import { getVisibleProducts } from "@/lib/server-data"
 
 export default async function NewProductPage() {
-  const products = await getProducts()
+  const products = await getVisibleProducts()
 
   return (
     <>

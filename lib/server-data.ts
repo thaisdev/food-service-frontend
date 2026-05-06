@@ -19,6 +19,12 @@ export function getProducts() {
   })
 }
 
+export function getVisibleProducts() {
+  return getProducts().then((products) =>
+    products.filter((product) => !product.deletedAt)
+  )
+}
+
 export function saveProducts(products: Product[]) {
   return writeServerJsonStore("products.json", products)
 }
