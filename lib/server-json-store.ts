@@ -48,3 +48,14 @@ export async function readServerJsonStore<T>({
 
   return initialData
 }
+
+export async function writeServerJsonStore<T>(
+  runtimeFile: string,
+  data: T[]
+) {
+  const runtimePath = path.join(runtimeDirectory, runtimeFile)
+
+  await writeJsonArray(runtimePath, data)
+
+  return data
+}
