@@ -11,17 +11,19 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
-import { useProducts } from "@/hooks/use-api-data"
+import { useCategories, useProducts } from "@/hooks/use-api-data"
 import { useSessionAccess } from "@/hooks/use-session-access"
 import {
   ProductStatus,
   ProductStock,
   formatProductPrice,
+  getProductCategoryName,
 } from "@/lib/data-schema"
 import { SessionModule } from "@/lib/session-access"
 
 export default function CustomersMenuPage() {
   const access = useSessionAccess()
+  const categories = useCategories()
   const products = useProducts()
   const menuItems = products.filter(
     (product) =>
@@ -92,7 +94,7 @@ export default function CustomersMenuPage() {
               <CardContent className="space-y-4 p-5">
                 <div>
                   <Badge className="bg-primary-muted text-primary">
-                    {item.category}
+                    {getProductCategoryName(item, categories)}
                   </Badge>
                   <CardTitle className="mt-3 text-lg font-semibold">
                     {item.name}

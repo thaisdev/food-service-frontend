@@ -1,8 +1,11 @@
 import { AdminProductsCrud } from "@/components/admin-products-crud"
-import { getVisibleProducts } from "@/lib/server-data"
+import { getVisibleCategories, getVisibleProducts } from "@/lib/server-data"
 
 export default async function AdminProductsPage() {
-  const products = await getVisibleProducts()
+  const [products, categories] = await Promise.all([
+    getVisibleProducts(),
+    getVisibleCategories(),
+  ])
 
-  return <AdminProductsCrud initialProducts={products} />
+  return <AdminProductsCrud categories={categories} initialProducts={products} />
 }

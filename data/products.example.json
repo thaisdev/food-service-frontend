@@ -4,7 +4,7 @@
     "image": "/branding/product-placeholder.png",
     "name": "Smash Burger",
     "description": "Pão brioche, burger artesanal, queijo e molho da casa.",
-    "category": "Lanches",
+    "categoryId": "CAT-001",
     "price": 28.9,
     "stock": "Disponível",
     "status": "Ativo"
@@ -14,7 +14,7 @@
     "image": "/branding/product-placeholder.png",
     "name": "Bowl Fit",
     "description": "Frango grelhado, arroz integral, legumes e molho leve.",
-    "category": "Saudável",
+    "categoryId": "CAT-002",
     "price": 24.5,
     "stock": "Disponível",
     "status": "Ativo"
@@ -24,7 +24,7 @@
     "image": "/branding/product-placeholder.png",
     "name": "Pizza Marguerita",
     "description": "Molho artesanal, muçarela, tomate fresco e manjericão.",
-    "category": "Pizzas",
+    "categoryId": "CAT-003",
     "price": 52,
     "stock": "Baixo",
     "status": "Ativo"
@@ -34,7 +34,7 @@
     "image": "/branding/product-placeholder.png",
     "name": "Brownie da Casa",
     "description": "Brownie macio com calda e finalização especial.",
-    "category": "Sobremesas",
+    "categoryId": "CAT-004",
     "price": 12,
     "stock": "Disponível",
     "status": "Ativo"
@@ -44,7 +44,7 @@
     "image": "/branding/product-placeholder.png",
     "name": "Suco Verde",
     "description": "Suco natural com couve, limão, maçã e gengibre.",
-    "category": "Bebidas",
+    "categoryId": "CAT-005",
     "price": 9.5,
     "stock": "Indisponível",
     "status": "Inativo"

@@ -31,13 +31,16 @@ import {
   ProductStatus,
   ProductStock,
   formatProductPrice,
+  getProductCategoryName,
   parseProducts,
+  type Category,
   type Product,
 } from "@/lib/data-schema"
 
 type ProductFilter = "Todos" | "Ativos" | "Inativos" | "Baixo estoque"
 
 type AdminProductsCrudProps = {
+  categories: Category[]
   initialProducts: Product[]
 }
 
@@ -92,7 +95,10 @@ async function requestProducts(
   )
 }
 
-export function AdminProductsCrud({ initialProducts }: AdminProductsCrudProps) {
+export function AdminProductsCrud({
+  categories,
+  initialProducts,
+}: AdminProductsCrudProps) {
   const [products, setProducts] = useState(initialProducts)
   const [filter, setFilter] = useState<ProductFilter>("Todos")
   const [message, setMessage] = useState<string | null>(null)
@@ -139,7 +145,9 @@ export function AdminProductsCrud({ initialProducts }: AdminProductsCrudProps) {
     const lowStockProducts = products.filter(
       (product) => product.stock === ProductStock.Low
     ).length
-    const categories = new Set(products.map((product) => product.category)).size
+    const productCategories = new Set(
+      products.map((product) => product.categoryId)
+    ).size
 
     return [
       {
@@ -149,7 +157,7 @@ export function AdminProductsCrud({ initialProducts }: AdminProductsCrudProps) {
       },
       {
         label: "Categorias",
-        value: String(categories),
+        value: String(productCategories),
         detail: "Cardápio principal e sazonais",
       },
       {
@@ -301,7 +309,9 @@ export function AdminProductsCrud({ initialProducts }: AdminProductsCrudProps) {
                           </div>
                         </div>
                       </TableCell>
-                      <TableCell>{product.category}</TableCell>
+                      <TableCell>
+                        {getProductCategoryName(product, categories)}
+                      </TableCell>
                       <TableCell className="font-medium">
                         {formatProductPrice(product.price)}
                       </TableCell>
@@ -445,7 +455,8 @@ export function AdminProductsCrud({ initialProducts }: AdminProductsCrudProps) {
                   {productPendingDelete.name}
                 </p>
                 <p className="mt-1 text-xs text-muted-foreground">
-                  {productPendingDelete.id} · {productPendingDelete.category}
+                  {productPendingDelete.id} ·{" "}
+                  {getProductCategoryName(productPendingDelete, categories)}
                 </p>
               </div>
 

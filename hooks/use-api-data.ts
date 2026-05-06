@@ -4,9 +4,12 @@ import { useEffect, useState } from "react"
 
 import {
   mockOrders,
+  mockCategories,
   mockProducts,
+  parseCategories,
   parseOrders,
   parseProducts,
+  type Category,
   type Order,
   type Product,
 } from "@/lib/data-schema"
@@ -49,6 +52,28 @@ export function useProducts() {
   }, [])
 
   return products
+}
+
+export function useCategories() {
+  const [categories, setCategories] = useState<Category[]>(mockCategories)
+
+  useEffect(() => {
+    let isCurrent = true
+
+    fetchJsonData("/api/categories", parseCategories, mockCategories).then(
+      (data) => {
+        if (isCurrent) {
+          setCategories(data)
+        }
+      }
+    )
+
+    return () => {
+      isCurrent = false
+    }
+  }, [])
+
+  return categories
 }
 
 export function useOrders() {

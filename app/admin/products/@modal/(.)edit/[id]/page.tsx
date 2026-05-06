@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation"
 
 import { AdminProductFormModal } from "@/components/admin-product-form-modal"
-import { getVisibleProducts } from "@/lib/server-data"
+import { getVisibleCategories, getVisibleProducts } from "@/lib/server-data"
 
 type EditProductModalPageProps = {
   params: Promise<{
@@ -13,12 +13,15 @@ export default async function EditProductModalPage({
   params,
 }: EditProductModalPageProps) {
   const { id } = await params
-  const products = await getVisibleProducts()
+  const [products, categories] = await Promise.all([
+    getVisibleProducts(),
+    getVisibleCategories(),
+  ])
   const product = products.find((currentProduct) => currentProduct.id === id)
 
   if (!product) {
     redirect("/admin/products")
   }
 
-  return <AdminProductFormModal product={product} />
+  return <AdminProductFormModal categories={categories} product={product} />
 }

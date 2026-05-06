@@ -15,11 +15,11 @@ import {
 } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import {
-  PRODUCT_CATEGORIES,
   ProductStatus,
   ProductStock,
   parseProductPrice,
   parseProducts,
+  type Category,
   type Product,
 } from "@/lib/data-schema"
 
@@ -29,17 +29,20 @@ type ProductFormData = Omit<Product, "id" | "price"> & {
 type ProductSavePayload = Omit<Product, "id"> | Product
 
 type AdminProductFormModalProps = {
+  categories?: Category[]
   product?: Product
 }
 
-const emptyForm: ProductFormData = {
-  image: "/branding/product-placeholder.png",
-  name: "",
-  description: "",
-  category: PRODUCT_CATEGORIES[0],
-  price: "",
-  stock: ProductStock.Available,
-  status: ProductStatus.Active,
+function createEmptyForm(categoryId: string): ProductFormData {
+  return {
+    image: "/branding/product-placeholder.png",
+    name: "",
+    description: "",
+    categoryId,
+    price: "",
+    stock: ProductStock.Available,
+    status: ProductStatus.Active,
+  }
 }
 
 async function requestProductSave(payload: ProductSavePayload) {
@@ -63,27 +66,37 @@ async function requestProductSave(payload: ProductSavePayload) {
   return parseProducts(JSON.stringify(await response.json()))
 }
 
-export function AdminProductFormModal({ product }: AdminProductFormModalProps) {
+export function AdminProductFormModal({
+  categories = [],
+  product,
+}: AdminProductFormModalProps) {
   const router = useRouter()
+  const categoryOptions =
+    product && !categories.some((category) => category.id === product.categoryId)
+      ? [
+          {
+            id: product.categoryId,
+            name: product.categoryId,
+          },
+          ...categories,
+        ]
+      : categories
   const productCategory =
-    product &&
-    PRODUCT_CATEGORIES.includes(
-      product.category as (typeof PRODUCT_CATEGORIES)[number]
-    )
-      ? product.category
-      : PRODUCT_CATEGORIES[0]
+    product && categoryOptions.some((category) => category.id === product.categoryId)
+      ? product.categoryId
+      : (categoryOptions[0]?.id ?? "")
   const [formData, setFormData] = useState<ProductFormData>(
     product
       ? {
           image: product.image,
           name: product.name,
           description: product.description,
-          category: productCategory,
+          categoryId: productCategory,
           price: product.price.toFixed(2),
           stock: product.stock,
           status: product.status,
         }
-      : emptyForm
+      : createEmptyForm(categoryOptions[0]?.id ?? "")
   )
   const [message, setMessage] = useState<string | null>(null)
   const [isPending, startTransition] = useTransition()
@@ -183,21 +196,21 @@ export function AdminProductFormModal({ product }: AdminProductFormModalProps) {
 
             <div className="grid gap-3 sm:grid-cols-2">
               <div className="grid gap-2">
-                <label className="text-xs font-medium" htmlFor="category">
+                <label className="text-xs font-medium" htmlFor="categoryId">
                   Categoria
                 </label>
                 <select
                   className="h-7 w-full rounded-md border border-input bg-input/20 px-2 text-xs transition-colors outline-none focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/30"
-                  id="category"
+                  id="categoryId"
                   onChange={(event) =>
-                    updateFormData("category", event.target.value)
+                    updateFormData("categoryId", event.target.value)
                   }
                   required
-                  value={formData.category}
+                  value={formData.categoryId}
                 >
-                  {PRODUCT_CATEGORIES.map((category) => (
-                    <option key={category} value={category}>
-                      {category}
+                  {categoryOptions.map((category) => (
+                    <option key={category.id} value={category.id}>
+                      {category.name}
                     </option>
                   ))}
                 </select>
