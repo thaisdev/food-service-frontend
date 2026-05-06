@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import {
+  PRODUCT_CATEGORIES,
   ProductStatus,
   ProductStock,
   parseProductPrice,
@@ -35,7 +36,7 @@ const emptyForm: ProductFormData = {
   image: "/branding/product-placeholder.png",
   name: "",
   description: "",
-  category: "",
+  category: PRODUCT_CATEGORIES[0],
   price: "",
   stock: ProductStock.Available,
   status: ProductStatus.Active,
@@ -64,13 +65,20 @@ async function requestProductSave(payload: ProductSavePayload) {
 
 export function AdminProductFormModal({ product }: AdminProductFormModalProps) {
   const router = useRouter()
+  const productCategory =
+    product &&
+    PRODUCT_CATEGORIES.includes(
+      product.category as (typeof PRODUCT_CATEGORIES)[number]
+    )
+      ? product.category
+      : PRODUCT_CATEGORIES[0]
   const [formData, setFormData] = useState<ProductFormData>(
     product
       ? {
           image: product.image,
           name: product.name,
           description: product.description,
-          category: product.category,
+          category: productCategory,
           price: product.price.toFixed(2),
           stock: product.stock,
           status: product.status,
@@ -178,14 +186,21 @@ export function AdminProductFormModal({ product }: AdminProductFormModalProps) {
                 <label className="text-xs font-medium" htmlFor="category">
                   Categoria
                 </label>
-                <Input
+                <select
+                  className="h-7 w-full rounded-md border border-input bg-input/20 px-2 text-xs transition-colors outline-none focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/30"
                   id="category"
                   onChange={(event) =>
                     updateFormData("category", event.target.value)
                   }
                   required
                   value={formData.category}
-                />
+                >
+                  {PRODUCT_CATEGORIES.map((category) => (
+                    <option key={category} value={category}>
+                      {category}
+                    </option>
+                  ))}
+                </select>
               </div>
               <div className="grid gap-2">
                 <label className="text-xs font-medium" htmlFor="price">

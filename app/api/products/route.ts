@@ -2,6 +2,7 @@ import { NextResponse } from "next/server"
 
 import { delay } from "@/lib/api-delay"
 import {
+  PRODUCT_CATEGORIES,
   ProductStatus,
   ProductStock,
   parseProductPrice,
@@ -39,6 +40,13 @@ function createProductId(products: Product[]) {
 
 function createProductFromBody(body: Partial<Product>, id: string): Product {
   const price = parseProductPrice(body.price)
+  const category =
+    typeof body.category === "string" &&
+    PRODUCT_CATEGORIES.includes(
+      body.category as (typeof PRODUCT_CATEGORIES)[number]
+    )
+      ? body.category
+      : PRODUCT_CATEGORIES[0]
   const stock: ProductStock = Object.values(ProductStock).includes(
     body.stock as ProductStock
   )
@@ -55,7 +63,7 @@ function createProductFromBody(body: Partial<Product>, id: string): Product {
     image: body.image?.trim() || defaultProductImage,
     name: body.name?.trim() ?? "",
     description: body.description?.trim() ?? "",
-    category: body.category?.trim() ?? "",
+    category,
     price: price ?? Number.NaN,
     stock,
     status,

@@ -9,6 +9,19 @@ export enum ProductStatus {
   Inactive = "Inativo",
 }
 
+export const PRODUCT_CATEGORIES = [
+  "Lanches",
+  "Saudável",
+  "Pizzas",
+  "Sobremesas",
+  "Bebidas",
+  "Pratos",
+  "Combos",
+  "Acompanhamentos",
+] as const
+
+export type ProductCategory = (typeof PRODUCT_CATEGORIES)[number]
+
 export enum OrderStatus {
   Waiting = "Aguardando",
   Preparing = "Em preparo",
