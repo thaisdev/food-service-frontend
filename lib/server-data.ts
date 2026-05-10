@@ -7,6 +7,7 @@ import {
   parseProducts,
   resolveProductCategoryId,
   type Category,
+  type Order,
   type Product,
 } from "@/lib/data-schema"
 import {
@@ -98,4 +99,12 @@ export function getOrders() {
     parse: parseOrders,
     runtimeFile: "orders.json",
   })
+}
+
+export function getVisibleOrders() {
+  return getOrders().then((orders) => orders.filter((order) => !order.deletedAt))
+}
+
+export function saveOrders(orders: Order[]) {
+  return writeServerJsonStore("orders.json", orders)
 }

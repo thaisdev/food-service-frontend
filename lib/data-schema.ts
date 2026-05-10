@@ -63,6 +63,7 @@ export type Order = {
   total: string
   status: OrderStatus
   time: string
+  deletedAt?: string
 }
 
 export const mockProducts: Product[] = [
@@ -364,7 +365,11 @@ function isOrder(value: unknown): value is Order {
       "items",
       "total",
       "time",
-    ]) && isOneOf(value.status, Object.values(OrderStatus))
+    ]) &&
+    isOneOf(value.status, Object.values(OrderStatus)) &&
+    (!isRecord(value) ||
+      value.deletedAt === undefined ||
+      typeof value.deletedAt === "string")
   )
 }
 
