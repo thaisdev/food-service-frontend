@@ -55,14 +55,31 @@ export type Product = {
   deletedAt?: string
 }
 
+export type OrderItem = {
+  productId: string
+  name: string
+  quantity: number
+  valor: number
+  observation: string
+}
+
 export type Order = {
   id: string
   customer: string
-  channel: string
-  items: string
-  total: string
+  table: number
+  items: OrderItem[]
+  total: number
   status: OrderStatus
-  time: string
+  datetime: string
+  deletedAt?: string
+}
+
+type RawOrder = Omit<Order, "items"> & {
+  channel?: string
+  datetime?: string
+  items: OrderItem[] | string
+  table?: number | string
+  time?: string
 }
 
 export const mockProducts: Product[] = [
@@ -173,47 +190,122 @@ export const mockOrders: Order[] = [
   {
     id: "#1028",
     customer: "Mariana Costa",
-    channel: "Delivery",
-    items: "2x Smash Burger, 1x Batata Rústica",
-    total: "R$ 86,90",
+    table: 1,
+    items: [
+      {
+        productId: "PRD-001",
+        name: "Smash Burger",
+        quantity: 2,
+        valor: 28.9,
+        observation: "",
+      },
+      {
+        productId: "LEGACY-001",
+        name: "Batata Rustica",
+        quantity: 1,
+        valor: 29.1,
+        observation: "",
+      },
+    ],
+    total: 86.9,
     status: OrderStatus.Preparing,
-    time: "12:40",
+    datetime: "2026-05-10T12:40:00.000-03:00",
   },
   {
     id: "#1027",
     customer: "Lucas Almeida",
-    channel: "Balcão",
-    items: "1x Bowl Fit, 1x Suco Verde",
-    total: "R$ 41,50",
+    table: 2,
+    items: [
+      {
+        productId: "PRD-002",
+        name: "Bowl Fit",
+        quantity: 1,
+        valor: 24.5,
+        observation: "",
+      },
+      {
+        productId: "PRD-005",
+        name: "Suco Verde",
+        quantity: 1,
+        valor: 9.5,
+        observation: "",
+      },
+    ],
+    total: 34,
     status: OrderStatus.Ready,
-    time: "12:32",
+    datetime: "2026-05-10T12:32:00.000-03:00",
   },
   {
     id: "#1026",
     customer: "Fernanda Rocha",
-    channel: "Mesa 08",
-    items: "3x Taco de Frango, 2x Refrigerante",
-    total: "R$ 73,00",
+    table: 8,
+    items: [
+      {
+        productId: "LEGACY-002",
+        name: "Taco de Frango",
+        quantity: 3,
+        valor: 17,
+        observation: "",
+      },
+      {
+        productId: "LEGACY-003",
+        name: "Refrigerante",
+        quantity: 2,
+        valor: 11,
+        observation: "",
+      },
+    ],
+    total: 73,
     status: OrderStatus.Waiting,
-    time: "12:25",
+    datetime: "2026-05-10T12:25:00.000-03:00",
   },
   {
     id: "#1025",
     customer: "Rafael Souza",
-    channel: "Delivery",
-    items: "1x Pizza Marguerita, 1x Brownie",
-    total: "R$ 64,90",
+    table: 4,
+    items: [
+      {
+        productId: "PRD-003",
+        name: "Pizza Marguerita",
+        quantity: 1,
+        valor: 52,
+        observation: "",
+      },
+      {
+        productId: "PRD-004",
+        name: "Brownie da Casa",
+        quantity: 1,
+        valor: 12,
+        observation: "",
+      },
+    ],
+    total: 64,
     status: OrderStatus.OutForDelivery,
-    time: "12:18",
+    datetime: "2026-05-10T12:18:00.000-03:00",
   },
   {
     id: "#1024",
     customer: "Carla Mendes",
-    channel: "Mesa 03",
-    items: "2x Prato Executivo, 2x Água com gás",
-    total: "R$ 92,00",
+    table: 3,
+    items: [
+      {
+        productId: "LEGACY-004",
+        name: "Prato Executivo",
+        quantity: 2,
+        valor: 34,
+        observation: "",
+      },
+      {
+        productId: "LEGACY-005",
+        name: "Agua com gas",
+        quantity: 2,
+        valor: 12,
+        observation: "",
+      },
+    ],
+    total: 92,
     status: OrderStatus.Finished,
-    time: "12:05",
+    datetime: "2026-05-10T12:05:00.000-03:00",
   },
 ]
 
@@ -303,6 +395,19 @@ function isCategory(value: unknown): value is Category {
   )
 }
 
+function isOrderItem(value: unknown): value is OrderItem {
+  return (
+    hasStringFields(value, ["productId", "name", "observation"]) &&
+    isRecord(value) &&
+    typeof value.quantity === "number" &&
+    Number.isFinite(value.quantity) &&
+    value.quantity > 0 &&
+    typeof value.valor === "number" &&
+    Number.isFinite(value.valor) &&
+    value.valor >= 0
+  )
+}
+
 function normalizeProduct(value: unknown): Product | null {
   if (!isProduct(value)) {
     return null
@@ -355,17 +460,137 @@ export function getProductCategoryName(
   )
 }
 
-function isOrder(value: unknown): value is Order {
+function hasOrderItemsField(value: unknown) {
+  return (
+    isRecord(value) &&
+    (typeof value.items === "string" ||
+      (Array.isArray(value.items) && value.items.every(isOrderItem)))
+  )
+}
+
+function hasOrderDatetimeField(value: unknown) {
+  return (
+    isRecord(value) &&
+    (typeof value.datetime === "string" || typeof value.time === "string")
+  )
+}
+
+function hasOrderTableField(value: unknown) {
+  return (
+    isRecord(value) &&
+    (typeof value.table === "number" ||
+      typeof value.table === "string" ||
+      typeof value.channel === "string")
+  )
+}
+
+function parseOrderTable(value: unknown) {
+  if (typeof value === "number") {
+    return Number.isInteger(value) && value > 0 ? value : null
+  }
+
+  if (typeof value !== "string") {
+    return null
+  }
+
+  const match = value.match(/\d+/)
+
+  if (!match) {
+    return null
+  }
+
+  const table = Number(match[0])
+
+  return Number.isInteger(table) && table > 0 ? table : null
+}
+
+function normalizeLegacyOrderDatetime(value: string) {
+  if (value.includes("T")) {
+    return value
+  }
+
+  const dateTimeMatch = value.match(
+    /^(\d{2})\/(\d{2})\/(\d{4}),?\s+(\d{2}):(\d{2})$/
+  )
+
+  if (dateTimeMatch) {
+    const [, day, month, year, hour, minute] = dateTimeMatch
+
+    return `${year}-${month}-${day}T${hour}:${minute}:00.000-03:00`
+  }
+
+  const timeMatch = value.match(/^(\d{2}):(\d{2})$/)
+
+  if (timeMatch) {
+    const [, hour, minute] = timeMatch
+
+    return `2026-05-10T${hour}:${minute}:00.000-03:00`
+  }
+
+  return value
+}
+
+function isOrder(value: unknown): value is RawOrder {
   return (
     hasStringFields(value, [
       "id",
       "customer",
-      "channel",
-      "items",
-      "total",
-      "time",
-    ]) && isOneOf(value.status, Object.values(OrderStatus))
+    ]) &&
+    hasOrderTableField(value) &&
+    hasOrderItemsField(value) &&
+    hasOrderDatetimeField(value) &&
+    isRecord(value) &&
+    parseProductPrice(value.total) !== null &&
+    isOneOf(value.status, Object.values(OrderStatus)) &&
+    (!isRecord(value) ||
+      value.deletedAt === undefined ||
+      typeof value.deletedAt === "string")
   )
+}
+
+function normalizeLegacyOrderItems(items: string): OrderItem[] {
+  return items
+    .split(",")
+    .map((item, index) => {
+      const trimmedItem = item.trim()
+      const match = trimmedItem.match(/^(\d+)x\s+(.+?)(?:\s+\((.*)\))?$/)
+      const quantity = match ? Number(match[1]) : 1
+      const name = match?.[2]?.trim() || trimmedItem
+      const product = mockProducts.find((currentProduct) =>
+        name.toLocaleLowerCase("pt-BR").includes(
+          currentProduct.name.toLocaleLowerCase("pt-BR")
+        )
+      )
+
+      return {
+        productId: product?.id ?? `LEGACY-${String(index + 1).padStart(3, "0")}`,
+        name,
+        quantity: Number.isFinite(quantity) && quantity > 0 ? quantity : 1,
+        valor: product?.price ?? 0,
+        observation: match?.[3]?.trim() ?? "",
+      }
+    })
+    .filter((item) => item.name)
+}
+
+function normalizeOrder(value: unknown): Order | null {
+  if (!isOrder(value)) {
+    return null
+  }
+
+  return {
+    id: value.id,
+    customer: value.customer,
+    table: parseOrderTable(value.table ?? value.channel) ?? 1,
+    items:
+      typeof value.items === "string"
+        ? normalizeLegacyOrderItems(value.items)
+        : value.items,
+    total: parseProductPrice(value.total) ?? 0,
+    status: value.status,
+    datetime: normalizeLegacyOrderDatetime(value.datetime ?? value.time ?? ""),
+    deletedAt: value.deletedAt,
+  }
 }
 
 function parseArray<T>(
@@ -412,7 +637,25 @@ export function parseProducts(rawData: string | null) {
 }
 
 export function parseOrders(rawData: string | null) {
-  return parseArray(rawData, isOrder)
+  if (!rawData) {
+    return null
+  }
+
+  try {
+    const data = JSON.parse(rawData) as unknown
+
+    if (!Array.isArray(data)) {
+      return null
+    }
+
+    const orders = data
+      .map((item) => normalizeOrder(item))
+      .filter((item): item is Order => item !== null)
+
+    return orders.length === data.length ? orders : null
+  } catch {
+    return null
+  }
 }
 
 export function parseCategories(rawData: string | null) {
