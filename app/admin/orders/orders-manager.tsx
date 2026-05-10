@@ -37,6 +37,7 @@ import {
   formatProductPrice,
   parseOrders,
   type Order,
+  type OrderItem,
   type Product,
 } from "@/lib/data-schema"
 
@@ -45,7 +46,7 @@ type OrderFilter = "Todos" | OrderStatus
 type OrderFormData = Omit<Order, "id" | "deletedAt">
 
 type SelectedOrderItem = {
-  observations: string
+  observation: string
   productId: string
   quantity: number
 }
@@ -57,11 +58,11 @@ type OrdersManagerProps = {
 
 const emptyForm: OrderFormData = {
   customer: "",
-  channel: "",
-  items: "",
-  total: "",
+  table: 1,
+  items: [],
+  total: 0,
   status: OrderStatus.Waiting,
-  time: "",
+  datetime: "",
 }
 
 const metricColors = [
@@ -85,17 +86,6 @@ function getStatusClasses(status: OrderStatus) {
   }
 }
 
-function parseOrderTotal(total: string) {
-  const value = Number(
-    total
-      .replace(/[^\d,.-]/g, "")
-      .replace(/\.(?=\d{3}(?:\D|$))/g, "")
-      .replace(",", ".")
-  )
-
-  return Number.isFinite(value) ? value : 0
-}
-
 function formatCurrency(value: number) {
   return new Intl.NumberFormat("pt-BR", {
     currency: "BRL",
@@ -104,10 +94,39 @@ function formatCurrency(value: number) {
   }).format(value)
 }
 
-function formatOrderItems(
+function formatOrderDatetime(datetime: string) {
+  const date = new Date(datetime)
+
+  if (Number.isNaN(date.getTime())) {
+    return datetime
+  }
+
+  return new Intl.DateTimeFormat("pt-BR", {
+    dateStyle: "short",
+    timeStyle: "short",
+  }).format(date)
+}
+
+function formatTable(table: number) {
+  return `Mesa ${String(table).padStart(2, "0")}`
+}
+
+function formatOrderItems(items: OrderItem[]) {
+  return items
+    .map((item) => {
+      const observation = item.observation.trim()
+
+      return `${item.quantity}x ${item.name}${
+        observation ? ` (${observation})` : ""
+      }`
+    })
+    .join(", ")
+}
+
+function createOrderItems(
   selectedItems: SelectedOrderItem[],
   products: Product[]
-) {
+): OrderItem[] {
   return selectedItems
     .map((item) => {
       const product = products.find(
@@ -118,14 +137,15 @@ function formatOrderItems(
         return null
       }
 
-      const observations = item.observations.trim()
-
-      return `${item.quantity}x ${product.name}${
-        observations ? ` (${observations})` : ""
-      }`
+      return {
+        productId: product.id,
+        name: product.name,
+        quantity: item.quantity,
+        valor: product.price,
+        observation: item.observation.trim(),
+      }
     })
-    .filter((item): item is string => item !== null)
-    .join(", ")
+    .filter((item): item is OrderItem => item !== null)
 }
 
 function calculateOrderTotal(
@@ -200,10 +220,7 @@ export function OrdersManager({
     const deliveryOrders = orders.filter(
       (order) => order.status === OrderStatus.OutForDelivery
     ).length
-    const revenue = orders.reduce(
-      (total, order) => total + parseOrderTotal(order.total),
-      0
-    )
+    const revenue = orders.reduce((total, order) => total + order.total, 0)
 
     return [
       {
@@ -229,8 +246,16 @@ export function OrdersManager({
     [initialProducts, selectedItems]
   )
 
-  function updateFormData(field: keyof OrderFormData, value: string) {
-    setFormData((currentData) => ({ ...currentData, [field]: value }))
+function updateFormData(field: keyof OrderFormData, value: string) {
+    setFormData((currentData) => ({
+      ...currentData,
+      [field]:
+        field === "table"
+          ? Number.isInteger(Number(value)) && Number(value) > 0
+            ? Number(value)
+            : 1
+          : value,
+    }))
   }
 
   function startOrderCreation() {
@@ -246,11 +271,11 @@ export function OrdersManager({
     setEditingOrder(order)
     setFormData({
       customer: order.customer,
-      channel: order.channel,
+      table: order.table,
       items: order.items,
       total: order.total,
       status: order.status,
-      time: order.time,
+      datetime: order.datetime,
     })
     setSelectedItems([])
     setIsFormOpen(true)
@@ -276,7 +301,7 @@ export function OrdersManager({
       return [
         ...currentItems,
         {
-          observations: "",
+          observation: "",
           productId: product.id,
           quantity: 1,
         },
@@ -286,7 +311,7 @@ export function OrdersManager({
 
   function updateSelectedItem(
     productId: string,
-    field: "observations" | "quantity",
+    field: "observation" | "quantity",
     value: string
   ) {
     setSelectedItems((currentItems) =>
@@ -306,7 +331,7 @@ export function OrdersManager({
 
         return {
           ...item,
-          observations: value,
+          observation: value,
         }
       })
     )
@@ -319,7 +344,7 @@ export function OrdersManager({
     if (editingOrder) {
       const payload = {
         id: editingOrder.id,
-        channel: formData.channel.trim(),
+        table: formData.table,
         status: formData.status,
       }
 
@@ -345,9 +370,9 @@ export function OrdersManager({
       return
     }
 
-    const items = formatOrderItems(selectedItems, initialProducts)
+    const items = createOrderItems(selectedItems, initialProducts)
 
-    if (!items) {
+    if (!items.length) {
       setMessage("Selecione ao menos um produto para o pedido.")
       return
     }
@@ -355,11 +380,11 @@ export function OrdersManager({
     const orderData = {
       ...formData,
       customer: formData.customer.trim(),
-      channel: formData.channel.trim(),
+      table: formData.table,
       items,
       status: OrderStatus.Waiting,
-      time: "",
-      total: formatCurrency(calculatedTotal),
+      datetime: "",
+      total: calculatedTotal,
     }
 
     startTransition(async () => {
@@ -498,25 +523,31 @@ export function OrdersManager({
                       <TableCell className="px-6">
                         <p className="font-medium">{order.id}</p>
                         <p className="text-xs text-muted-foreground">
-                          {order.channel}
+                          {formatTable(order.table)}
                         </p>
                       </TableCell>
                       <TableCell>
                         <p className="font-medium">{order.customer}</p>
                         <p className="text-xs text-muted-foreground">
-                          Canal: {order.channel}
+                          {formatTable(order.table)}
                         </p>
                       </TableCell>
                       <TableCell className="min-w-72">
-                        <p className="text-sm leading-6">{order.items}</p>
+                        <p className="text-sm leading-6">
+                          {formatOrderItems(order.items)}
+                        </p>
                       </TableCell>
-                      <TableCell className="font-medium">{order.total}</TableCell>
+                      <TableCell className="font-medium">
+                        {formatCurrency(order.total)}
+                      </TableCell>
                       <TableCell>
                         <Badge className={getStatusClasses(order.status)}>
                           {order.status}
                         </Badge>
                       </TableCell>
-                      <TableCell className="font-medium">{order.time}</TableCell>
+                      <TableCell className="font-medium">
+                        {formatOrderDatetime(order.datetime)}
+                      </TableCell>
                       <TableCell className="px-6 text-right">
                         <div className="inline-flex gap-1">
                           <Button
@@ -680,23 +711,25 @@ export function OrdersManager({
                         {editingOrder.id} · {editingOrder.customer}
                       </p>
                       <p className="mt-1 text-xs text-muted-foreground">
-                        {editingOrder.items}
+                        {formatOrderItems(editingOrder.items)}
                       </p>
                     </div>
 
                     <div className="grid gap-4 md:grid-cols-2">
                       <div className="grid gap-2">
-                        <label className="text-xs font-medium" htmlFor="channel">
+                        <label className="text-xs font-medium" htmlFor="table">
                           Mesa
                         </label>
                         <Input
-                          id="channel"
+                          id="table"
+                          min={1}
                           onChange={(event) =>
-                            updateFormData("channel", event.target.value)
+                            updateFormData("table", event.target.value)
                           }
-                          placeholder="Mesa 01"
+                          placeholder="1"
                           required
-                          value={formData.channel}
+                          type="number"
+                          value={formData.table}
                         />
                       </div>
 
@@ -739,17 +772,19 @@ export function OrdersManager({
                   </div>
 
                   <div className="grid gap-2">
-                    <label className="text-xs font-medium" htmlFor="channel">
+                    <label className="text-xs font-medium" htmlFor="table">
                       Mesa
                     </label>
                     <Input
-                      id="channel"
+                      id="table"
+                      min={1}
                       onChange={(event) =>
-                        updateFormData("channel", event.target.value)
+                        updateFormData("table", event.target.value)
                       }
-                      placeholder="Mesa 01"
+                      placeholder="1"
                       required
-                      value={formData.channel}
+                      type="number"
+                      value={formData.table}
                     />
                   </div>
                 </div>
@@ -829,12 +864,12 @@ export function OrdersManager({
                                       onChange={(event) =>
                                         updateSelectedItem(
                                           product.id,
-                                          "observations",
+                                          "observation",
                                           event.target.value
                                         )
                                       }
                                       placeholder="Ex: Sem cebola"
-                                      value={selectedItem.observations}
+                                      value={selectedItem.observation}
                                     />
                                   </div>
                                 </div>
@@ -851,7 +886,9 @@ export function OrdersManager({
                   </div>
                   {selectedItems.length ? (
                     <p className="text-xs text-muted-foreground">
-                      {formatOrderItems(selectedItems, initialProducts)}
+                      {formatOrderItems(
+                        createOrderItems(selectedItems, initialProducts)
+                      )}
                     </p>
                   ) : null}
                 </div>
@@ -929,9 +966,9 @@ export function OrdersManager({
               <div className="grid gap-3 sm:grid-cols-2">
                 {[
                   ["Cliente", viewingOrder.customer],
-                  ["Canal", viewingOrder.channel],
-                  ["Total", viewingOrder.total],
-                  ["Hora", viewingOrder.time],
+                  ["Mesa", formatTable(viewingOrder.table)],
+                  ["Total", formatCurrency(viewingOrder.total)],
+                  ["Hora", formatOrderDatetime(viewingOrder.datetime)],
                 ].map(([label, value]) => (
                   <div
                     key={label}
@@ -945,7 +982,9 @@ export function OrdersManager({
 
               <div className="rounded-2xl border border-border/70 bg-muted/35 p-4">
                 <p className="text-xs text-muted-foreground">Itens</p>
-                <p className="mt-1 text-sm font-medium">{viewingOrder.items}</p>
+                <p className="mt-1 text-sm font-medium">
+                  {formatOrderItems(viewingOrder.items)}
+                </p>
               </div>
 
               <Badge className={getStatusClasses(viewingOrder.status)}>
@@ -990,7 +1029,7 @@ export function OrdersManager({
                   {orderPendingDelete.id} · {orderPendingDelete.customer}
                 </p>
                 <p className="mt-1 text-xs text-muted-foreground">
-                  {orderPendingDelete.items}
+                  {formatOrderItems(orderPendingDelete.items)}
                 </p>
               </div>
 

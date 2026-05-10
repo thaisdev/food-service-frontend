@@ -2,46 +2,121 @@
   {
     "id": "#1028",
     "customer": "Mariana Costa",
-    "channel": "Delivery",
-    "items": "2x Smash Burger, 1x Batata Rústica",
-    "total": "R$ 86,90",
+    "table": 1,
+    "items": [
+      {
+        "productId": "PRD-001",
+        "name": "Smash Burger",
+        "quantity": 2,
+        "valor": 28.9,
+        "observation": ""
+      },
+      {
+        "productId": "LEGACY-001",
+        "name": "Batata Rustica",
+        "quantity": 1,
+        "valor": 29.1,
+        "observation": ""
+      }
+    ],
+    "total": 86.9,
     "status": "Em preparo",
-    "time": "12:40"
+    "datetime": "2026-05-10T12:40:00.000-03:00"
   },
   {
     "id": "#1027",
     "customer": "Lucas Almeida",
-    "channel": "Balcão",
-    "items": "1x Bowl Fit, 1x Suco Verde",
-    "total": "R$ 41,50",
+    "table": 2,
+    "items": [
+      {
+        "productId": "PRD-002",
+        "name": "Bowl Fit",
+        "quantity": 1,
+        "valor": 24.5,
+        "observation": ""
+      },
+      {
+        "productId": "PRD-005",
+        "name": "Suco Verde",
+        "quantity": 1,
+        "valor": 9.5,
+        "observation": ""
+      }
+    ],
+    "total": 34,
     "status": "Pronto",
-    "time": "12:32"
+    "datetime": "2026-05-10T12:32:00.000-03:00"
   },
   {
     "id": "#1026",
     "customer": "Fernanda Rocha",
-    "channel": "Mesa 08",
-    "items": "3x Taco de Frango, 2x Refrigerante",
-    "total": "R$ 73,00",
+    "table": 8,
+    "items": [
+      {
+        "productId": "LEGACY-002",
+        "name": "Taco de Frango",
+        "quantity": 3,
+        "valor": 17,
+        "observation": ""
+      },
+      {
+        "productId": "LEGACY-003",
+        "name": "Refrigerante",
+        "quantity": 2,
+        "valor": 11,
+        "observation": ""
+      }
+    ],
+    "total": 73,
     "status": "Aguardando",
-    "time": "12:25"
+    "datetime": "2026-05-10T12:25:00.000-03:00"
   },
   {
     "id": "#1025",
     "customer": "Rafael Souza",
-    "channel": "Delivery",
-    "items": "1x Pizza Marguerita, 1x Brownie",
-    "total": "R$ 64,90",
+    "table": 4,
+    "items": [
+      {
+        "productId": "PRD-003",
+        "name": "Pizza Marguerita",
+        "quantity": 1,
+        "valor": 52,
+        "observation": ""
+      },
+      {
+        "productId": "PRD-004",
+        "name": "Brownie da Casa",
+        "quantity": 1,
+        "valor": 12,
+        "observation": ""
+      }
+    ],
+    "total": 64,
     "status": "Saiu para entrega",
-    "time": "12:18"
+    "datetime": "2026-05-10T12:18:00.000-03:00"
   },
   {
     "id": "#1024",
     "customer": "Carla Mendes",
-    "channel": "Mesa 03",
-    "items": "2x Prato Executivo, 2x Água com gás",
-    "total": "R$ 92,00",
+    "table": 3,
+    "items": [
+      {
+        "productId": "LEGACY-004",
+        "name": "Prato Executivo",
+        "quantity": 2,
+        "valor": 34,
+        "observation": ""
+      },
+      {
+        "productId": "LEGACY-005",
+        "name": "Agua com gas",
+        "quantity": 2,
+        "valor": 12,
+        "observation": ""
+      }
+    ],
+    "total": 92,
     "status": "Finalizado",
-    "time": "12:05"
+    "datetime": "2026-05-10T12:05:00.000-03:00"
   }
 ]

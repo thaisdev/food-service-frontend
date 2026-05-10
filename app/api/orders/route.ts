@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server"
 
 import { delay } from "@/lib/api-delay"
-import { OrderStatus, parseOrders, type Order } from "@/lib/data-schema"
+import { OrderStatus, parseOrders, type Order, type OrderItem } from "@/lib/data-schema"
 import { getOrders, getVisibleOrders, saveOrders } from "@/lib/server-data"
 
 export const runtime = "nodejs"
@@ -25,28 +25,62 @@ function createOrderId(orders: Order[]) {
   return `#${String(nextNumber).padStart(4, "0")}`
 }
 
-function getCurrentOrderTime() {
-  return new Intl.DateTimeFormat("pt-BR", {
-    day: "2-digit",
-    hour: "2-digit",
-    minute: "2-digit",
-    month: "2-digit",
-    year: "numeric",
-  }).format(new Date())
+function getCurrentOrderDatetime() {
+  return new Date().toISOString()
+}
+
+function calculateOrderTotal(items: OrderItem[]) {
+  return items.reduce((total, item) => total + item.valor * item.quantity, 0)
+}
+
+function normalizeOrderItems(items: Partial<OrderItem>[] | undefined) {
+  if (!Array.isArray(items)) {
+    return []
+  }
+
+  return items.map((item) => ({
+    productId: item.productId?.trim() ?? "",
+    name: item.name?.trim() ?? "",
+    quantity:
+      typeof item.quantity === "number" && Number.isFinite(item.quantity)
+        ? item.quantity
+        : 1,
+    valor:
+      typeof item.valor === "number" && Number.isFinite(item.valor)
+        ? item.valor
+        : Number.NaN,
+    observation: item.observation?.trim() ?? "",
+  }))
+}
+
+function parseOrderTable(value: unknown) {
+  if (typeof value === "number") {
+    return Number.isInteger(value) && value > 0 ? value : null
+  }
+
+  if (typeof value !== "string") {
+    return null
+  }
+
+  const table = Number(value)
+
+  return Number.isInteger(table) && table > 0 ? table : null
 }
 
 function createOrderFromBody(
   body: Partial<Order>,
   id: string
 ): Order {
+  const items = normalizeOrderItems(body.items)
+
   return {
     id,
     customer: body.customer?.trim() ?? "",
-    channel: body.channel?.trim() ?? "",
-    items: body.items?.trim() ?? "",
-    total: body.total?.trim() ?? "",
+    table: parseOrderTable(body.table) ?? Number.NaN,
+    items,
+    total: calculateOrderTotal(items),
     status: OrderStatus.Waiting,
-    time: getCurrentOrderTime(),
+    datetime: getCurrentOrderDatetime(),
   }
 }
 
@@ -59,7 +93,7 @@ function updateOrderFromBody(body: Partial<Order>, order: Order): Order {
 
   return {
     ...order,
-    channel: body.channel?.trim() || order.channel,
+    table: parseOrderTable(body.table) ?? order.table,
     status,
   }
 }
