@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation"
 
-import { AdminOrderFormModal } from "@/components/admin-order-form-modal"
+import { AdminOrderFormModal } from "@/app/admin/orders/_components/admin-order-form-modal"
 import { getVisibleOrders } from "@/lib/server-data"
 
 type EditOrderModalPageProps = {

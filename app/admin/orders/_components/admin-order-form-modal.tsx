@@ -15,73 +15,23 @@ import {
 } from "@/components/ui/card"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Input } from "@/components/ui/input"
+import { formatCurrency, formatProductPrice } from "@/helpers/currency"
+import {
+  calculateOrderTotal,
+  createOrderItems,
+  formatOrderItems,
+  type SelectedOrderItem,
+} from "@/helpers/order"
 import {
   OrderStatus,
-  formatProductPrice,
   parseOrders,
   type Order,
-  type OrderItem,
   type Product,
 } from "@/lib/data-schema"
-
-type SelectedOrderItem = {
-  observation: string
-  productId: string
-  quantity: number
-}
 
 type AdminOrderFormModalProps = {
   order?: Order
   products?: Product[]
-}
-
-function formatCurrency(value: number) {
-  return new Intl.NumberFormat("pt-BR", {
-    currency: "BRL",
-    minimumFractionDigits: 2,
-    style: "currency",
-  }).format(value)
-}
-
-function formatOrderItems(items: OrderItem[]) {
-  return items
-    .map((item) => {
-      const observation = item.observation.trim()
-
-      return `${item.quantity}x ${item.name}${
-        observation ? ` (${observation})` : ""
-      }`
-    })
-    .join(", ")
-}
-
-function createOrderItems(
-  selectedItems: SelectedOrderItem[],
-  products: Product[]
-): OrderItem[] {
-  return selectedItems
-    .map((item) => {
-      const product = products.find(
-        (currentProduct) => currentProduct.id === item.productId
-      )
-
-      if (!product) {
-        return null
-      }
-
-      return {
-        productId: product.id,
-        name: product.name,
-        quantity: item.quantity,
-        valor: product.price,
-        observation: item.observation.trim(),
-      }
-    })
-    .filter((item): item is OrderItem => item !== null)
-}
-
-function calculateOrderTotal(items: OrderItem[]) {
-  return items.reduce((total, item) => total + item.valor * item.quantity, 0)
 }
 
 async function requestOrderSave(

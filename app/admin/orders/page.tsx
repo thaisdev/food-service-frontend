@@ -1,4 +1,4 @@
-import { OrdersManager } from "@/app/admin/orders/orders-manager"
+import { OrdersManager } from "@/app/admin/orders/_components/orders-manager"
 import { getVisibleOrders } from "@/lib/server-data"
 
 export default async function AdminOrdersPage() {

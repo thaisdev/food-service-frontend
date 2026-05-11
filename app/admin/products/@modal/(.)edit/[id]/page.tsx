@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation"
 
-import { AdminProductFormModal } from "@/components/admin-product-form-modal"
+import { AdminProductFormModal } from "@/app/admin/products/_components/admin-product-form-modal"
 import { getVisibleCategories, getVisibleProducts } from "@/lib/server-data"
 
 type EditProductModalPageProps = {

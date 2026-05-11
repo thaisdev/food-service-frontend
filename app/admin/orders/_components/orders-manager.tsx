@@ -30,7 +30,10 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
-import { OrderStatus, parseOrders, type Order, type OrderItem } from "@/lib/data-schema"
+import { formatCurrency } from "@/helpers/currency"
+import { formatDatetime } from "@/helpers/datetime"
+import { formatOrderItems, formatTable } from "@/helpers/order"
+import { OrderStatus, parseOrders, type Order } from "@/lib/data-schema"
 
 type OrderFilter = "Todos" | OrderStatus
 
@@ -57,43 +60,6 @@ function getStatusClasses(status: OrderStatus) {
     case OrderStatus.Waiting:
       return "bg-destructive-muted text-destructive"
   }
-}
-
-function formatCurrency(value: number) {
-  return new Intl.NumberFormat("pt-BR", {
-    currency: "BRL",
-    minimumFractionDigits: 2,
-    style: "currency",
-  }).format(value)
-}
-
-function formatOrderDatetime(datetime: string) {
-  const date = new Date(datetime)
-
-  if (Number.isNaN(date.getTime())) {
-    return datetime
-  }
-
-  return new Intl.DateTimeFormat("pt-BR", {
-    dateStyle: "short",
-    timeStyle: "short",
-  }).format(date)
-}
-
-function formatTable(table: number) {
-  return `Mesa ${String(table).padStart(2, "0")}`
-}
-
-function formatOrderItems(items: OrderItem[]) {
-  return items
-    .map((item) => {
-      const observation = item.observation.trim()
-
-      return `${item.quantity}x ${item.name}${
-        observation ? ` (${observation})` : ""
-      }`
-    })
-    .join(", ")
 }
 
 async function requestOrders(
@@ -325,7 +291,7 @@ export function OrdersManager({ initialOrders }: OrdersManagerProps) {
                         </Badge>
                       </TableCell>
                       <TableCell className="font-medium">
-                        {formatOrderDatetime(order.datetime)}
+                        {formatDatetime(order.datetime)}
                       </TableCell>
                       <TableCell className="px-6 text-right">
                         <div className="inline-flex gap-1">
@@ -491,7 +457,7 @@ export function OrdersManager({ initialOrders }: OrdersManagerProps) {
                   ["Cliente", viewingOrder.customer],
                   ["Mesa", formatTable(viewingOrder.table)],
                   ["Total", formatCurrency(viewingOrder.total)],
-                  ["Hora", formatOrderDatetime(viewingOrder.datetime)],
+                  ["Hora", formatDatetime(viewingOrder.datetime)],
                 ].map(([label, value]) => (
                   <div
                     key={label}

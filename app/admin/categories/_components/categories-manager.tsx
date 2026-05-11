@@ -32,11 +32,11 @@ import {
   CategoryStatus,
   ProductStatus,
   ProductStock,
-  formatProductPrice,
   parseCategories,
   type Category,
   type Product,
 } from "@/lib/data-schema"
+import { formatProductPrice } from "@/helpers/currency"
 
 type CategoryFilter = "Todas" | "Ativas" | "Inativas"
 

@@ -1,4 +1,4 @@
-import { CustomerMenu } from "@/components/customer-menu"
+import { CustomerMenu } from "@/app/customers/menu/_components/customer-menu"
 
 export default function CustomersMenuPage() {
   return <CustomerMenu />

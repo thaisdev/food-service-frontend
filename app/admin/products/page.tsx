@@ -1,4 +1,4 @@
-import { AdminProductsCrud } from "@/components/admin-products-crud"
+import { AdminProductsCrud } from "@/app/admin/products/_components/admin-products-crud"
 import { getVisibleCategories, getVisibleProducts } from "@/lib/server-data"
 
 export default async function AdminProductsPage() {

@@ -30,12 +30,12 @@ import {
 import {
   ProductStatus,
   ProductStock,
-  formatProductPrice,
   getProductCategoryName,
   parseProducts,
   type Category,
   type Product,
 } from "@/lib/data-schema"
+import { formatProductPrice } from "@/helpers/currency"
 
 type ProductFilter = "Todos" | "Ativos" | "Inativos" | "Baixo estoque"
 
