@@ -1,5 +1,6 @@
 "use client"
 
+import Link from "next/link"
 import {
   RiAddLine,
   RiCloseLine,
@@ -8,10 +9,9 @@ import {
   RiEyeLine,
   RiMotorbikeLine,
   RiRestaurant2Line,
-  RiSaveLine,
   RiTimeLine,
 } from "@remixicon/react"
-import { FormEvent, useMemo, useState, useTransition } from "react"
+import { useEffect, useMemo, useState, useTransition } from "react"
 
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -22,7 +22,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
 import {
   Table,
   TableBody,
@@ -31,38 +30,12 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
-import { Checkbox } from "@/components/ui/checkbox"
-import {
-  OrderStatus,
-  formatProductPrice,
-  parseOrders,
-  type Order,
-  type OrderItem,
-  type Product,
-} from "@/lib/data-schema"
+import { OrderStatus, parseOrders, type Order, type OrderItem } from "@/lib/data-schema"
 
 type OrderFilter = "Todos" | OrderStatus
 
-type OrderFormData = Omit<Order, "id" | "deletedAt">
-
-type SelectedOrderItem = {
-  observation: string
-  productId: string
-  quantity: number
-}
-
 type OrdersManagerProps = {
   initialOrders: Order[]
-  initialProducts: Product[]
-}
-
-const emptyForm: OrderFormData = {
-  customer: "",
-  table: 1,
-  items: [],
-  total: 0,
-  status: OrderStatus.Waiting,
-  datetime: "",
 }
 
 const metricColors = [
@@ -123,44 +96,6 @@ function formatOrderItems(items: OrderItem[]) {
     .join(", ")
 }
 
-function createOrderItems(
-  selectedItems: SelectedOrderItem[],
-  products: Product[]
-): OrderItem[] {
-  return selectedItems
-    .map((item) => {
-      const product = products.find(
-        (currentProduct) => currentProduct.id === item.productId
-      )
-
-      if (!product) {
-        return null
-      }
-
-      return {
-        productId: product.id,
-        name: product.name,
-        quantity: item.quantity,
-        valor: product.price,
-        observation: item.observation.trim(),
-      }
-    })
-    .filter((item): item is OrderItem => item !== null)
-}
-
-function calculateOrderTotal(
-  selectedItems: SelectedOrderItem[],
-  products: Product[]
-) {
-  return selectedItems.reduce((total, item) => {
-    const product = products.find(
-      (currentProduct) => currentProduct.id === item.productId
-    )
-
-    return total + (product?.price ?? 0) * item.quantity
-  }, 0)
-}
-
 async function requestOrders(
   endpoint: string,
   options: RequestInit,
@@ -185,22 +120,30 @@ async function requestOrders(
   return parseOrders(JSON.stringify(await response.json())) ?? fallbackOrders
 }
 
-export function OrdersManager({
-  initialOrders,
-  initialProducts,
-}: OrdersManagerProps) {
+export function OrdersManager({ initialOrders }: OrdersManagerProps) {
   const [orders, setOrders] = useState(initialOrders)
   const [filter, setFilter] = useState<OrderFilter>("Todos")
-  const [formData, setFormData] = useState<OrderFormData>(emptyForm)
-  const [selectedItems, setSelectedItems] = useState<SelectedOrderItem[]>([])
-  const [editingOrder, setEditingOrder] = useState<Order | null>(null)
   const [viewingOrder, setViewingOrder] = useState<Order | null>(null)
   const [orderPendingDelete, setOrderPendingDelete] = useState<Order | null>(
     null
   )
-  const [isFormOpen, setIsFormOpen] = useState(false)
   const [message, setMessage] = useState<string | null>(null)
   const [isPending, startTransition] = useTransition()
+
+  useEffect(() => {
+    function updateOrders(event: Event) {
+      const orderEvent = event as CustomEvent<Order[]>
+
+      setOrders(orderEvent.detail)
+      setMessage(null)
+    }
+
+    window.addEventListener("admin-orders:changed", updateOrders)
+
+    return () => {
+      window.removeEventListener("admin-orders:changed", updateOrders)
+    }
+  }, [])
 
   const filteredOrders = useMemo(() => {
     if (filter === "Todos") {
@@ -241,172 +184,6 @@ export function OrdersManager({
     ]
   }, [orders])
 
-  const calculatedTotal = useMemo(
-    () => calculateOrderTotal(selectedItems, initialProducts),
-    [initialProducts, selectedItems]
-  )
-
-function updateFormData(field: keyof OrderFormData, value: string) {
-    setFormData((currentData) => ({
-      ...currentData,
-      [field]:
-        field === "table"
-          ? Number.isInteger(Number(value)) && Number(value) > 0
-            ? Number(value)
-            : 1
-          : value,
-    }))
-  }
-
-  function startOrderCreation() {
-    setMessage(null)
-    setEditingOrder(null)
-    setFormData(emptyForm)
-    setSelectedItems([])
-    setIsFormOpen(true)
-  }
-
-  function startOrderEdition(order: Order) {
-    setMessage(null)
-    setEditingOrder(order)
-    setFormData({
-      customer: order.customer,
-      table: order.table,
-      items: order.items,
-      total: order.total,
-      status: order.status,
-      datetime: order.datetime,
-    })
-    setSelectedItems([])
-    setIsFormOpen(true)
-  }
-
-  function closeForm() {
-    setIsFormOpen(false)
-    setEditingOrder(null)
-    setFormData(emptyForm)
-    setSelectedItems([])
-  }
-
-  function toggleProduct(product: Product, checked: boolean) {
-    setSelectedItems((currentItems) => {
-      if (!checked) {
-        return currentItems.filter((item) => item.productId !== product.id)
-      }
-
-      if (currentItems.some((item) => item.productId === product.id)) {
-        return currentItems
-      }
-
-      return [
-        ...currentItems,
-        {
-          observation: "",
-          productId: product.id,
-          quantity: 1,
-        },
-      ]
-    })
-  }
-
-  function updateSelectedItem(
-    productId: string,
-    field: "observation" | "quantity",
-    value: string
-  ) {
-    setSelectedItems((currentItems) =>
-      currentItems.map((item) => {
-        if (item.productId !== productId) {
-          return item
-        }
-
-        if (field === "quantity") {
-          const quantity = Number(value)
-
-          return {
-            ...item,
-            quantity: Number.isFinite(quantity) && quantity > 0 ? quantity : 1,
-          }
-        }
-
-        return {
-          ...item,
-          observation: value,
-        }
-      })
-    )
-  }
-
-  function submitOrder(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault()
-    setMessage(null)
-
-    if (editingOrder) {
-      const payload = {
-        id: editingOrder.id,
-        table: formData.table,
-        status: formData.status,
-      }
-
-      startTransition(async () => {
-        try {
-          const nextOrders = await requestOrders(
-            "/api/orders",
-            {
-              body: JSON.stringify(payload),
-              method: "PUT",
-            },
-            orders
-          )
-
-          setOrders(nextOrders)
-          setMessage("Pedido atualizado.")
-          closeForm()
-        } catch (error) {
-          setMessage(error instanceof Error ? error.message : "Erro inesperado.")
-        }
-      })
-
-      return
-    }
-
-    const items = createOrderItems(selectedItems, initialProducts)
-
-    if (!items.length) {
-      setMessage("Selecione ao menos um produto para o pedido.")
-      return
-    }
-
-    const orderData = {
-      ...formData,
-      customer: formData.customer.trim(),
-      table: formData.table,
-      items,
-      status: OrderStatus.Waiting,
-      datetime: "",
-      total: calculatedTotal,
-    }
-
-    startTransition(async () => {
-      try {
-        const nextOrders = await requestOrders(
-          "/api/orders",
-          {
-            body: JSON.stringify(orderData),
-            method: "POST",
-          },
-          orders
-        )
-
-        setOrders(nextOrders)
-        setMessage("Pedido criado.")
-        closeForm()
-      } catch (error) {
-        setMessage(error instanceof Error ? error.message : "Erro inesperado.")
-      }
-    })
-  }
-
   function confirmOrderDeletion(order: Order) {
     setMessage(null)
 
@@ -445,9 +222,11 @@ function updateFormData(field: keyof OrderFormData, value: string) {
                 persistente usado pela API.
               </p>
             </div>
-            <Button onClick={startOrderCreation} type="button" variant="outline">
-              <RiAddLine aria-hidden />
-              Novo pedido
+            <Button asChild variant="outline">
+              <Link href="/admin/orders/new">
+                <RiAddLine aria-hidden />
+                Novo pedido
+              </Link>
             </Button>
           </div>
         </section>
@@ -560,13 +339,18 @@ function updateFormData(field: keyof OrderFormData, value: string) {
                             <RiEyeLine aria-hidden />
                           </Button>
                           <Button
-                            onClick={() => startOrderEdition(order)}
+                            asChild
                             size="icon-sm"
                             title="Editar pedido"
-                            type="button"
                             variant="ghost"
                           >
-                            <RiEditLine aria-hidden />
+                            <Link
+                              href={`/admin/orders/edit/${encodeURIComponent(
+                                order.id
+                              )}`}
+                            >
+                              <RiEditLine aria-hidden />
+                            </Link>
                           </Button>
                           <Button
                             disabled={isPending}
@@ -673,267 +457,6 @@ function updateFormData(field: keyof OrderFormData, value: string) {
           </Card>
         </section>
       </div>
-
-      {isFormOpen ? (
-        <div
-          aria-modal="true"
-          className="fixed inset-0 z-50 flex items-center justify-center bg-foreground/45 p-4 backdrop-blur-sm"
-          role="dialog"
-        >
-          <Card className="max-h-[calc(100svh-2rem)] w-full max-w-2xl overflow-hidden rounded-2xl border border-info/15 p-0 shadow-xl">
-            <CardHeader className="flex flex-row items-start justify-between gap-4 border-b border-info/15 bg-info-muted/45 p-6">
-              <div>
-                <CardTitle className="text-lg font-semibold">
-                  {editingOrder ? "Editar pedido" : "Novo pedido"}
-                </CardTitle>
-                <CardDescription className="text-sm">
-                  As alterações são enviadas para a API e gravadas no mock.
-                </CardDescription>
-              </div>
-              <Button
-                disabled={isPending}
-                onClick={closeForm}
-                size="icon-sm"
-                title="Fechar modal"
-                type="button"
-                variant="ghost"
-              >
-                <RiCloseLine aria-hidden />
-              </Button>
-            </CardHeader>
-
-            <CardContent className="max-h-[calc(100svh-9rem)] overflow-y-auto p-6">
-              <form className="space-y-4" onSubmit={submitOrder}>
-                {editingOrder ? (
-                  <>
-                    <div className="rounded-2xl border border-border/70 bg-muted/35 p-4">
-                      <p className="text-sm font-medium">
-                        {editingOrder.id} · {editingOrder.customer}
-                      </p>
-                      <p className="mt-1 text-xs text-muted-foreground">
-                        {formatOrderItems(editingOrder.items)}
-                      </p>
-                    </div>
-
-                    <div className="grid gap-4 md:grid-cols-2">
-                      <div className="grid gap-2">
-                        <label className="text-xs font-medium" htmlFor="table">
-                          Mesa
-                        </label>
-                        <Input
-                          id="table"
-                          min={1}
-                          onChange={(event) =>
-                            updateFormData("table", event.target.value)
-                          }
-                          placeholder="1"
-                          required
-                          type="number"
-                          value={formData.table}
-                        />
-                      </div>
-
-                      <div className="grid gap-2">
-                        <label className="text-xs font-medium" htmlFor="status">
-                          Status
-                        </label>
-                        <select
-                          className="h-7 w-full rounded-md border border-input bg-input/20 px-2 text-xs transition-colors outline-none focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/30"
-                          id="status"
-                          onChange={(event) =>
-                            updateFormData("status", event.target.value)
-                          }
-                          value={formData.status}
-                        >
-                          {Object.values(OrderStatus).map((status) => (
-                            <option key={status} value={status}>
-                              {status}
-                            </option>
-                          ))}
-                        </select>
-                      </div>
-                    </div>
-                  </>
-                ) : (
-                  <>
-                <div className="grid gap-4 md:grid-cols-2">
-                  <div className="grid gap-2">
-                    <label className="text-xs font-medium" htmlFor="customer">
-                      Cliente
-                    </label>
-                    <Input
-                      id="customer"
-                      onChange={(event) =>
-                        updateFormData("customer", event.target.value)
-                      }
-                      required
-                      value={formData.customer}
-                    />
-                  </div>
-
-                  <div className="grid gap-2">
-                    <label className="text-xs font-medium" htmlFor="table">
-                      Mesa
-                    </label>
-                    <Input
-                      id="table"
-                      min={1}
-                      onChange={(event) =>
-                        updateFormData("table", event.target.value)
-                      }
-                      placeholder="1"
-                      required
-                      type="number"
-                      value={formData.table}
-                    />
-                  </div>
-                </div>
-
-                <div className="grid gap-2">
-                  <span className="text-xs font-medium">Itens</span>
-                  <div className="rounded-2xl border border-border/70 bg-muted/20 p-3">
-                    {initialProducts.length ? (
-                      <div className="grid gap-3">
-                        {initialProducts.map((product) => {
-                          const selectedItem = selectedItems.find(
-                            (item) => item.productId === product.id
-                          )
-                          const isSelected = Boolean(selectedItem)
-
-                          return (
-                            <div
-                              key={product.id}
-                              className="rounded-xl border border-border/70 bg-card/80 p-3"
-                            >
-                              <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-                                <label
-                                  className="flex min-w-0 items-start gap-3"
-                                  htmlFor={`order-product-${product.id}`}
-                                >
-                                  <Checkbox
-                                    checked={isSelected}
-                                    id={`order-product-${product.id}`}
-                                    onCheckedChange={(checked) =>
-                                      toggleProduct(product, checked === true)
-                                    }
-                                  />
-                                  <span className="min-w-0">
-                                    <span className="block text-sm font-medium">
-                                      {product.name}
-                                    </span>
-                                    <span className="mt-1 block text-xs text-muted-foreground">
-                                      {formatProductPrice(product.price)}
-                                    </span>
-                                  </span>
-                                </label>
-                              </div>
-
-                              {selectedItem ? (
-                                <div className="mt-3 grid gap-3 md:grid-cols-[8rem_1fr]">
-                                  <div className="grid gap-2">
-                                    <label
-                                      className="text-xs font-medium"
-                                      htmlFor={`order-product-quantity-${product.id}`}
-                                    >
-                                      Quantidade
-                                    </label>
-                                    <Input
-                                      id={`order-product-quantity-${product.id}`}
-                                      min={1}
-                                      onChange={(event) =>
-                                        updateSelectedItem(
-                                          product.id,
-                                          "quantity",
-                                          event.target.value
-                                        )
-                                      }
-                                      type="number"
-                                      value={selectedItem.quantity}
-                                    />
-                                  </div>
-
-                                  <div className="grid gap-2">
-                                    <label
-                                      className="text-xs font-medium"
-                                      htmlFor={`order-product-observations-${product.id}`}
-                                    >
-                                      Observações
-                                    </label>
-                                    <Input
-                                      id={`order-product-observations-${product.id}`}
-                                      onChange={(event) =>
-                                        updateSelectedItem(
-                                          product.id,
-                                          "observation",
-                                          event.target.value
-                                        )
-                                      }
-                                      placeholder="Ex: Sem cebola"
-                                      value={selectedItem.observation}
-                                    />
-                                  </div>
-                                </div>
-                              ) : null}
-                            </div>
-                          )
-                        })}
-                      </div>
-                    ) : (
-                      <p className="rounded-xl border border-warning/20 bg-warning-muted/45 p-4 text-sm text-muted-foreground">
-                        Cadastre produtos antes de montar os itens do pedido.
-                      </p>
-                    )}
-                  </div>
-                  {selectedItems.length ? (
-                    <p className="text-xs text-muted-foreground">
-                      {formatOrderItems(
-                        createOrderItems(selectedItems, initialProducts)
-                      )}
-                    </p>
-                  ) : null}
-                </div>
-
-                <div className="rounded-2xl border border-info/15 bg-info-muted/35 p-4">
-                  <div>
-                    <p className="text-xs text-muted-foreground">Total</p>
-                    <p className="mt-1 text-sm font-semibold">
-                      {formatCurrency(calculatedTotal)}
-                    </p>
-                  </div>
-                </div>
-                  </>
-                )}
-
-                {message ? (
-                  <p className="rounded-md border border-info/20 bg-info-muted/40 px-3 py-2 text-xs text-muted-foreground">
-                    {message}
-                  </p>
-                ) : null}
-
-                <div className="flex flex-wrap justify-end gap-2 pt-2">
-                  <Button
-                    className="bg-success text-success-foreground hover:bg-success/90"
-                    disabled={isPending}
-                    type="submit"
-                  >
-                    <RiSaveLine aria-hidden />
-                    {editingOrder ? "Salvar" : "Cadastrar"}
-                  </Button>
-                  <Button
-                    disabled={isPending}
-                    onClick={closeForm}
-                    type="button"
-                    variant="outline"
-                  >
-                    <RiCloseLine aria-hidden />
-                    Cancelar
-                  </Button>
-                </div>
-              </form>
-            </CardContent>
-          </Card>
-        </div>
-      ) : null}
 
       {viewingOrder ? (
         <div
