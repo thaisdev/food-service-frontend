@@ -166,6 +166,9 @@ export function CustomerMenu() {
                     Carrinho ({cartQuantity})
                   </Link>
                 </Button>
+                <Button asChild variant="outline">
+                  <Link href="/customers/orders">Meus pedidos</Link>
+                </Button>
               </div>
             </CardContent>
           </Card>
