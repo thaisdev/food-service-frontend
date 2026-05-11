@@ -1,4 +1,4 @@
-import { AdminProductFormModal } from "@/components/admin-product-form-modal"
+import { AdminProductFormModal } from "@/app/admin/products/_components/admin-product-form-modal"
 import { getVisibleCategories } from "@/lib/server-data"
 
 export default async function NewProductModalPage() {

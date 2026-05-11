@@ -78,6 +78,7 @@ export function useCategories() {
 
 export function useOrders() {
   const [orders, setOrders] = useState<Order[]>(mockOrders)
+  const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
     let isCurrent = true
@@ -85,6 +86,7 @@ export function useOrders() {
     fetchJsonData("/api/orders", parseOrders, mockOrders).then((data) => {
       if (isCurrent) {
         setOrders(data)
+        setIsLoading(false)
       }
     })
 
@@ -93,5 +95,5 @@ export function useOrders() {
     }
   }, [])
 
-  return orders
+  return { isLoading, orders }
 }

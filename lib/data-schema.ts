@@ -352,14 +352,6 @@ export function parseProductPrice(value: unknown) {
   return Number.isFinite(price) && price >= 0 ? price : null
 }
 
-export function formatProductPrice(price: number) {
-  return new Intl.NumberFormat("pt-BR", {
-    currency: "BRL",
-    minimumFractionDigits: 2,
-    style: "currency",
-  }).format(price)
-}
-
 function hasProductCategoryField(value: unknown) {
   return (
     isRecord(value) &&

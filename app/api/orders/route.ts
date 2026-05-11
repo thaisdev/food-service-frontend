@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server"
 
+import { calculateOrderTotal, parseTable } from "@/helpers/order"
 import { delay } from "@/lib/api-delay"
 import { OrderStatus, parseOrders, type Order, type OrderItem } from "@/lib/data-schema"
 import { getOrders, getVisibleOrders, saveOrders } from "@/lib/server-data"
@@ -27,10 +28,6 @@ function createOrderId(orders: Order[]) {
 
 function getCurrentOrderDatetime() {
   return new Date().toISOString()
-}
-
-function calculateOrderTotal(items: OrderItem[]) {
-  return items.reduce((total, item) => total + item.valor * item.quantity, 0)
 }
 
 function normalizeOrderItems(items: Partial<OrderItem>[] | undefined) {
@@ -62,9 +59,7 @@ function parseOrderTable(value: unknown) {
     return null
   }
 
-  const table = Number(value)
-
-  return Number.isInteger(table) && table > 0 ? table : null
+  return parseTable(value)
 }
 
 function createOrderFromBody(

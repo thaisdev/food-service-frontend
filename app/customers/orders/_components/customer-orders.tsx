@@ -11,35 +11,13 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
+import { formatCurrency } from "@/helpers/currency"
+import { formatDatetime } from "@/helpers/datetime"
+import { formatTable, parseTable } from "@/helpers/order"
 import { useOrders } from "@/hooks/use-api-data"
 import { useSessionAccess } from "@/hooks/use-session-access"
 import { OrderStatus, type Order } from "@/lib/data-schema"
 import { SessionModule } from "@/lib/session-access"
-
-function formatCurrency(value: number) {
-  return new Intl.NumberFormat("pt-BR", {
-    currency: "BRL",
-    minimumFractionDigits: 2,
-    style: "currency",
-  }).format(value)
-}
-
-function formatOrderDatetime(datetime: string) {
-  const date = new Date(datetime)
-
-  if (Number.isNaN(date.getTime())) {
-    return datetime
-  }
-
-  return new Intl.DateTimeFormat("pt-BR", {
-    dateStyle: "short",
-    timeStyle: "short",
-  }).format(date)
-}
-
-function formatTable(table: number) {
-  return `Mesa ${String(table).padStart(2, "0")}`
-}
 
 function getStatusClasses(status: OrderStatus) {
   switch (status) {
@@ -56,14 +34,10 @@ function getStatusClasses(status: OrderStatus) {
   }
 }
 
-function parseTable(table: string) {
-  const match = table.match(/\d+/)
-  const tableNumber = match ? Number(match[0]) : Number.NaN
-
-  return Number.isInteger(tableNumber) && tableNumber > 0 ? tableNumber : null
-}
-
-function filterCustomerOrders(orders: Order[], access: ReturnType<typeof useSessionAccess>) {
+function filterCustomerOrders(
+  orders: Order[],
+  access: ReturnType<typeof useSessionAccess>
+) {
   if (access?.module !== SessionModule.Customers) {
     return []
   }
@@ -80,7 +54,7 @@ function filterCustomerOrders(orders: Order[], access: ReturnType<typeof useSess
 
 export function CustomerOrders() {
   const access = useSessionAccess()
-  const orders = useOrders()
+  const { isLoading, orders } = useOrders()
   const customerOrders = filterCustomerOrders(orders, access)
   const total = customerOrders.reduce((sum, order) => sum + order.total, 0)
   const customerName =
@@ -138,7 +112,32 @@ export function CustomerOrders() {
           </Card>
         </section>
 
-        {customerOrders.length ? (
+        {isLoading ? (
+          <section className="grid gap-4">
+            {[0, 1].map((item) => (
+              <Card
+                key={item}
+                className="rounded-3xl border border-primary/15 p-0 shadow-sm"
+              >
+                <CardHeader className="border-b border-primary/15 bg-primary-muted/35 p-6">
+                  <div className="h-5 w-36 animate-pulse rounded bg-muted" />
+                  <div className="mt-3 h-4 w-56 animate-pulse rounded bg-muted" />
+                </CardHeader>
+                <CardContent className="space-y-3 p-6">
+                  {[0, 1, 2].map((line) => (
+                    <div
+                      key={line}
+                      className="rounded-2xl border border-border/70 bg-muted/25 p-4"
+                    >
+                      <div className="h-4 w-48 animate-pulse rounded bg-muted" />
+                      <div className="mt-3 h-3 w-28 animate-pulse rounded bg-muted" />
+                    </div>
+                  ))}
+                </CardContent>
+              </Card>
+            ))}
+          </section>
+        ) : customerOrders.length ? (
           <section className="grid gap-4">
             {customerOrders.map((order) => (
               <Card
@@ -152,7 +151,7 @@ export function CustomerOrders() {
                     </CardTitle>
                     <CardDescription className="mt-1 text-sm">
                       {formatTable(order.table)} ·{" "}
-                      {formatOrderDatetime(order.datetime)}
+                      {formatDatetime(order.datetime)}
                     </CardDescription>
                   </div>
                   <div className="flex flex-wrap items-center gap-2">

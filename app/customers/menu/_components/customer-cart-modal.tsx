@@ -6,9 +6,11 @@ import { RiCloseLine, RiDeleteBinLine, RiSendPlaneLine } from "@remixicon/react"
 import { FormEvent, useMemo, useState, useTransition } from "react"
 
 import {
-  CUSTOMER_CART_KEY,
+  clearCustomerCart,
+  readCustomerCart,
+  writeCustomerCart,
   type CustomerCartItem,
-} from "@/components/customer-menu"
+} from "@/app/customers/menu/_helpers/cart"
 import { Button } from "@/components/ui/button"
 import {
   Card,
@@ -18,61 +20,12 @@ import {
   CardTitle,
 } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
+import { formatCurrency, formatProductPrice } from "@/helpers/currency"
+import { calculateOrderTotal, createOrderItems, parseTable } from "@/helpers/order"
 import { useProducts } from "@/hooks/use-api-data"
 import { useSessionAccess } from "@/hooks/use-session-access"
-import { formatProductPrice, type OrderItem } from "@/lib/data-schema"
+import { type OrderItem } from "@/lib/data-schema"
 import { SessionModule } from "@/lib/session-access"
-
-function readCustomerCart() {
-  try {
-    const data = JSON.parse(
-      window.localStorage.getItem(CUSTOMER_CART_KEY) ?? "[]"
-    ) as unknown
-
-    if (!Array.isArray(data)) {
-      return []
-    }
-
-    return data.filter(
-      (item): item is CustomerCartItem =>
-        typeof item === "object" &&
-        item !== null &&
-        "productId" in item &&
-        "quantity" in item &&
-        "observation" in item &&
-        typeof item.productId === "string" &&
-        typeof item.quantity === "number" &&
-        typeof item.observation === "string"
-    )
-  } catch {
-    return []
-  }
-}
-
-function writeCustomerCart(cartItems: CustomerCartItem[]) {
-  window.localStorage.setItem(CUSTOMER_CART_KEY, JSON.stringify(cartItems))
-  window.dispatchEvent(new Event("customer-cart:changed"))
-}
-
-function clearCustomerCart() {
-  window.localStorage.removeItem(CUSTOMER_CART_KEY)
-  window.dispatchEvent(new Event("customer-cart:changed"))
-}
-
-function formatCurrency(value: number) {
-  return new Intl.NumberFormat("pt-BR", {
-    currency: "BRL",
-    minimumFractionDigits: 2,
-    style: "currency",
-  }).format(value)
-}
-
-function parseTable(table: string) {
-  const match = table.match(/\d+/)
-  const tableNumber = match ? Number(match[0]) : Number.NaN
-
-  return Number.isInteger(tableNumber) && tableNumber > 0 ? tableNumber : 1
-}
 
 export function CustomerCartModal() {
   const router = useRouter()
@@ -85,74 +38,49 @@ export function CustomerCartModal() {
   const customerName =
     access?.module === SessionModule.Customers ? access.name : "Cliente"
   const tableNumber =
-    access?.module === SessionModule.Customers ? parseTable(access.table) : 1
+    access?.module === SessionModule.Customers
+      ? (parseTable(access.table) ?? 1)
+      : 1
 
   const orderItems = useMemo<OrderItem[]>(() => {
-    return cartItems
-      .map((item) => {
-        const product = products.find(
-          (currentProduct) => currentProduct.id === item.productId
-        )
-
-        if (!product) {
-          return null
-        }
-
-        return {
-          productId: product.id,
-          name: product.name,
-          quantity: item.quantity,
-          valor: product.price,
-          observation: item.observation.trim(),
-        }
-      })
-      .filter((item): item is OrderItem => item !== null)
+    return createOrderItems(cartItems, products)
   }, [cartItems, products])
-  const total = useMemo(
-    () => orderItems.reduce((sum, item) => sum + item.valor * item.quantity, 0),
-    [orderItems]
-  )
+  const total = useMemo(() => calculateOrderTotal(orderItems), [orderItems])
 
   function updateCartItem(
     productId: string,
     field: "observation" | "quantity",
     value: string
   ) {
-    setCartItems((currentItems) => {
-      const nextItems = currentItems.map((item) => {
-        if (item.productId !== productId) {
-          return item
-        }
+    const nextItems = cartItems.map((item) => {
+      if (item.productId !== productId) {
+        return item
+      }
 
-        if (field === "quantity") {
-          const quantity = Number(value)
-
-          return {
-            ...item,
-            quantity: Number.isFinite(quantity) && quantity > 0 ? quantity : 1,
-          }
-        }
+      if (field === "quantity") {
+        const quantity = Number(value)
 
         return {
           ...item,
-          observation: value,
+          quantity: Number.isFinite(quantity) && quantity > 0 ? quantity : 1,
         }
-      })
+      }
 
-      writeCustomerCart(nextItems)
-
-      return nextItems
+      return {
+        ...item,
+        observation: value,
+      }
     })
+
+    setCartItems(nextItems)
+    writeCustomerCart(nextItems)
   }
 
   function removeCartItem(productId: string) {
-    setCartItems((currentItems) => {
-      const nextItems = currentItems.filter((item) => item.productId !== productId)
+    const nextItems = cartItems.filter((item) => item.productId !== productId)
 
-      writeCustomerCart(nextItems)
-
-      return nextItems
-    })
+    setCartItems(nextItems)
+    writeCustomerCart(nextItems)
   }
 
   function submitOrder(event: FormEvent<HTMLFormElement>) {

@@ -1,5 +1,5 @@
-import { AdminProductFormModal } from "@/components/admin-product-form-modal"
-import { AdminProductsCrud } from "@/components/admin-products-crud"
+import { AdminProductFormModal } from "@/app/admin/products/_components/admin-product-form-modal"
+import { AdminProductsCrud } from "@/app/admin/products/_components/admin-products-crud"
 import { getVisibleCategories, getVisibleProducts } from "@/lib/server-data"
 
 export default async function NewProductPage() {

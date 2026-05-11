@@ -1,4 +1,4 @@
-import { CategoriesManager } from "@/app/admin/categories/categories-manager"
+import { CategoriesManager } from "@/app/admin/categories/_components/categories-manager"
 import { getVisibleCategories, getVisibleProducts } from "@/lib/server-data"
 
 export default async function AdminCategoriesPage() {
