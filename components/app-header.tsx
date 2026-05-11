@@ -4,6 +4,7 @@ import Image from "next/image"
 import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
 import { useTheme } from "next-themes"
+import { RiShoppingCartLine } from "@remixicon/react"
 
 import { Button } from "@/components/ui/button"
 import { clearSessionAccess } from "@/lib/session-access"
@@ -16,7 +17,10 @@ const adminLinks = [
   { href: "/admin/categories", label: "Categorias" },
 ]
 
-const customerLinks = [{ href: "/customers/menu", label: "Cardápio" }]
+const customerLinks = [
+  { href: "/customers/menu", label: "Cardápio" },
+  { href: "/customers/orders", label: "Meus pedidos" },
+]
 
 export function AppHeader() {
   const router = useRouter()
@@ -94,6 +98,14 @@ export function AppHeader() {
         </div>
 
         <div className="flex items-center gap-2">
+          {isCustomers ? (
+            <Button asChild size="icon" title="Abrir carrinho" variant="outline">
+              <Link href="/customers/menu/cart">
+                <RiShoppingCartLine aria-hidden />
+              </Link>
+            </Button>
+          ) : null}
+
           {(isAdmin || isCustomers) && (
             <Button
               type="button"
