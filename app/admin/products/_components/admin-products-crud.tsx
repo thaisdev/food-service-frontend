@@ -138,41 +138,13 @@ export function AdminProductsCrud({
     }
   }, [filter, products])
 
-  const metrics = useMemo(() => {
-    const activeProducts = products.filter(
-      (product) => product.status === ProductStatus.Active
-    ).length
-    const lowStockProducts = products.filter(
-      (product) => product.stock === ProductStock.Low
-    ).length
-    const productCategories = new Set(
-      products.map((product) => product.categoryId)
-    ).size
-
-    return [
-      {
-        label: "Produtos ativos",
-        value: String(activeProducts),
-        detail: `${lowStockProducts} com estoque baixo`,
-      },
-      {
-        label: "Categorias",
-        value: String(productCategories),
-        detail: "Cardápio principal e sazonais",
-      },
-      {
-        label: "Itens cadastrados",
-        value: String(products.length),
-        detail: "Dados salvos em data/runtime/products.json",
-      },
-    ]
-  }, [products])
-
   function confirmProductDeletion(product: Product) {
     setMessage(null)
     setProductPendingDelete(null)
     setProducts((currentProducts) =>
-      currentProducts.filter((currentProduct) => currentProduct.id !== product.id)
+      currentProducts.filter(
+        (currentProduct) => currentProduct.id !== product.id
+      )
     )
 
     startTransition(async () => {
@@ -199,15 +171,11 @@ export function AdminProductsCrud({
         <section className="flex flex-col gap-4 rounded-3xl border border-primary/20 bg-card/85 p-8 shadow-sm shadow-primary/5 backdrop-blur">
           <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
             <div className="max-w-2xl space-y-2">
-              <span className="inline-flex w-fit rounded-full bg-primary px-3 py-1 text-xs font-medium text-primary-foreground">
-                Catálogo administrativo
-              </span>
               <h1 className="font-heading text-3xl font-semibold tracking-tight md:text-4xl">
                 Gerencie os produtos do cardápio
               </h1>
               <p className="text-sm leading-6 text-muted-foreground md:text-base">
-                Cadastre, edite e remova itens do catálogo com persistência no
-                JSON de runtime usado pela API.
+                Cadastre, edite e remova itens do cardápio.
               </p>
             </div>
             <Button asChild variant="outline">
@@ -217,25 +185,6 @@ export function AdminProductsCrud({
               </Link>
             </Button>
           </div>
-        </section>
-
-        <section className="grid gap-4 md:grid-cols-3">
-          {metrics.map((item, index) => (
-            <Card
-              key={item.label}
-              className={`rounded-2xl border p-2 shadow-sm ${metricColors[index]}`}
-            >
-              <CardContent className="p-4">
-                <p className="text-sm text-muted-foreground">{item.label}</p>
-                <strong className="mt-3 block text-3xl font-semibold tracking-tight">
-                  {item.value}
-                </strong>
-                <p className="mt-2 text-sm text-muted-foreground">
-                  {item.detail}
-                </p>
-              </CardContent>
-            </Card>
-          ))}
         </section>
 
         {message ? (
@@ -356,69 +305,6 @@ export function AdminProductsCrud({
             </CardContent>
           </Card>
         </section>
-
-        <section className="grid gap-4 lg:grid-cols-[1fr_1fr]">
-          <Card className="rounded-3xl border border-warning/20 bg-card/95 p-2 shadow-sm shadow-warning/5">
-            <CardHeader>
-              <CardTitle className="text-lg font-semibold">
-                Visão de estoque
-              </CardTitle>
-              <CardDescription className="text-sm">
-                Itens que pedem atenção do time administrativo.
-              </CardDescription>
-            </CardHeader>
-
-            <CardContent className="space-y-3">
-              {[
-                ["Produtos em baixa", `${metrics[0].detail}`],
-                ["Itens ativos", `${metrics[0].value} produtos no cardápio`],
-                [
-                  "Itens indisponíveis",
-                  `${
-                    products.filter(
-                      (product) => product.stock === ProductStock.Unavailable
-                    ).length
-                  } produtos pausados`,
-                ],
-              ].map(([title, description], index) => (
-                <div
-                  key={title}
-                  className={`rounded-2xl border p-4 ${stockInsightColors[index]}`}
-                >
-                  <h3 className="font-medium text-foreground">{title}</h3>
-                  <p className="mt-1 text-sm text-current/80">{description}</p>
-                </div>
-              ))}
-            </CardContent>
-          </Card>
-
-          <Card className="rounded-3xl border border-success/20 bg-card/95 p-2 shadow-sm shadow-success/5">
-            <CardHeader>
-              <CardTitle className="text-lg font-semibold">
-                Dados do mock
-              </CardTitle>
-              <CardDescription className="text-sm">
-                A API usa o arquivo persistente criado dentro de data/runtime.
-              </CardDescription>
-            </CardHeader>
-
-            <CardContent className="space-y-3">
-              {[
-                "GET /api/products lista os produtos",
-                "POST /api/products cadastra um novo item",
-                "PUT /api/products edita um item existente",
-                "DELETE /api/products?id=PRD-001 oculta um item",
-              ].map((task) => (
-                <div
-                  key={task}
-                  className="rounded-2xl border border-success/25 bg-success-muted/55 p-4 text-sm"
-                >
-                  {task}
-                </div>
-              ))}
-            </CardContent>
-          </Card>
-        </section>
       </div>
 
       {productPendingDelete ? (
@@ -434,7 +320,7 @@ export function AdminProductsCrud({
                   Confirmar exclusão
                 </CardTitle>
                 <CardDescription className="text-sm">
-                  O produto será ocultado do catálogo administrativo.
+                  O produto será ocultado do cardápio.
                 </CardDescription>
               </div>
               <Button

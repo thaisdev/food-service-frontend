@@ -97,8 +97,7 @@ async function requestCategories(
   }
 
   return (
-    parseCategories(JSON.stringify(await response.json())) ??
-    fallbackCategories
+    parseCategories(JSON.stringify(await response.json())) ?? fallbackCategories
   )
 }
 
@@ -213,7 +212,9 @@ export function CategoriesManager({
         )
 
         setCategories(nextCategories)
-        setMessage(editingCategory ? "Categoria atualizada." : "Categoria criada.")
+        setMessage(
+          editingCategory ? "Categoria atualizada." : "Categoria criada."
+        )
         closeForm()
       } catch (error) {
         setMessage(error instanceof Error ? error.message : "Erro inesperado.")
@@ -248,9 +249,6 @@ export function CategoriesManager({
         <section className="flex flex-col gap-4 rounded-3xl border border-primary/20 bg-card/85 p-8 shadow-sm shadow-primary/5 backdrop-blur">
           <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
             <div className="max-w-2xl space-y-2">
-              <span className="inline-flex w-fit rounded-full bg-primary px-3 py-1 text-xs font-medium text-primary-foreground">
-                Catálogo administrativo
-              </span>
               <h1 className="font-heading text-3xl font-semibold tracking-tight md:text-4xl">
                 Gerencie as categorias do cardápio
               </h1>
@@ -259,7 +257,11 @@ export function CategoriesManager({
                 os produtos do menu.
               </p>
             </div>
-            <Button onClick={startCategoryCreation} type="button" variant="outline">
+            <Button
+              onClick={startCategoryCreation}
+              type="button"
+              variant="outline"
+            >
               <RiAddLine aria-hidden />
               Nova categoria
             </Button>
@@ -328,7 +330,9 @@ export function CategoriesManager({
                         {productCountByCategory[category.id] ?? 0}
                       </TableCell>
                       <TableCell>
-                        <Badge className={getCategoryBadgeClasses(category.status)}>
+                        <Badge
+                          className={getCategoryBadgeClasses(category.status)}
+                        >
                           {category.status}
                         </Badge>
                       </TableCell>
@@ -496,7 +500,7 @@ export function CategoriesManager({
                   Produtos em {viewingCategory.name}
                 </CardTitle>
                 <CardDescription className="text-sm">
-                  Itens cadastrados com esta categoria no catálogo.
+                  Itens cadastrados com esta categoria no cardápio.
                 </CardDescription>
               </div>
               <Button
@@ -606,9 +610,8 @@ export function CategoriesManager({
                   {categoryPendingDelete.name}
                 </p>
                 <p className="mt-1 text-xs text-muted-foreground">
-                  {categoryPendingDelete.id} ·{" "}
-                  {pendingDeleteProducts.length}{" "}
-                  produtos serão removidos do catálogo
+                  {categoryPendingDelete.id} · {pendingDeleteProducts.length}{" "}
+                  produtos serão removidos do cardápio junto com esta categoria.
                 </p>
               </div>
 

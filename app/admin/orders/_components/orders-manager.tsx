@@ -119,37 +119,6 @@ export function OrdersManager({ initialOrders }: OrdersManagerProps) {
     return orders.filter((order) => order.status === filter)
   }, [filter, orders])
 
-  const metrics = useMemo(() => {
-    const activeOrders = orders.filter(
-      (order) => order.status !== OrderStatus.Finished
-    ).length
-    const pendingOrders = orders.filter(
-      (order) => order.status === OrderStatus.Waiting
-    ).length
-    const deliveryOrders = orders.filter(
-      (order) => order.status === OrderStatus.OutForDelivery
-    ).length
-    const revenue = orders.reduce((total, order) => total + order.total, 0)
-
-    return [
-      {
-        label: "Pedidos ativos",
-        value: String(activeOrders),
-        detail: `${pendingOrders} aguardando preparo`,
-      },
-      {
-        label: "Receita listada",
-        value: formatCurrency(revenue),
-        detail: "Soma dos pedidos cadastrados",
-      },
-      {
-        label: "Entregas em rota",
-        value: String(deliveryOrders),
-        detail: "Pedidos com saída para entrega",
-      },
-    ]
-  }, [orders])
-
   function confirmOrderDeletion(order: Order) {
     setMessage(null)
 
@@ -177,15 +146,11 @@ export function OrdersManager({ initialOrders }: OrdersManagerProps) {
         <section className="flex flex-col gap-4 rounded-3xl border border-info/20 bg-card/85 p-8 shadow-sm shadow-info/5 backdrop-blur">
           <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
             <div className="max-w-2xl space-y-2">
-              <span className="inline-flex w-fit rounded-full bg-info px-3 py-1 text-xs font-medium text-info-foreground">
-                Painel administrativo
-              </span>
               <h1 className="font-heading text-3xl font-semibold tracking-tight md:text-4xl">
                 Gerencie os pedidos cadastrados
               </h1>
               <p className="text-sm leading-6 text-muted-foreground md:text-base">
-                Cadastre, edite, acompanhe status e remova pedidos do mock
-                persistente usado pela API.
+                Cadastre, edite, acompanhe status e cancele pedidos.
               </p>
             </div>
             <Button asChild variant="outline">
@@ -195,25 +160,6 @@ export function OrdersManager({ initialOrders }: OrdersManagerProps) {
               </Link>
             </Button>
           </div>
-        </section>
-
-        <section className="grid gap-4 md:grid-cols-3">
-          {metrics.map((item, index) => (
-            <Card
-              key={item.label}
-              className={`rounded-2xl border p-2 shadow-sm ${metricColors[index]}`}
-            >
-              <CardContent className="p-4">
-                <p className="text-sm text-muted-foreground">{item.label}</p>
-                <strong className="mt-3 block text-3xl font-semibold tracking-tight">
-                  {item.value}
-                </strong>
-                <p className="mt-2 text-sm text-muted-foreground">
-                  {item.detail}
-                </p>
-              </CardContent>
-            </Card>
-          ))}
         </section>
 
         {message ? (
@@ -334,91 +280,6 @@ export function OrdersManager({ initialOrders }: OrdersManagerProps) {
                   ))}
                 </TableBody>
               </Table>
-            </CardContent>
-          </Card>
-        </section>
-
-        <section className="grid gap-4 lg:grid-cols-[1fr_1fr]">
-          <Card className="rounded-3xl border border-warning/20 bg-card/95 p-2 shadow-sm shadow-warning/5">
-            <CardHeader>
-              <CardTitle className="text-lg font-semibold">
-                Fila operacional
-              </CardTitle>
-              <CardDescription className="text-sm">
-                Status que pedem acompanhamento no turno atual.
-              </CardDescription>
-            </CardHeader>
-
-            <CardContent className="space-y-3">
-              {[
-                {
-                  title: "Aguardando",
-                  description: `${orders.filter((order) => order.status === OrderStatus.Waiting).length} pedidos pendentes`,
-                  icon: RiTimeLine,
-                  className:
-                    "border-destructive/25 bg-destructive-muted/50 text-destructive",
-                },
-                {
-                  title: "Em preparo",
-                  description: `${orders.filter((order) => order.status === OrderStatus.Preparing).length} pedidos na cozinha`,
-                  icon: RiRestaurant2Line,
-                  className: "border-warning/25 bg-warning-muted/55 text-warning",
-                },
-                {
-                  title: "Saiu para entrega",
-                  description: `${orders.filter((order) => order.status === OrderStatus.OutForDelivery).length} entregas ativas`,
-                  icon: RiMotorbikeLine,
-                  className: "border-info/25 bg-info-muted/55 text-info",
-                },
-              ].map((item) => {
-                const Icon = item.icon
-
-                return (
-                  <div
-                    key={item.title}
-                    className={`flex items-start gap-3 rounded-2xl border p-4 ${item.className}`}
-                  >
-                    <span className="mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-full bg-card/80">
-                      <Icon aria-hidden className="size-4" />
-                    </span>
-                    <div>
-                      <h3 className="font-medium text-foreground">
-                        {item.title}
-                      </h3>
-                      <p className="text-sm text-current/80">
-                        {item.description}
-                      </p>
-                    </div>
-                  </div>
-                )
-              })}
-            </CardContent>
-          </Card>
-
-          <Card className="rounded-3xl border border-info/20 bg-card/95 p-2 shadow-sm shadow-info/5">
-            <CardHeader>
-              <CardTitle className="text-lg font-semibold">
-                Dados do mock
-              </CardTitle>
-              <CardDescription className="text-sm">
-                A API usa o arquivo persistente criado dentro de data/runtime.
-              </CardDescription>
-            </CardHeader>
-
-            <CardContent className="space-y-3">
-              {[
-                "GET /api/orders lista os pedidos",
-                "POST /api/orders cadastra um novo pedido",
-                "PUT /api/orders edita um pedido existente",
-                "DELETE /api/orders?id=%231028 remove um pedido",
-              ].map((task) => (
-                <div
-                  key={task}
-                  className="rounded-2xl border border-info/25 bg-info-muted/55 p-4 text-sm"
-                >
-                  {task}
-                </div>
-              ))}
             </CardContent>
           </Card>
         </section>

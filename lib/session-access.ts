@@ -89,5 +89,5 @@ export function clearSessionAccess() {
 }
 
 export function getModuleHome(module: SessionAccess["module"]) {
-  return module === SessionModule.Admin ? "/admin/home" : "/customers/menu"
+  return module === SessionModule.Admin ? "/admin/dashboard" : "/customers/menu"
 }

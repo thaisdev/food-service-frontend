@@ -11,7 +11,7 @@ import { clearSessionAccess } from "@/lib/session-access"
 import { cn } from "@/lib/utils"
 
 const adminLinks = [
-  { href: "/admin/home", label: "Início" },
+  { href: "/admin/dashboard", label: "Painel" },
   { href: "/admin/orders", label: "Pedidos" },
   { href: "/admin/products", label: "Produtos" },
   { href: "/admin/categories", label: "Categorias" },
@@ -35,12 +35,12 @@ export function AppHeader() {
     : "/branding/food-service-logo-app-icon-light.svg"
   const links = isAdmin ? adminLinks : isCustomers ? customerLinks : []
   const homeHref = isAdmin
-    ? "/admin/home"
+    ? "/admin/dashboard"
     : isCustomers
       ? "/customers/menu"
       : "/"
   const subtitle = isAdmin
-    ? "Painel administrativo"
+    ? "Módulo administrativo"
     : isCustomers
       ? "Módulo do cliente"
       : "Seleção de módulos"
@@ -77,7 +77,7 @@ export function AppHeader() {
             {links.map((link) => {
               const isActive =
                 pathname === link.href ||
-                (!["/admin/home", "/customers/menu"].includes(link.href) &&
+                (!["/admin/dashboard", "/customers/menu"].includes(link.href) &&
                   pathname.startsWith(link.href))
 
               return (
@@ -99,7 +99,12 @@ export function AppHeader() {
 
         <div className="flex items-center gap-2">
           {isCustomers ? (
-            <Button asChild size="icon" title="Abrir carrinho" variant="outline">
+            <Button
+              asChild
+              size="icon"
+              title="Abrir carrinho"
+              variant="outline"
+            >
               <Link href="/customers/menu/cart">
                 <RiShoppingCartLine aria-hidden />
               </Link>
