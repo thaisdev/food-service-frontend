@@ -22,6 +22,7 @@ import {
   formatOrderItems,
   type SelectedOrderItem,
 } from "@/helpers/order"
+import { getEditableOrderStatuses } from "@/helpers/order-status"
 import {
   OrderStatus,
   parseOrders,
@@ -78,6 +79,10 @@ export function AdminOrderFormModal({
   const calculatedTotal = useMemo(
     () => calculateOrderTotal(orderItems),
     [orderItems]
+  )
+  const editableStatuses = useMemo(
+    () => (order ? getEditableOrderStatuses(order.status) : []),
+    [order]
   )
 
   function updateTable(value: string) {
@@ -240,7 +245,7 @@ export function AdminOrderFormModal({
                       }
                       value={status}
                     >
-                      {Object.values(OrderStatus).map((currentStatus) => (
+                      {editableStatuses.map((currentStatus) => (
                         <option key={currentStatus} value={currentStatus}>
                           {currentStatus}
                         </option>

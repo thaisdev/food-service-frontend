@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server"
 
 import { calculateOrderTotal, parseTable } from "@/helpers/order"
+import { canCancelOrder, canUpdateOrderStatus } from "@/helpers/order-status"
 import { delay } from "@/lib/api-delay"
 import { OrderStatus, parseOrders, type Order, type OrderItem } from "@/lib/data-schema"
 import { getOrders, getVisibleOrders, saveOrders } from "@/lib/server-data"
@@ -79,13 +80,17 @@ function createOrderFromBody(
   }
 }
 
-function updateOrderFromBody(body: Partial<Order>, order: Order): Order {
-  const status: OrderStatus = Object.values(OrderStatus).includes(
-    body.status as OrderStatus
-  )
+function resolveOrderStatus(body: Partial<Order>, order: Order) {
+  return Object.values(OrderStatus).includes(body.status as OrderStatus)
     ? (body.status as OrderStatus)
     : order.status
+}
 
+function updateOrderFromBody(
+  body: Partial<Order>,
+  order: Order,
+  status: OrderStatus
+): Order {
   return {
     ...order,
     table: parseOrderTable(body.table) ?? order.table,
@@ -155,7 +160,28 @@ export async function PUT(request: Request) {
     )
   }
 
-  const order = updateOrderFromBody(body, currentOrder)
+  const status = resolveOrderStatus(body, currentOrder)
+
+  if (
+    [OrderStatus.Canceled, OrderStatus.Finished].includes(currentOrder.status)
+  ) {
+    return NextResponse.json(
+      { message: "Pedidos cancelados ou finalizados não podem ser editados." },
+      { status: 400 }
+    )
+  }
+
+  if (!canUpdateOrderStatus(currentOrder.status, status)) {
+    return NextResponse.json(
+      {
+        message:
+          "O status do pedido não pode voltar e pedidos prontos não podem ser cancelados.",
+      },
+      { status: 400 }
+    )
+  }
+
+  const order = updateOrderFromBody(body, currentOrder, status)
 
   if (!isValidOrder(order)) {
     return NextResponse.json(
@@ -186,24 +212,30 @@ export async function DELETE(request: Request) {
 
   if (!id) {
     return NextResponse.json(
-      { message: "Informe o pedido que será removido." },
+      { message: "Informe o pedido que será cancelado." },
       { status: 400 }
     )
   }
 
   const orders = await getOrders()
   let foundOrder = false
-  const deletedAt = new Date().toISOString()
+  let canCancelCurrentOrder = true
   const nextOrders = orders.map((order) => {
     if (order.id !== id || order.deletedAt) {
       return order
     }
 
-    foundOrder = true
+    if (!canCancelOrder(order.status)) {
+      foundOrder = true
+      canCancelCurrentOrder = false
 
+      return order
+    }
+
+    foundOrder = true
     return {
       ...order,
-      deletedAt,
+      status: OrderStatus.Canceled,
     }
   })
 
@@ -211,6 +243,13 @@ export async function DELETE(request: Request) {
     return NextResponse.json(
       { message: "Pedido não encontrado." },
       { status: 404 }
+    )
+  }
+
+  if (!canCancelCurrentOrder) {
+    return NextResponse.json(
+      { message: "Pedidos prontos ou cancelados não podem ser cancelados." },
+      { status: 400 }
     )
   }
 

@@ -39,8 +39,8 @@ export enum OrderStatus {
   Waiting = "Aguardando",
   Preparing = "Em preparo",
   Ready = "Pronto",
-  OutForDelivery = "Saiu para entrega",
   Finished = "Finalizado",
+  Canceled = "Cancelado",
 }
 
 export type Product = {
@@ -169,7 +169,7 @@ export const mockCategories: Category[] = [
   {
     id: "CAT-006",
     name: "Pratos",
-    description: "Refeições completas para salão e delivery.",
+    description: "Refeições completas para salão.",
     status: CategoryStatus.Active,
   },
   {
@@ -280,7 +280,7 @@ export const mockOrders: Order[] = [
       },
     ],
     total: 64,
-    status: OrderStatus.OutForDelivery,
+    status: OrderStatus.Ready,
     datetime: "2026-05-10T12:18:00.000-03:00",
   },
   {

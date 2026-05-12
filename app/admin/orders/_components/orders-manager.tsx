@@ -4,12 +4,8 @@ import Link from "next/link"
 import {
   RiAddLine,
   RiCloseLine,
-  RiDeleteBinLine,
   RiEditLine,
   RiEyeLine,
-  RiMotorbikeLine,
-  RiRestaurant2Line,
-  RiTimeLine,
 } from "@remixicon/react"
 import { useEffect, useMemo, useState, useTransition } from "react"
 
@@ -33,6 +29,7 @@ import {
 import { formatCurrency } from "@/helpers/currency"
 import { formatDatetime } from "@/helpers/datetime"
 import { formatOrderItems, formatTable } from "@/helpers/order"
+import { canCancelOrder } from "@/helpers/order-status"
 import { OrderStatus, parseOrders, type Order } from "@/lib/data-schema"
 
 type OrderFilter = "Todos" | OrderStatus
@@ -41,22 +38,16 @@ type OrdersManagerProps = {
   initialOrders: Order[]
 }
 
-const metricColors = [
-  "border-info/25 bg-info-muted/65 shadow-info/5",
-  "border-success/25 bg-success-muted/65 shadow-success/5",
-  "border-warning/20 bg-warning-muted/45 shadow-warning/5",
-]
-
 function getStatusClasses(status: OrderStatus) {
   switch (status) {
     case OrderStatus.Ready:
       return "bg-success-muted text-success"
     case OrderStatus.Preparing:
       return "bg-warning-muted text-warning"
-    case OrderStatus.OutForDelivery:
-      return "bg-info-muted text-info"
     case OrderStatus.Finished:
       return "bg-muted text-muted-foreground"
+    case OrderStatus.Canceled:
+      return "bg-destructive-muted text-destructive"
     case OrderStatus.Waiting:
       return "bg-destructive-muted text-destructive"
   }
@@ -90,7 +81,7 @@ export function OrdersManager({ initialOrders }: OrdersManagerProps) {
   const [orders, setOrders] = useState(initialOrders)
   const [filter, setFilter] = useState<OrderFilter>("Todos")
   const [viewingOrder, setViewingOrder] = useState<Order | null>(null)
-  const [orderPendingDelete, setOrderPendingDelete] = useState<Order | null>(
+  const [orderPendingCancel, setOrderPendingCancel] = useState<Order | null>(
     null
   )
   const [message, setMessage] = useState<string | null>(null)
@@ -119,23 +110,51 @@ export function OrdersManager({ initialOrders }: OrdersManagerProps) {
     return orders.filter((order) => order.status === filter)
   }, [filter, orders])
 
-  function confirmOrderDeletion(order: Order) {
+  function getOrderActionAvailability(order: Order) {
+    const isCanceled = order.status === OrderStatus.Canceled
+    const isFinished = order.status === OrderStatus.Finished
+    const canCancel = canCancelOrder(order.status)
+
+    return {
+      canCancel,
+      canEdit: !isCanceled && !isFinished,
+      editTitle: isCanceled
+        ? "Pedido cancelado não pode ser editado"
+        : isFinished
+          ? "Pedido finalizado não pode ser editado"
+          : "Editar pedido",
+      cancelTitle: isCanceled
+        ? "Pedido cancelado"
+        : canCancel
+          ? "Cancelar pedido"
+          : "Pedido pronto não pode ser cancelado",
+    }
+  }
+
+  function confirmOrderCancellation(order: Order) {
     setMessage(null)
 
     startTransition(async () => {
       try {
         const nextOrders = await requestOrders(
-          `/api/orders?id=${encodeURIComponent(order.id)}`,
-          { method: "DELETE" },
+          "/api/orders",
+          {
+            body: JSON.stringify({
+              id: order.id,
+              status: OrderStatus.Canceled,
+              table: order.table,
+            }),
+            method: "PUT",
+          },
           orders
         )
 
         setOrders(nextOrders)
-        setOrderPendingDelete(null)
-        setMessage("Pedido removido.")
+        setOrderPendingCancel(null)
+        setMessage("Pedido cancelado.")
       } catch (error) {
         setMessage(error instanceof Error ? error.message : "Erro inesperado.")
-        setOrderPendingDelete(null)
+        setOrderPendingCancel(null)
       }
     })
   }
@@ -211,6 +230,12 @@ export function OrdersManager({ initialOrders }: OrdersManagerProps) {
                 <TableBody>
                   {filteredOrders.map((order) => (
                     <TableRow key={order.id}>
+                      {(() => {
+                        const actionAvailability =
+                          getOrderActionAvailability(order)
+
+                        return (
+                          <>
                       <TableCell className="px-6">
                         <p className="font-medium">{order.id}</p>
                         <p className="text-xs text-muted-foreground">
@@ -250,32 +275,47 @@ export function OrdersManager({ initialOrders }: OrdersManagerProps) {
                           >
                             <RiEyeLine aria-hidden />
                           </Button>
-                          <Button
-                            asChild
-                            size="icon-sm"
-                            title="Editar pedido"
-                            variant="ghost"
-                          >
-                            <Link
-                              href={`/admin/orders/edit/${encodeURIComponent(
-                                order.id
-                              )}`}
-                            >
+                          {!actionAvailability.canEdit ? (
+                              <Button
+                                disabled
+                                size="icon-sm"
+                                title={actionAvailability.editTitle}
+                                type="button"
+                                variant="ghost"
+                              >
                               <RiEditLine aria-hidden />
-                            </Link>
-                          </Button>
+                            </Button>
+                          ) : (
+                            <Button
+                                asChild
+                                size="icon-sm"
+                                title={actionAvailability.editTitle}
+                                variant="ghost"
+                              >
+                              <Link
+                                href={`/admin/orders/edit/${encodeURIComponent(
+                                  order.id
+                                )}`}
+                              >
+                                <RiEditLine aria-hidden />
+                              </Link>
+                            </Button>
+                          )}
                           <Button
-                            disabled={isPending}
-                            onClick={() => setOrderPendingDelete(order)}
+                            disabled={isPending || !actionAvailability.canCancel}
+                            onClick={() => setOrderPendingCancel(order)}
                             size="icon-sm"
-                            title="Excluir pedido"
+                            title={actionAvailability.cancelTitle}
                             type="button"
                             variant="destructive"
                           >
-                            <RiDeleteBinLine aria-hidden />
+                            <RiCloseLine aria-hidden />
                           </Button>
                         </div>
                       </TableCell>
+                          </>
+                        )
+                      })()}
                     </TableRow>
                   ))}
                 </TableBody>
@@ -345,7 +385,7 @@ export function OrdersManager({ initialOrders }: OrdersManagerProps) {
         </div>
       ) : null}
 
-      {orderPendingDelete ? (
+      {orderPendingCancel ? (
         <div
           aria-modal="true"
           className="fixed inset-0 z-50 flex items-center justify-center bg-foreground/45 p-4 backdrop-blur-sm"
@@ -355,15 +395,15 @@ export function OrdersManager({ initialOrders }: OrdersManagerProps) {
             <CardHeader className="flex flex-row items-start justify-between gap-4 border-b border-destructive/15 bg-destructive-muted/45 p-6">
               <div>
                 <CardTitle className="text-lg font-semibold">
-                  Confirmar exclusão
+                  Cancelar pedido
                 </CardTitle>
                 <CardDescription className="text-sm">
-                  O pedido será removido da listagem administrativa.
+                  O pedido continuará na listagem com status cancelado.
                 </CardDescription>
               </div>
               <Button
                 disabled={isPending}
-                onClick={() => setOrderPendingDelete(null)}
+                onClick={() => setOrderPendingCancel(null)}
                 size="icon-sm"
                 title="Fechar modal"
                 type="button"
@@ -376,31 +416,31 @@ export function OrdersManager({ initialOrders }: OrdersManagerProps) {
             <CardContent className="space-y-4 p-6">
               <div className="rounded-2xl border border-border/70 bg-muted/35 p-4">
                 <p className="text-sm font-medium">
-                  {orderPendingDelete.id} · {orderPendingDelete.customer}
+                  {orderPendingCancel.id} · {orderPendingCancel.customer}
                 </p>
                 <p className="mt-1 text-xs text-muted-foreground">
-                  {formatOrderItems(orderPendingDelete.items)}
+                  {formatOrderItems(orderPendingCancel.items)}
                 </p>
               </div>
 
               <div className="flex flex-wrap justify-end gap-2">
                 <Button
                   disabled={isPending}
-                  onClick={() => setOrderPendingDelete(null)}
+                  onClick={() => setOrderPendingCancel(null)}
                   type="button"
                   variant="outline"
                 >
                   <RiCloseLine aria-hidden />
-                  Cancelar
+                  Voltar
                 </Button>
                 <Button
                   disabled={isPending}
-                  onClick={() => confirmOrderDeletion(orderPendingDelete)}
+                  onClick={() => confirmOrderCancellation(orderPendingCancel)}
                   type="button"
                   variant="destructive"
                 >
-                  <RiDeleteBinLine aria-hidden />
-                  {isPending ? "Excluindo..." : "Excluir"}
+                  <RiCloseLine aria-hidden />
+                  {isPending ? "Cancelando..." : "Cancelar pedido"}
                 </Button>
               </div>
             </CardContent>

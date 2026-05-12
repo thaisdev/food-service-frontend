@@ -25,10 +25,10 @@ function getStatusClasses(status: OrderStatus) {
       return "bg-success-muted text-success"
     case OrderStatus.Preparing:
       return "bg-warning-muted text-warning"
-    case OrderStatus.OutForDelivery:
-      return "bg-info-muted text-info"
     case OrderStatus.Finished:
       return "bg-muted text-muted-foreground"
+    case OrderStatus.Canceled:
+      return "bg-destructive-muted text-destructive"
     case OrderStatus.Waiting:
       return "bg-destructive-muted text-destructive"
   }
@@ -104,7 +104,10 @@ export function CustomerOrders() {
               <strong className="mt-3 block text-3xl font-semibold">
                 {
                   customerOrders.filter(
-                    (order) => order.status !== OrderStatus.Finished
+                    (order) =>
+                      ![OrderStatus.Finished, OrderStatus.Canceled].includes(
+                        order.status
+                      )
                   ).length
                 }
               </strong>
