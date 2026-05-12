@@ -1,12 +1,7 @@
 "use client"
 
 import Link from "next/link"
-import {
-  RiAddLine,
-  RiCloseLine,
-  RiEditLine,
-  RiEyeLine,
-} from "@remixicon/react"
+import { RiAddLine, RiCloseLine, RiEditLine, RiEyeLine } from "@remixicon/react"
 import { useEffect, useMemo, useState, useTransition } from "react"
 
 import { Badge } from "@/components/ui/badge"
@@ -80,7 +75,6 @@ async function requestOrders(
 export function OrdersManager({ initialOrders }: OrdersManagerProps) {
   const [orders, setOrders] = useState(initialOrders)
   const [filter, setFilter] = useState<OrderFilter>("Todos")
-  const [viewingOrder, setViewingOrder] = useState<Order | null>(null)
   const [orderPendingCancel, setOrderPendingCancel] = useState<Order | null>(
     null
   )
@@ -236,83 +230,90 @@ export function OrdersManager({ initialOrders }: OrdersManagerProps) {
 
                         return (
                           <>
-                      <TableCell className="px-6">
-                        <p className="font-medium">{order.id}</p>
-                        <p className="text-xs text-muted-foreground">
-                          {formatTable(order.table)}
-                        </p>
-                      </TableCell>
-                      <TableCell>
-                        <p className="font-medium">{order.customer}</p>
-                        <p className="text-xs text-muted-foreground">
-                          {formatTable(order.table)}
-                        </p>
-                      </TableCell>
-                      <TableCell className="min-w-72">
-                        <p className="text-sm leading-6">
-                          {formatOrderItems(order.items)}
-                        </p>
-                      </TableCell>
-                      <TableCell className="font-medium">
-                        {formatCurrency(order.total)}
-                      </TableCell>
-                      <TableCell>
-                        <Badge className={getStatusClasses(order.status)}>
-                          {order.status}
-                        </Badge>
-                      </TableCell>
-                      <TableCell className="font-medium">
-                        {formatDatetime(order.datetime)}
-                      </TableCell>
-                      <TableCell className="px-6 text-right">
-                        <div className="inline-flex gap-1">
-                          <Button
-                            onClick={() => setViewingOrder(order)}
-                            size="icon-sm"
-                            title="Ver pedido"
-                            type="button"
-                            variant="ghost"
-                          >
-                            <RiEyeLine aria-hidden />
-                          </Button>
-                          {!actionAvailability.canEdit ? (
-                              <Button
-                                disabled
-                                size="icon-sm"
-                                title={actionAvailability.editTitle}
-                                type="button"
-                                variant="ghost"
-                              >
-                              <RiEditLine aria-hidden />
-                            </Button>
-                          ) : (
-                            <Button
-                                asChild
-                                size="icon-sm"
-                                title={actionAvailability.editTitle}
-                                variant="ghost"
-                              >
-                              <Link
-                                href={`/admin/orders/edit/${encodeURIComponent(
-                                  order.id
-                                )}`}
-                              >
-                                <RiEditLine aria-hidden />
-                              </Link>
-                            </Button>
-                          )}
-                          <Button
-                            disabled={isPending || !actionAvailability.canCancel}
-                            onClick={() => setOrderPendingCancel(order)}
-                            size="icon-sm"
-                            title={actionAvailability.cancelTitle}
-                            type="button"
-                            variant="destructive"
-                          >
-                            <RiCloseLine aria-hidden />
-                          </Button>
-                        </div>
-                      </TableCell>
+                            <TableCell className="px-6">
+                              <p className="font-medium">{order.id}</p>
+                              <p className="text-xs text-muted-foreground">
+                                {formatTable(order.table)}
+                              </p>
+                            </TableCell>
+                            <TableCell>
+                              <p className="font-medium">{order.customer}</p>
+                              <p className="text-xs text-muted-foreground">
+                                {formatTable(order.table)}
+                              </p>
+                            </TableCell>
+                            <TableCell className="min-w-72">
+                              <p className="text-sm leading-6">
+                                {formatOrderItems(order.items)}
+                              </p>
+                            </TableCell>
+                            <TableCell className="font-medium">
+                              {formatCurrency(order.total)}
+                            </TableCell>
+                            <TableCell>
+                              <Badge className={getStatusClasses(order.status)}>
+                                {order.status}
+                              </Badge>
+                            </TableCell>
+                            <TableCell className="font-medium">
+                              {formatDatetime(order.datetime)}
+                            </TableCell>
+                            <TableCell className="px-6 text-right">
+                              <div className="inline-flex gap-1">
+                                <Button
+                                  asChild
+                                  size="icon-sm"
+                                  title="Ver pedido"
+                                  variant="ghost"
+                                >
+                                  <Link
+                                    href={`/admin/orders/details/${encodeURIComponent(
+                                      order.id
+                                    )}`}
+                                  >
+                                    <RiEyeLine aria-hidden />
+                                  </Link>
+                                </Button>
+                                {!actionAvailability.canEdit ? (
+                                  <Button
+                                    disabled
+                                    size="icon-sm"
+                                    title={actionAvailability.editTitle}
+                                    type="button"
+                                    variant="ghost"
+                                  >
+                                    <RiEditLine aria-hidden />
+                                  </Button>
+                                ) : (
+                                  <Button
+                                    asChild
+                                    size="icon-sm"
+                                    title={actionAvailability.editTitle}
+                                    variant="ghost"
+                                  >
+                                    <Link
+                                      href={`/admin/orders/edit/${encodeURIComponent(
+                                        order.id
+                                      )}`}
+                                    >
+                                      <RiEditLine aria-hidden />
+                                    </Link>
+                                  </Button>
+                                )}
+                                <Button
+                                  disabled={
+                                    isPending || !actionAvailability.canCancel
+                                  }
+                                  onClick={() => setOrderPendingCancel(order)}
+                                  size="icon-sm"
+                                  title={actionAvailability.cancelTitle}
+                                  type="button"
+                                  variant="destructive"
+                                >
+                                  <RiCloseLine aria-hidden />
+                                </Button>
+                              </div>
+                            </TableCell>
                           </>
                         )
                       })()}
@@ -324,66 +325,6 @@ export function OrdersManager({ initialOrders }: OrdersManagerProps) {
           </Card>
         </section>
       </div>
-
-      {viewingOrder ? (
-        <div
-          aria-modal="true"
-          className="fixed inset-0 z-50 flex items-center justify-center bg-foreground/45 p-4 backdrop-blur-sm"
-          role="dialog"
-        >
-          <Card className="w-full max-w-xl rounded-2xl border border-info/15 p-0 shadow-xl">
-            <CardHeader className="flex flex-row items-start justify-between gap-4 border-b border-info/15 bg-info-muted/45 p-6">
-              <div>
-                <CardTitle className="text-lg font-semibold">
-                  Pedido {viewingOrder.id}
-                </CardTitle>
-                <CardDescription className="text-sm">
-                  Detalhes cadastrados para acompanhamento administrativo.
-                </CardDescription>
-              </div>
-              <Button
-                onClick={() => setViewingOrder(null)}
-                size="icon-sm"
-                title="Fechar modal"
-                type="button"
-                variant="ghost"
-              >
-                <RiCloseLine aria-hidden />
-              </Button>
-            </CardHeader>
-
-            <CardContent className="space-y-4 p-6">
-              <div className="grid gap-3 sm:grid-cols-2">
-                {[
-                  ["Cliente", viewingOrder.customer],
-                  ["Mesa", formatTable(viewingOrder.table)],
-                  ["Total", formatCurrency(viewingOrder.total)],
-                  ["Hora", formatDatetime(viewingOrder.datetime)],
-                ].map(([label, value]) => (
-                  <div
-                    key={label}
-                    className="rounded-2xl border border-border/70 bg-muted/35 p-4"
-                  >
-                    <p className="text-xs text-muted-foreground">{label}</p>
-                    <p className="mt-1 text-sm font-medium">{value}</p>
-                  </div>
-                ))}
-              </div>
-
-              <div className="rounded-2xl border border-border/70 bg-muted/35 p-4">
-                <p className="text-xs text-muted-foreground">Itens</p>
-                <p className="mt-1 text-sm font-medium">
-                  {formatOrderItems(viewingOrder.items)}
-                </p>
-              </div>
-
-              <Badge className={getStatusClasses(viewingOrder.status)}>
-                {viewingOrder.status}
-              </Badge>
-            </CardContent>
-          </Card>
-        </div>
-      ) : null}
 
       {orderPendingCancel ? (
         <div

@@ -2,7 +2,17 @@ import { AdminOrderFormModal } from "@/app/admin/orders/_components/admin-order-
 import { OrdersManager } from "@/app/admin/orders/_components/orders-manager"
 import { getVisibleOrders, getVisibleProducts } from "@/lib/server-data"
 
-export default async function NewOrderPage() {
+type NewOrderPageProps = {
+  searchParams: Promise<{
+    returnTo?: string
+  }>
+}
+
+export default async function NewOrderPage({
+  searchParams,
+}: NewOrderPageProps) {
+  const { returnTo } = await searchParams
+  const closeHref = returnTo === "/admin/dashboard" ? returnTo : "/admin/orders"
   const [orders, products] = await Promise.all([
     getVisibleOrders(),
     getVisibleProducts(),
@@ -11,7 +21,7 @@ export default async function NewOrderPage() {
   return (
     <>
       <OrdersManager initialOrders={orders} />
-      <AdminOrderFormModal products={products} />
+      <AdminOrderFormModal closeHref={closeHref} products={products} />
     </>
   )
 }
