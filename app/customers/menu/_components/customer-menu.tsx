@@ -52,6 +52,25 @@ function normalizeSearchText(value: string) {
     .replace(/[\u0300-\u036f]/g, "")
 }
 
+function sortProductsByCategory(products: Product[], categoryIds: string[]) {
+  const categoryOrder = new Map(
+    categoryIds.map((categoryId, index) => [categoryId, index])
+  )
+
+  return [...products].sort((firstProduct, secondProduct) => {
+    const firstCategoryOrder =
+      categoryOrder.get(firstProduct.categoryId) ?? Number.MAX_SAFE_INTEGER
+    const secondCategoryOrder =
+      categoryOrder.get(secondProduct.categoryId) ?? Number.MAX_SAFE_INTEGER
+
+    if (firstCategoryOrder !== secondCategoryOrder) {
+      return firstCategoryOrder - secondCategoryOrder
+    }
+
+    return firstProduct.name.localeCompare(secondProduct.name, "pt-BR")
+  })
+}
+
 function addProductToCart(product: Product) {
   const cartItems = readCustomerCart()
   const currentItem = cartItems.find((item) => item.productId === product.id)
@@ -84,13 +103,17 @@ export function CustomerMenu() {
   )
   const [productNameFilter, setProductNameFilter] = useState("")
   const menuItems = useMemo(
-    () =>
-      products.filter(
+    () => {
+      const categoryIds = categories.map((category) => category.id)
+      const availableProducts = products.filter(
         (product) =>
           product.status === ProductStatus.Active &&
           product.stock !== ProductStock.Unavailable
-      ),
-    [products]
+      )
+
+      return sortProductsByCategory(availableProducts, categoryIds)
+    },
+    [categories, products]
   )
   const menuCategories = useMemo(
     () =>
