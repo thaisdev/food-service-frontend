@@ -1,47 +1,362 @@
 [
   {
+    "id": "#1057",
+    "customer": "Ana Beatriz",
+    "table": 12,
+    "items": [
+      {
+        "productId": "PRD-029",
+        "name": "Combo Burger",
+        "quantity": 1,
+        "valor": 42.9,
+        "observation": "Sem picles"
+      },
+      {
+        "productId": "PRD-024",
+        "name": "Petit Gateau",
+        "quantity": 1,
+        "valor": 22.9,
+        "observation": ""
+      }
+    ],
+    "total": 65.8,
+    "status": "Aguardando",
+    "datetime": "2026-05-12T20:10:00.000-03:00"
+  },
+  {
+    "id": "#1056",
+    "customer": "Renato Lima",
+    "table": 9,
+    "items": [
+      {
+        "productId": "PRD-012",
+        "name": "Batata Frita",
+        "quantity": 1,
+        "valor": 24,
+        "observation": ""
+      },
+      {
+        "productId": "PRD-020",
+        "name": "Cerveja Pilsen",
+        "quantity": 2,
+        "valor": 12.9,
+        "observation": ""
+      }
+    ],
+    "total": 49.8,
+    "status": "Pronto",
+    "datetime": "2026-05-12T20:04:00.000-03:00"
+  },
+  {
+    "id": "#1055",
+    "customer": "Camila Nunes",
+    "table": 3,
+    "items": [
+      {
+        "productId": "PRD-010",
+        "name": "Pizza Calabresa",
+        "quantity": 1,
+        "valor": 56,
+        "observation": "Cebola à parte"
+      },
+      {
+        "productId": "PRD-018",
+        "name": "Refrigerante Guaraná",
+        "quantity": 2,
+        "valor": 7.5,
+        "observation": ""
+      }
+    ],
+    "total": 71,
+    "status": "Em preparo",
+    "datetime": "2026-05-12T19:58:00.000-03:00"
+  },
+  {
+    "id": "#1054",
+    "customer": "Bruno Azevedo",
+    "table": 14,
+    "items": [
+      {
+        "productId": "PRD-014",
+        "name": "Anéis de Cebola",
+        "quantity": 1,
+        "valor": 26,
+        "observation": ""
+      },
+      {
+        "productId": "PRD-021",
+        "name": "Cerveja IPA",
+        "quantity": 1,
+        "valor": 16.9,
+        "observation": ""
+      }
+    ],
+    "total": 42.9,
+    "status": "Aguardando",
+    "datetime": "2026-05-12T19:46:00.000-03:00"
+  },
+  {
+    "id": "#1053",
+    "customer": "Patrícia Gomes",
+    "table": 6,
+    "items": [
+      {
+        "productId": "PRD-028",
+        "name": "Parmegiana de Frango",
+        "quantity": 1,
+        "valor": 42.9,
+        "observation": ""
+      },
+      {
+        "productId": "PRD-023",
+        "name": "Pudim de Leite",
+        "quantity": 1,
+        "valor": 13.5,
+        "observation": ""
+      }
+    ],
+    "total": 56.4,
+    "status": "Finalizado",
+    "datetime": "2026-05-12T19:20:00.000-03:00"
+  },
+  {
+    "id": "#1052",
+    "customer": "Diego Martins",
+    "table": 10,
+    "items": [
+      {
+        "productId": "PRD-007",
+        "name": "Chicken Crispy",
+        "quantity": 2,
+        "valor": 27.9,
+        "observation": ""
+      },
+      {
+        "productId": "PRD-017",
+        "name": "Refrigerante Cola",
+        "quantity": 2,
+        "valor": 7.5,
+        "observation": ""
+      }
+    ],
+    "total": 70.8,
+    "status": "Pronto",
+    "datetime": "2026-05-12T19:12:00.000-03:00"
+  },
+  {
+    "id": "#1051",
+    "customer": "Helena Prado",
+    "table": 2,
+    "items": [
+      {
+        "productId": "PRD-008",
+        "name": "Veggie Burger",
+        "quantity": 1,
+        "valor": 29.9,
+        "observation": ""
+      },
+      {
+        "productId": "PRD-026",
+        "name": "Mousse de Maracujá",
+        "quantity": 1,
+        "valor": 11.9,
+        "observation": ""
+      }
+    ],
+    "total": 41.8,
+    "status": "Cancelado",
+    "datetime": "2026-05-12T18:54:00.000-03:00"
+  },
+  {
+    "id": "#1050",
+    "customer": "Rafaela Torres",
+    "table": 11,
+    "items": [
+      {
+        "productId": "PRD-013",
+        "name": "Batata Frita com Cheddar e Bacon",
+        "quantity": 1,
+        "valor": 34.9,
+        "observation": ""
+      },
+      {
+        "productId": "PRD-015",
+        "name": "Isca de Frango",
+        "quantity": 1,
+        "valor": 32,
+        "observation": ""
+      }
+    ],
+    "total": 66.9,
+    "status": "Em preparo",
+    "datetime": "2026-05-12T18:41:00.000-03:00"
+  },
+  {
+    "id": "#1049",
+    "customer": "Thiago Rocha",
+    "table": 8,
+    "items": [
+      {
+        "productId": "PRD-030",
+        "name": "Combo Família Pizza",
+        "quantity": 1,
+        "valor": 89.9,
+        "observation": "Refrigerante cola"
+      }
+    ],
+    "total": 89.9,
+    "status": "Aguardando",
+    "datetime": "2026-05-12T18:29:00.000-03:00"
+  },
+  {
+    "id": "#1048",
+    "customer": "Sofia Barros",
+    "table": 16,
+    "items": [
+      {
+        "productId": "PRD-011",
+        "name": "Pizza Quatro Queijos",
+        "quantity": 1,
+        "valor": 59,
+        "observation": ""
+      },
+      {
+        "productId": "PRD-022",
+        "name": "Limonada Suíça",
+        "quantity": 2,
+        "valor": 11.9,
+        "observation": ""
+      }
+    ],
+    "total": 82.8,
+    "status": "Finalizado",
+    "datetime": "2026-05-12T17:55:00.000-03:00"
+  },
+  {
+    "id": "#1047",
+    "customer": "Marcelo Vieira",
+    "table": 4,
+    "items": [
+      {
+        "productId": "PRD-006",
+        "name": "Cheeseburger Clássico",
+        "quantity": 1,
+        "valor": 26.9,
+        "observation": ""
+      },
+      {
+        "productId": "PRD-016",
+        "name": "Mini Pastéis",
+        "quantity": 1,
+        "valor": 29.5,
+        "observation": ""
+      },
+      {
+        "productId": "PRD-019",
+        "name": "Água com Gás",
+        "quantity": 1,
+        "valor": 6,
+        "observation": ""
+      }
+    ],
+    "total": 62.4,
+    "status": "Pronto",
+    "datetime": "2026-05-12T17:30:00.000-03:00"
+  },
+  {
+    "id": "#1046",
+    "customer": "Letícia Ramos",
+    "table": 13,
+    "items": [
+      {
+        "productId": "PRD-027",
+        "name": "Prato Executivo",
+        "quantity": 2,
+        "valor": 34.9,
+        "observation": ""
+      },
+      {
+        "productId": "PRD-025",
+        "name": "Cheesecake de Frutas Vermelhas",
+        "quantity": 1,
+        "valor": 18.9,
+        "observation": ""
+      }
+    ],
+    "total": 88.7,
+    "status": "Em preparo",
+    "datetime": "2026-05-12T17:08:00.000-03:00"
+  },
+  {
     "id": "#1028",
     "customer": "Mariana Costa",
-    "channel": "Delivery",
-    "items": "2x Smash Burger, 1x Batata Rústica",
-    "total": "R$ 86,90",
+    "table": 1,
+    "items": [
+      {
+        "productId": "PRD-001",
+        "name": "Smash Burger",
+        "quantity": 2,
+        "valor": 28.9,
+        "observation": ""
+      },
+      {
+        "productId": "PRD-012",
+        "name": "Batata Frita",
+        "quantity": 1,
+        "valor": 24,
+        "observation": ""
+      }
+    ],
+    "total": 81.8,
     "status": "Em preparo",
-    "time": "12:40"
+    "datetime": "2026-05-10T12:40:00.000-03:00"
   },
   {
     "id": "#1027",
     "customer": "Lucas Almeida",
-    "channel": "Balcão",
-    "items": "1x Bowl Fit, 1x Suco Verde",
-    "total": "R$ 41,50",
+    "table": 2,
+    "items": [
+      {
+        "productId": "PRD-002",
+        "name": "Bowl Fit",
+        "quantity": 1,
+        "valor": 24.5,
+        "observation": ""
+      },
+      {
+        "productId": "PRD-005",
+        "name": "Suco Verde",
+        "quantity": 1,
+        "valor": 9.5,
+        "observation": ""
+      }
+    ],
+    "total": 34,
     "status": "Pronto",
-    "time": "12:32"
+    "datetime": "2026-05-10T12:32:00.000-03:00"
   },
   {
     "id": "#1026",
     "customer": "Fernanda Rocha",
-    "channel": "Mesa 08",
-    "items": "3x Taco de Frango, 2x Refrigerante",
-    "total": "R$ 73,00",
+    "table": 8,
+    "items": [
+      {
+        "productId": "PRD-009",
+        "name": "Hot Dog da Casa",
+        "quantity": 3,
+        "valor": 22.9,
+        "observation": ""
+      },
+      {
+        "productId": "PRD-017",
+        "name": "Refrigerante Cola",
+        "quantity": 2,
+        "valor": 7.5,
+        "observation": ""
+      }
+    ],
+    "total": 83.7,
     "status": "Aguardando",
-    "time": "12:25"
-  },
-  {
-    "id": "#1025",
-    "customer": "Rafael Souza",
-    "channel": "Delivery",
-    "items": "1x Pizza Marguerita, 1x Brownie",
-    "total": "R$ 64,90",
-    "status": "Saiu para entrega",
-    "time": "12:18"
-  },
-  {
-    "id": "#1024",
-    "customer": "Carla Mendes",
-    "channel": "Mesa 03",
-    "items": "2x Prato Executivo, 2x Água com gás",
-    "total": "R$ 92,00",
-    "status": "Finalizado",
-    "time": "12:05"
+    "datetime": "2026-05-10T12:25:00.000-03:00"
   }
 ]

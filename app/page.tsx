@@ -35,7 +35,7 @@ export default function Page() {
       email: adminEmail.trim(),
     })
 
-    router.push("/admin/home")
+    router.push("/admin/dashboard")
   }
 
   function handleCustomerSubmit(event: FormEvent<HTMLFormElement>) {
@@ -84,7 +84,7 @@ export default function Page() {
                 Acesso da equipe
               </CardTitle>
               <CardDescription className="text-sm leading-6">
-                Use e-mail e senha para entrar no painel administrativo e
+                Use e-mail e senha para entrar no módulo administrativo e
                 gerenciar pedidos, produtos e operação.
               </CardDescription>
             </CardHeader>

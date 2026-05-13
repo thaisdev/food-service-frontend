@@ -1,0 +1,50 @@
+[
+  {
+    "id": "CAT-001",
+    "name": "Lanches",
+    "description": "Hambúrgueres, sanduíches e opções rápidas.",
+    "status": "Ativa"
+  },
+  {
+    "id": "CAT-002",
+    "name": "Saudável",
+    "description": "Pratos leves, bowls e combinações balanceadas.",
+    "status": "Ativa"
+  },
+  {
+    "id": "CAT-003",
+    "name": "Pizzas",
+    "description": "Pizzas inteiras e sabores especiais.",
+    "status": "Ativa"
+  },
+  {
+    "id": "CAT-004",
+    "name": "Sobremesas",
+    "description": "Doces, bolos e finalizações da casa.",
+    "status": "Ativa"
+  },
+  {
+    "id": "CAT-005",
+    "name": "Bebidas",
+    "description": "Sucos, refrigerantes, águas e bebidas geladas.",
+    "status": "Ativa"
+  },
+  {
+    "id": "CAT-006",
+    "name": "Pratos",
+    "description": "Refeições completas para salão.",
+    "status": "Ativa"
+  },
+  {
+    "id": "CAT-007",
+    "name": "Combos",
+    "description": "Combinações promocionais e kits do cardápio.",
+    "status": "Ativa"
+  },
+  {
+    "id": "CAT-008",
+    "name": "Acompanhamentos",
+    "description": "Porções extras, entradas e complementos.",
+    "status": "Ativa"
+  }
+]

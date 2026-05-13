@@ -29,6 +29,20 @@ Instale as dependências do projeto:
 npm install
 ```
 
+Configure as variáveis de ambiente do Firebase Admin para persistir dados no Firestore. Use `.env.example` como referência:
+
+```bash
+FIREBASE_PROJECT_ID=
+FIREBASE_CLIENT_EMAIL=
+FIREBASE_PRIVATE_KEY=
+```
+
+A aplicação sempre lê e grava os dados no Firestore. Para carregar os dados iniciais a partir dos arquivos em `data/*.example.json`, execute:
+
+```bash
+npm run seed:firestore
+```
+
 ## Rodando em desenvolvimento
 
 Inicie o servidor de desenvolvimento:
@@ -70,6 +84,12 @@ npm run lint
 Executa a análise de lint do projeto.
 
 ```bash
+npm run seed:firestore
+```
+
+Popula as coleções `categories`, `products` e `orders` do Firestore com os JSON de exemplo.
+
+```bash
 npm run typecheck
 ```
 
@@ -94,5 +114,5 @@ Os componentes de UI ficam no diretório `components`.
 Exemplo de importação:
 
 ```tsx
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/ui/button"
 ```
