@@ -8,9 +8,10 @@ import {
   RiDeleteBinLine,
   RiEditLine,
 } from "@remixicon/react"
-import { useEffect, useMemo, useState, useTransition } from "react"
+import { useEffect, useState, useTransition } from "react"
 
 import { Badge } from "@/components/ui/badge"
+import { TablePagination } from "@/components/table-pagination"
 import { Button } from "@/components/ui/button"
 import {
   Card,
@@ -19,6 +20,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
+import { Input } from "@/components/ui/input"
 import {
   Table,
   TableBody,
@@ -36,8 +38,12 @@ import {
   type Product,
 } from "@/lib/data-schema"
 import { formatProductPrice } from "@/helpers/currency"
+import type { PaginatedResponse } from "@/lib/api-pagination"
 
 type ProductFilter = "Todos" | "Ativos" | "Inativos" | "Baixo estoque"
+
+const ALL_CATEGORIES_FILTER = "all"
+const PRODUCTS_PAGE_SIZE = 10
 
 type AdminProductsCrudProps = {
   categories: Category[]
@@ -83,22 +89,70 @@ async function requestProducts(
   )
 }
 
+function parsePaginatedProducts(value: unknown): PaginatedResponse<Product> | null {
+  if (!value || typeof value !== "object") {
+    return null
+  }
+
+  const data = value as {
+    items?: unknown
+    pagination?: {
+      page?: unknown
+      pageSize?: unknown
+      totalItems?: unknown
+      totalPages?: unknown
+    }
+  }
+  const products = parseProducts(
+    data.items ? JSON.stringify(data.items) : null
+  )
+
+  if (
+    !products ||
+    !data.pagination ||
+    typeof data.pagination.page !== "number" ||
+    typeof data.pagination.pageSize !== "number" ||
+    typeof data.pagination.totalItems !== "number" ||
+    typeof data.pagination.totalPages !== "number"
+  ) {
+    return null
+  }
+
+  return {
+    items: products,
+    pagination: {
+      page: data.pagination.page,
+      pageSize: data.pagination.pageSize,
+      totalItems: data.pagination.totalItems,
+      totalPages: data.pagination.totalPages,
+    },
+  }
+}
+
 export function AdminProductsCrud({
   categories,
   initialProducts,
 }: AdminProductsCrudProps) {
-  const [products, setProducts] = useState(initialProducts)
+  const [products, setProducts] = useState(
+    initialProducts.slice(0, PRODUCTS_PAGE_SIZE)
+  )
   const [filter, setFilter] = useState<ProductFilter>("Todos")
+  const [selectedCategoryId, setSelectedCategoryId] = useState(
+    ALL_CATEGORIES_FILTER
+  )
+  const [productNameFilter, setProductNameFilter] = useState("")
+  const [currentPage, setCurrentPage] = useState(1)
+  const [totalItems, setTotalItems] = useState(initialProducts.length)
+  const [refreshKey, setRefreshKey] = useState(0)
   const [message, setMessage] = useState<string | null>(null)
   const [productPendingDelete, setProductPendingDelete] =
     useState<Product | null>(null)
   const [isPending, startTransition] = useTransition()
 
   useEffect(() => {
-    function updateProducts(event: Event) {
-      const productEvent = event as CustomEvent<Product[]>
-
-      setProducts(productEvent.detail)
+    function updateProducts() {
+      setCurrentPage(1)
+      setRefreshKey((key) => key + 1)
       setMessage(null)
     }
 
@@ -109,22 +163,46 @@ export function AdminProductsCrud({
     }
   }, [])
 
-  const filteredProducts = useMemo(() => {
-    switch (filter) {
-      case "Ativos":
-        return products.filter(
-          (product) => product.status === ProductStatus.Active
-        )
-      case "Inativos":
-        return products.filter(
-          (product) => product.status === ProductStatus.Inactive
-        )
-      case "Baixo estoque":
-        return products.filter((product) => product.stock === ProductStock.Low)
-      case "Todos":
-        return products
+  useEffect(() => {
+    const searchParams = new URLSearchParams({
+      page: String(currentPage),
+      pageSize: String(PRODUCTS_PAGE_SIZE),
+    })
+
+    if (filter === "Ativos") {
+      searchParams.set("status", ProductStatus.Active)
     }
-  }, [filter, products])
+
+    if (filter === "Inativos") {
+      searchParams.set("status", ProductStatus.Inactive)
+    }
+
+    if (filter === "Baixo estoque") {
+      searchParams.set("stock", ProductStock.Low)
+    }
+
+    if (selectedCategoryId !== ALL_CATEGORIES_FILTER) {
+      searchParams.set("categoryId", selectedCategoryId)
+    }
+
+    if (productNameFilter.trim()) {
+      searchParams.set("name", productNameFilter)
+    }
+
+    fetch(`/api/products?${searchParams.toString()}`, { cache: "no-store" })
+      .then((response) => (response.ok ? response.json() : null))
+      .then((data) => {
+        const paginatedProducts = parsePaginatedProducts(data)
+
+        if (!paginatedProducts) {
+          return
+        }
+
+        setProducts(paginatedProducts.items)
+        setTotalItems(paginatedProducts.pagination.totalItems)
+        setCurrentPage(paginatedProducts.pagination.page)
+      })
+  }, [currentPage, filter, productNameFilter, refreshKey, selectedCategoryId])
 
   function confirmProductDeletion(product: Product) {
     setMessage(null)
@@ -143,7 +221,9 @@ export function AdminProductsCrud({
           products
         )
 
-        setProducts(nextProducts)
+        setProducts(nextProducts.slice(0, PRODUCTS_PAGE_SIZE))
+        setCurrentPage(1)
+        setRefreshKey((key) => key + 1)
 
         setMessage("Produto ocultado.")
       } catch (error) {
@@ -183,7 +263,7 @@ export function AdminProductsCrud({
 
         <section>
           <Card className="rounded-3xl border border-primary/15 p-0 shadow-sm">
-            <CardHeader className="flex flex-col gap-4 border-b border-primary/15 bg-primary-muted/45 p-6 md:flex-row md:items-center md:justify-between">
+            <CardHeader className="flex flex-col gap-4 border-b border-primary/15 bg-primary-muted/45 p-6">
               <div>
                 <CardTitle className="text-lg font-semibold">
                   Produtos cadastrados
@@ -192,19 +272,75 @@ export function AdminProductsCrud({
                   Visualize, filtre e mantenha os itens disponíveis no sistema.
                 </CardDescription>
               </div>
-              <div className="flex flex-wrap gap-2">
-                {(
-                  ["Todos", "Ativos", "Inativos", "Baixo estoque"] as const
-                ).map((currentFilter) => (
-                  <Button
-                    key={currentFilter}
-                    onClick={() => setFilter(currentFilter)}
-                    type="button"
-                    variant={filter === currentFilter ? "default" : "outline"}
-                  >
-                    {currentFilter}
-                  </Button>
-                ))}
+              <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <div className="grid gap-1.5">
+                    <label
+                      className="text-xs font-medium"
+                      htmlFor="categoryFilter"
+                    >
+                      Categoria
+                    </label>
+                    <select
+                      className="h-9 min-w-48 rounded-md border border-input bg-input/20 px-2 text-xs outline-none transition-colors focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/30"
+                      id="categoryFilter"
+                      onChange={(event) => {
+                        setSelectedCategoryId(event.target.value)
+                        setCurrentPage(1)
+                      }}
+                      value={selectedCategoryId}
+                    >
+                      <option value={ALL_CATEGORIES_FILTER}>
+                        Todas as categorias
+                      </option>
+                      {categories.map((category) => (
+                        <option key={category.id} value={category.id}>
+                          {category.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div className="grid gap-1.5">
+                    <label
+                      className="text-xs font-medium"
+                      htmlFor="productNameFilter"
+                    >
+                      Produto
+                    </label>
+                    <Input
+                      className="h-9 min-w-64"
+                      id="productNameFilter"
+                      onChange={(event) => {
+                        setProductNameFilter(event.target.value)
+                        setCurrentPage(1)
+                      }}
+                      placeholder="Filtrar por nome"
+                      type="search"
+                      value={productNameFilter}
+                    />
+                  </div>
+                </div>
+
+                <div className="flex flex-wrap gap-2">
+                  {(
+                    ["Todos", "Ativos", "Inativos", "Baixo estoque"] as const
+                  ).map((currentFilter) => (
+                    <Button
+                      key={currentFilter}
+                      onClick={() => {
+                        setFilter(currentFilter)
+                        setCurrentPage(1)
+                      }}
+                      type="button"
+                      variant={
+                        filter === currentFilter ? "default" : "outline"
+                      }
+                    >
+                      {currentFilter}
+                    </Button>
+                  ))}
+                </div>
               </div>
             </CardHeader>
 
@@ -222,7 +358,7 @@ export function AdminProductsCrud({
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {filteredProducts.map((product) => (
+                  {products.map((product) => (
                     <TableRow key={product.id}>
                       <TableCell className="px-6 font-medium">
                         {product.id}
@@ -291,6 +427,12 @@ export function AdminProductsCrud({
                 </TableBody>
               </Table>
             </CardContent>
+            <TablePagination
+              currentPage={currentPage}
+              onPageChange={setCurrentPage}
+              pageSize={PRODUCTS_PAGE_SIZE}
+              totalItems={totalItems}
+            />
           </Card>
         </section>
       </div>

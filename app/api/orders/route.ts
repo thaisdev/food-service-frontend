@@ -3,7 +3,13 @@ import { NextResponse } from "next/server"
 import { calculateOrderTotal, parseTable } from "@/helpers/order"
 import { canCancelOrder, canUpdateOrderStatus } from "@/helpers/order-status"
 import { delay } from "@/lib/api-delay"
-import { OrderStatus, parseOrders, type Order, type OrderItem } from "@/lib/data-schema"
+import { paginateItems, parsePaginationParams } from "@/lib/api-pagination"
+import {
+  OrderStatus,
+  parseOrders,
+  type Order,
+  type OrderItem,
+} from "@/lib/data-schema"
 import { getOrders, getVisibleOrders, saveOrders } from "@/lib/server-data"
 
 export const runtime = "nodejs"
@@ -29,6 +35,20 @@ function createOrderId(orders: Order[]) {
 
 function getCurrentOrderDatetime() {
   return new Date().toISOString()
+}
+
+function getOrderDateFilterValue(datetime: string) {
+  const date = new Date(datetime)
+
+  if (Number.isNaN(date.getTime())) {
+    return ""
+  }
+
+  const year = date.getFullYear()
+  const month = String(date.getMonth() + 1).padStart(2, "0")
+  const day = String(date.getDate()).padStart(2, "0")
+
+  return `${year}-${month}-${day}`
 }
 
 function normalizeOrderItems(items: Partial<OrderItem>[] | undefined) {
@@ -106,12 +126,31 @@ async function readOrderRequest(request: Request) {
   }
 }
 
-export async function GET() {
+export async function GET(request: Request) {
   await delay()
 
+  const { searchParams } = new URL(request.url)
   const orders = await getVisibleOrders()
 
-  return NextResponse.json(orders)
+  if (!searchParams.has("page")) {
+    return NextResponse.json(orders)
+  }
+
+  const status = searchParams.get("status")
+  const date = searchParams.get("date") ?? ""
+  const filteredOrders = orders.filter((order) => {
+    const matchesStatus =
+      !status ||
+      (Object.values(OrderStatus).includes(status as OrderStatus) &&
+        order.status === status)
+    const matchesDate =
+      !date || getOrderDateFilterValue(order.datetime) === date
+
+    return matchesStatus && matchesDate
+  })
+  const { page, pageSize } = parsePaginationParams(searchParams)
+
+  return NextResponse.json(paginateItems(filteredOrders, page, pageSize))
 }
 
 export async function POST(request: Request) {
