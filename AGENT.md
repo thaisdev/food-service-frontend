@@ -8,6 +8,15 @@ Este arquivo define as regras que agentes de IA devem seguir ao implementar, rev
 - Reutilizar componentes, funções, estilos e tipos sempre que possível.
 - Evitar componentes muito grandes. Separar blocos de UI, comportamento ou composição em componentes menores quando isso melhorar a leitura.
 - Evitar programação defensiva com condições desnecessárias, mantendo a complexidade cognitiva baixa.
+- Remover types, funções, constantes, componentes, imports e arquivos que não estejam sendo utilizados.
+
+## Stack e comandos do projeto
+
+- O projeto utiliza Next.js com App Router, React, TypeScript em modo strict, Tailwind CSS, shadcn/ui, ESLint e Prettier.
+- Utilizar `npm` como gerenciador de pacotes, preservando o `package-lock.json`.
+- Usar imports absolutos com o alias `@/*` quando isso melhorar a leitura e estiver alinhado ao padrão existente.
+- Antes de finalizar alterações de código, executar `npm run lint` e `npm run typecheck` sempre que a mudança tocar TypeScript, React, rotas ou contratos.
+- Quando alterar arquivos `.ts` ou `.tsx`, manter a formatação compatível com o Prettier do projeto.
 
 ## React e Next.js
 
@@ -29,6 +38,8 @@ Este arquivo define as regras que agentes de IA devem seguir ao implementar, rev
 
 - Dar preferência aos componentes do shadcn/ui antes de criar componentes de interface do zero.
 - Utilizar as cores e tokens definidos em `app/globals.css` como fonte principal para estilos.
+- Utilizar Tailwind CSS e tokens semânticos do tema antes de cores soltas ou estilos inline.
+- Utilizar ícones de `@remixicon/react`, conforme configurado no `components.json`.
 - Evitar estilos duplicados. Quando um padrão visual se repetir, extrair para componente, variante ou helper de classe.
 - Manter a interface consistente com os componentes e convenções já existentes no projeto.
 - Manter consistência visual entre componentes equivalentes, preservando padrões de espaçamento, bordas, cores, tipografia, estados, ícones e ações para fluxos semelhantes.
@@ -48,6 +59,8 @@ Este arquivo define as regras que agentes de IA devem seguir ao implementar, rev
 - Utilizar pastas privadas com prefixo underline, como `_components`, `_hooks`, `_helpers` e `_types`, para arquivos internos ao slice que devem ser ignorados pelo roteamento.
 - Promover arquivos para pastas na raiz do projeto apenas quando forem compartilhados por mais de uma página, módulo ou contexto.
 - Evitar criar abstrações globais antes de existir uso real compartilhado.
+- Manter componentes base do shadcn/ui em `components/ui` e componentes compartilhados de aplicação em `components`.
+- Manter helpers compartilhados em `helpers` ou `lib` conforme a responsabilidade já existente: helpers puros de domínio em `helpers`, integrações e infraestrutura em `lib`.
 
 ## Hooks, utils e helpers
 
@@ -67,6 +80,8 @@ Este arquivo define as regras que agentes de IA devem seguir ao implementar, rev
 
 ## Revisão antes de finalizar
 
+- Executar `npm run lint` e `npm run typecheck` quando aplicável, relatando qualquer falha que não puder ser corrigida no momento.
+- Verificar se não ficaram types, funções, constantes, componentes, imports ou arquivos sem uso.
 - Verificar se o componente poderia continuar como Server Component.
 - Verificar se toda rota com requisição ao backend possui `loading.tsx` com skeleton.
 - Verificar se relacionamentos entre dados usam chaves/IDs em vez de cópias desnecessárias de objetos relacionados.
