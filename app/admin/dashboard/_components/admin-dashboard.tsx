@@ -69,6 +69,21 @@ function getStockClasses(stock: ProductStock) {
   }
 }
 
+function getMetricClasses(status: OrderStatus) {
+  switch (status) {
+    case OrderStatus.Ready:
+      return "border-success/25 bg-success-muted/70 shadow-success/5"
+    case OrderStatus.Preparing:
+      return "border-warning/25 bg-warning-muted/70 shadow-warning/5"
+    case OrderStatus.Waiting:
+      return "border-destructive/20 bg-destructive-muted/60 shadow-destructive/5"
+    case OrderStatus.Finished:
+      return "border-muted bg-muted/70 shadow-muted/5"
+    case OrderStatus.Canceled:
+      return "border-destructive/20 bg-destructive-muted/60 shadow-destructive/5"
+  }
+}
+
 function getTodayKey(date: Date) {
   return new Intl.DateTimeFormat("en-CA", {
     day: "2-digit",
@@ -143,17 +158,18 @@ export function AdminDashboard({
     }
   }, [])
 
+  const allTodaysOrders = useMemo(
+    () => orders.filter((order) => isTodayOrder(order, todayKey)),
+    [orders, todayKey]
+  )
+
   const todaysOrders = useMemo(() => {
     const statusWeight = new Map<OrderStatus, number>(
       activeOrderStatuses.map((status, index) => [status, index])
     )
 
-    return orders
-      .filter(
-        (order) =>
-          activeOrderStatuses.includes(order.status) &&
-          isTodayOrder(order, todayKey)
-      )
+    return allTodaysOrders
+      .filter((order) => activeOrderStatuses.includes(order.status))
       .sort((firstOrder, secondOrder) => {
         const statusDifference =
           (statusWeight.get(firstOrder.status) ?? 99) -
@@ -168,7 +184,7 @@ export function AdminDashboard({
           new Date(secondOrder.datetime).getTime()
         )
       })
-  }, [orders, todayKey])
+  }, [allTodaysOrders])
 
   const lowStockProducts = useMemo(
     () =>
@@ -257,19 +273,23 @@ export function AdminDashboard({
         </section>
 
         <section className="grid gap-4 md:grid-cols-4">
-          <div className="rounded-2xl border border-info/15 bg-card/85 p-5 shadow-sm">
-            <p className="flex items-center gap-2 text-xs font-medium text-muted-foreground">
+          <div className="rounded-2xl border border-info/25 bg-info-muted/70 p-5 shadow-sm shadow-info/5">
+            <p className="flex items-center gap-2 text-xs font-medium text-info">
               <RiShoppingBag3Line aria-hidden className="size-4" />
-              Pedidos ativos hoje
+              Pedidos de hoje
             </p>
-            <p className="mt-3 text-3xl font-semibold">{todaysOrders.length}</p>
+            <p className="mt-3 text-3xl font-semibold">
+              {allTodaysOrders.length}
+            </p>
           </div>
           {statusTotals.map((metric) => (
             <div
-              className="rounded-2xl border border-border/70 bg-card/85 p-5 shadow-sm"
+              className={`rounded-2xl border p-5 shadow-sm ${getMetricClasses(
+                metric.label
+              )}`}
               key={metric.label}
             >
-              <p className="text-xs font-medium text-muted-foreground">
+              <p className="text-xs font-medium text-foreground/75">
                 {metric.label}
               </p>
               <p className="mt-3 text-3xl font-semibold">{metric.total}</p>
@@ -288,11 +308,11 @@ export function AdminDashboard({
             <CardHeader className="flex flex-col gap-4 border-b border-info/15 bg-info-muted/45 p-6 md:flex-row md:items-center md:justify-between">
               <div>
                 <CardTitle className="text-lg font-semibold">
-                  Pedidos de hoje
+                  Pedidos ativos
                 </CardTitle>
                 <CardDescription className="text-sm">
-                  Sem cancelados ou finalizados, ordenados por prioridade
-                  operacional.
+                  {todaysOrders.length} pedidos sem cancelados ou finalizados,
+                  ordenados por prioridade operacional.
                 </CardDescription>
               </div>
               <Button asChild variant="link">

@@ -30,9 +30,7 @@ export function AppHeader() {
   const isDark = resolvedTheme === "dark"
   const isAdmin = pathname.startsWith("/admin")
   const isCustomers = pathname.startsWith("/customers")
-  const logoSrc = isDark
-    ? "/branding/food-service-logo-app-icon-primary.svg"
-    : "/branding/food-service-logo-app-icon-light.svg"
+  const logoSrc = "/branding/food-service-logo-app-icon-light.svg"
   const links = isAdmin ? adminLinks : isCustomers ? customerLinks : []
   const homeHref = isAdmin
     ? "/admin/dashboard"
@@ -51,7 +49,7 @@ export function AppHeader() {
   }
 
   return (
-    <header className="sticky top-0 z-50 border-b border-primary/20 bg-white/95 shadow-[0_1px_0_color-mix(in_srgb,var(--brand-bright)_18%,transparent)] backdrop-blur dark:bg-card/95">
+    <header className="sticky top-0 z-50 border-b border-brand-bright/25 bg-brand-deep text-white shadow-[0_1px_0_color-mix(in_srgb,var(--brand-bright)_30%,transparent)]">
       <div className="mx-auto flex w-full max-w-[1800px] items-center justify-between gap-4 px-6 py-4">
         <div className="flex items-center gap-6">
           <Link href={homeHref} className="flex items-center gap-3">
@@ -64,10 +62,10 @@ export function AppHeader() {
               priority
             />
             <span className="hidden sm:flex sm:flex-col sm:leading-none">
-              <strong className="font-heading text-base font-semibold tracking-tight">
+              <strong className="font-heading text-base font-semibold tracking-tight text-white">
                 Food Service
               </strong>
-              <span className="mt-1 text-[11px] font-medium tracking-[0.24em] text-brand-muted uppercase">
+              <span className="mt-1 text-[11px] font-medium tracking-[0.24em] text-brand-bright uppercase">
                 {subtitle}
               </span>
             </span>
@@ -85,9 +83,9 @@ export function AppHeader() {
                   key={link.href}
                   href={link.href}
                   className={cn(
-                    "rounded-full px-3 py-2 text-sm text-muted-foreground transition-colors hover:bg-primary-muted hover:text-primary",
+                    "rounded-full px-3 py-2 text-sm text-white/78 transition-colors hover:bg-white/10 hover:text-white",
                     isActive &&
-                      "bg-primary text-primary-foreground shadow-sm shadow-primary/20"
+                      "bg-brand-bright text-brand-deep shadow-sm shadow-brand-bright/20"
                   )}
                 >
                   {link.label}
@@ -116,7 +114,8 @@ export function AppHeader() {
               type="button"
               variant="ghost"
               className={cn(
-                isCustomers && "text-rose hover:bg-destructive-muted"
+                "text-white hover:bg-white/10 hover:text-white",
+                isCustomers && "hover:bg-destructive/25"
               )}
               onClick={handleSignOut}
             >
@@ -127,6 +126,7 @@ export function AppHeader() {
           <Button
             type="button"
             variant="outline"
+            className="border-white/25 bg-white/8 text-white hover:bg-white/14 hover:text-white"
             onClick={() => setTheme(isDark ? "light" : "dark")}
           >
             {isDark ? "Modo claro" : "Modo escuro"}

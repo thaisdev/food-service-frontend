@@ -436,12 +436,17 @@ export function AdminOrderFormModal({
                 </Button>
               ) : (
                 <>
+                  <Button asChild variant="outline">
+                    <Link href={closeHref}>
+                      <RiCloseLine aria-hidden />
+                      Cancelar
+                    </Link>
+                  </Button>
                   <Button
                     disabled={isPending}
                     name="submitAction"
                     type="submit"
                     value="continue"
-                    variant="outline"
                   >
                     <RiAddLine aria-hidden />
                     Cadastrar mais pedidos
@@ -458,12 +463,6 @@ export function AdminOrderFormModal({
                   </Button>
                 </>
               )}
-              <Button asChild variant="outline">
-                <Link href={closeHref}>
-                  <RiCloseLine aria-hidden />
-                  Cancelar
-                </Link>
-              </Button>
             </div>
           </form>
         </CardContent>

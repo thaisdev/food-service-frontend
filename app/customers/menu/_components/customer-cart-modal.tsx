@@ -2,7 +2,12 @@
 
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { RiCloseLine, RiDeleteBinLine, RiSendPlaneLine } from "@remixicon/react"
+import {
+  RiAddLine,
+  RiCloseLine,
+  RiDeleteBinLine,
+  RiSendPlaneLine,
+} from "@remixicon/react"
 import { FormEvent, useMemo, useState, useTransition } from "react"
 
 import {
@@ -21,7 +26,11 @@ import {
 } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { formatCurrency, formatProductPrice } from "@/helpers/currency"
-import { calculateOrderTotal, createOrderItems, parseTable } from "@/helpers/order"
+import {
+  calculateOrderTotal,
+  createOrderItems,
+  parseTable,
+} from "@/helpers/order"
 import { useProducts } from "@/hooks/use-api-data"
 import { useSessionAccess } from "@/hooks/use-session-access"
 import { type OrderItem } from "@/lib/data-schema"
@@ -108,9 +117,11 @@ export function CustomerCartModal() {
 
         if (!response.ok) {
           const errorMessage =
-            ((await response.json().catch(() => null)) as {
-              message?: string
-            } | null)?.message ?? "Não foi possível enviar o pedido."
+            (
+              (await response.json().catch(() => null)) as {
+                message?: string
+              } | null
+            )?.message ?? "Não foi possível enviar o pedido."
 
           throw new Error(errorMessage)
         }
@@ -256,7 +267,8 @@ export function CustomerCartModal() {
             ) : null}
 
             <div className="flex flex-wrap justify-end gap-2 pt-2">
-              <Button asChild variant="outline">
+              <Button>
+                <RiAddLine aria-hidden />
                 <Link href="/customers/menu">Adicionar mais itens</Link>
               </Button>
               <Button

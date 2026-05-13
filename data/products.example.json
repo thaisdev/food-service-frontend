@@ -1,7 +1,7 @@
 [
   {
     "id": "PRD-001",
-    "image": "/branding/product-placeholder.png",
+    "image": "/products/smash-burger.png",
     "name": "Smash Burger",
     "description": "Pão brioche, burger artesanal, queijo e molho da casa.",
     "categoryId": "CAT-001",
@@ -11,7 +11,7 @@
   },
   {
     "id": "PRD-002",
-    "image": "/branding/product-placeholder.png",
+    "image": "/products/bowl-fit.png",
     "name": "Bowl Fit",
     "description": "Frango grelhado, arroz integral, legumes e molho leve.",
     "categoryId": "CAT-002",
@@ -21,7 +21,7 @@
   },
   {
     "id": "PRD-003",
-    "image": "/branding/product-placeholder.png",
+    "image": "/products/pizza-marguerita.png",
     "name": "Pizza Marguerita",
     "description": "Molho artesanal, muçarela, tomate fresco e manjericão.",
     "categoryId": "CAT-003",
@@ -31,7 +31,7 @@
   },
   {
     "id": "PRD-004",
-    "image": "/branding/product-placeholder.png",
+    "image": "/products/brownie-da-casa.png",
     "name": "Brownie da Casa",
     "description": "Brownie macio com calda e finalização especial.",
     "categoryId": "CAT-004",
@@ -41,12 +41,262 @@
   },
   {
     "id": "PRD-005",
-    "image": "/branding/product-placeholder.png",
+    "image": "/products/suco-verde.png",
     "name": "Suco Verde",
     "description": "Suco natural com couve, limão, maçã e gengibre.",
     "categoryId": "CAT-005",
     "price": 9.5,
-    "stock": "Indisponível",
-    "status": "Inativo"
+    "stock": "Disponível",
+    "status": "Ativo"
+  },
+  {
+    "id": "PRD-006",
+    "image": "/products/cheeseburger-classico.png",
+    "name": "Cheeseburger Clássico",
+    "description": "Burger bovino, queijo cheddar, alface, tomate e maionese.",
+    "categoryId": "CAT-001",
+    "price": 26.9,
+    "stock": "Disponível",
+    "status": "Ativo"
+  },
+  {
+    "id": "PRD-007",
+    "image": "/products/chicken-crispy.png",
+    "name": "Chicken Crispy",
+    "description": "Frango empanado crocante, queijo, alface e molho ranch.",
+    "categoryId": "CAT-001",
+    "price": 27.9,
+    "stock": "Disponível",
+    "status": "Ativo"
+  },
+  {
+    "id": "PRD-008",
+    "image": "/products/veggie-burger.png",
+    "name": "Veggie Burger",
+    "description": "Burger vegetal, queijo, rúcula, tomate e molho especial.",
+    "categoryId": "CAT-001",
+    "price": 29.9,
+    "stock": "Baixo",
+    "status": "Ativo"
+  },
+  {
+    "id": "PRD-009",
+    "image": "/products/hot-dog-da-casa.png",
+    "name": "Hot Dog da Casa",
+    "description": "Salsicha artesanal, vinagrete, batata palha e molho da casa.",
+    "categoryId": "CAT-001",
+    "price": 22.9,
+    "stock": "Disponível",
+    "status": "Ativo"
+  },
+  {
+    "id": "PRD-010",
+    "image": "/products/pizza-calabresa.png",
+    "name": "Pizza Calabresa",
+    "description": "Molho de tomate, muçarela, calabresa, cebola e orégano.",
+    "categoryId": "CAT-003",
+    "price": 56,
+    "stock": "Disponível",
+    "status": "Ativo"
+  },
+  {
+    "id": "PRD-011",
+    "image": "/products/pizza-quatro-queijos.png",
+    "name": "Pizza Quatro Queijos",
+    "description": "Muçarela, parmesão, provolone, gorgonzola e molho artesanal.",
+    "categoryId": "CAT-003",
+    "price": 59,
+    "stock": "Disponível",
+    "status": "Ativo"
+  },
+  {
+    "id": "PRD-012",
+    "image": "/products/batata-frita.png",
+    "name": "Batata Frita",
+    "description": "Porção de batata frita crocante com sal da casa.",
+    "categoryId": "CAT-008",
+    "price": 24,
+    "stock": "Disponível",
+    "status": "Ativo"
+  },
+  {
+    "id": "PRD-013",
+    "image": "/products/batata-frita-com-cheddar-e-bacon.png",
+    "name": "Batata Frita com Cheddar e Bacon",
+    "description": "Batata frita coberta com cheddar cremoso e bacon crocante.",
+    "categoryId": "CAT-008",
+    "price": 34.9,
+    "stock": "Disponível",
+    "status": "Ativo"
+  },
+  {
+    "id": "PRD-014",
+    "image": "/products/aneis-de-cebola.png",
+    "name": "Anéis de Cebola",
+    "description": "Porção de anéis de cebola empanados com molho barbecue.",
+    "categoryId": "CAT-008",
+    "price": 26,
+    "stock": "Disponível",
+    "status": "Ativo"
+  },
+  {
+    "id": "PRD-015",
+    "image": "/products/isca-de-frango.png",
+    "name": "Isca de Frango",
+    "description": "Tiras de frango empanadas com molho de mostarda e mel.",
+    "categoryId": "CAT-008",
+    "price": 32,
+    "stock": "Disponível",
+    "status": "Ativo"
+  },
+  {
+    "id": "PRD-016",
+    "image": "/products/mini-pasteis.png",
+    "name": "Mini Pastéis",
+    "description": "Porção de mini pastéis mistos com vinagrete da casa.",
+    "categoryId": "CAT-008",
+    "price": 29.5,
+    "stock": "Baixo",
+    "status": "Ativo"
+  },
+  {
+    "id": "PRD-017",
+    "image": "/products/refrigerante-cola.png",
+    "name": "Refrigerante Cola",
+    "description": "Lata de refrigerante cola gelado.",
+    "categoryId": "CAT-005",
+    "price": 7.5,
+    "stock": "Disponível",
+    "status": "Ativo"
+  },
+  {
+    "id": "PRD-018",
+    "image": "/products/refrigerante-guarana.png",
+    "name": "Refrigerante Guaraná",
+    "description": "Lata de refrigerante guaraná gelado.",
+    "categoryId": "CAT-005",
+    "price": 7.5,
+    "stock": "Disponível",
+    "status": "Ativo"
+  },
+  {
+    "id": "PRD-019",
+    "image": "/products/agua-com-gas.png",
+    "name": "Água com Gás",
+    "description": "Garrafa de água com gás bem gelada.",
+    "categoryId": "CAT-005",
+    "price": 6,
+    "stock": "Disponível",
+    "status": "Ativo"
+  },
+  {
+    "id": "PRD-020",
+    "image": "/products/cerveja-pilsen.png",
+    "name": "Cerveja Pilsen",
+    "description": "Long neck pilsen gelada.",
+    "categoryId": "CAT-005",
+    "price": 12.9,
+    "stock": "Disponível",
+    "status": "Ativo"
+  },
+  {
+    "id": "PRD-021",
+    "image": "/products/cerveja-ipa.png",
+    "name": "Cerveja IPA",
+    "description": "Cerveja IPA long neck com amargor equilibrado.",
+    "categoryId": "CAT-005",
+    "price": 16.9,
+    "stock": "Baixo",
+    "status": "Ativo"
+  },
+  {
+    "id": "PRD-022",
+    "image": "/products/limonada-suica.png",
+    "name": "Limonada Suíça",
+    "description": "Limonada batida com gelo e toque cremoso.",
+    "categoryId": "CAT-005",
+    "price": 11.9,
+    "stock": "Disponível",
+    "status": "Ativo"
+  },
+  {
+    "id": "PRD-023",
+    "image": "/products/pudim-de-leite.png",
+    "name": "Pudim de Leite",
+    "description": "Pudim tradicional com calda de caramelo.",
+    "categoryId": "CAT-004",
+    "price": 13.5,
+    "stock": "Disponível",
+    "status": "Ativo"
+  },
+  {
+    "id": "PRD-024",
+    "image": "/products/petit-gateau.png",
+    "name": "Petit Gateau",
+    "description": "Bolinho quente de chocolate com sorvete de creme.",
+    "categoryId": "CAT-004",
+    "price": 22.9,
+    "stock": "Disponível",
+    "status": "Ativo"
+  },
+  {
+    "id": "PRD-025",
+    "image": "/products/cheesecake-de-frutas-vermelhas.png",
+    "name": "Cheesecake de Frutas Vermelhas",
+    "description": "Cheesecake cremoso com calda de frutas vermelhas.",
+    "categoryId": "CAT-004",
+    "price": 18.9,
+    "stock": "Baixo",
+    "status": "Ativo"
+  },
+  {
+    "id": "PRD-026",
+    "image": "/products/mousse-de-maracuja.png",
+    "name": "Mousse de Maracujá",
+    "description": "Mousse leve com calda de maracujá.",
+    "categoryId": "CAT-004",
+    "price": 11.9,
+    "stock": "Disponível",
+    "status": "Ativo"
+  },
+  {
+    "id": "PRD-027",
+    "image": "/products/prato-executivo.png",
+    "name": "Prato Executivo",
+    "description": "Arroz, feijão, bife grelhado, salada e batata frita.",
+    "categoryId": "CAT-006",
+    "price": 34.9,
+    "stock": "Disponível",
+    "status": "Ativo"
+  },
+  {
+    "id": "PRD-028",
+    "image": "/products/parmegiana-de-frango.png",
+    "name": "Parmegiana de Frango",
+    "description": "Filé de frango à parmegiana com arroz e fritas.",
+    "categoryId": "CAT-006",
+    "price": 42.9,
+    "stock": "Disponível",
+    "status": "Ativo"
+  },
+  {
+    "id": "PRD-029",
+    "image": "/products/combo-burger.png",
+    "name": "Combo Burger",
+    "description": "Smash burger, batata frita pequena e refrigerante.",
+    "categoryId": "CAT-007",
+    "price": 42.9,
+    "stock": "Disponível",
+    "status": "Ativo"
+  },
+  {
+    "id": "PRD-030",
+    "image": "/products/combo-familia-pizza.png",
+    "name": "Combo Família Pizza",
+    "description": "Pizza grande, porção de anéis de cebola e refrigerante.",
+    "categoryId": "CAT-007",
+    "price": 89.9,
+    "stock": "Disponível",
+    "status": "Ativo"
   }
 ]

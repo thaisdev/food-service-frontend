@@ -85,7 +85,7 @@ type RawOrder = Omit<Order, "items"> & {
 export const mockProducts: Product[] = [
   {
     id: "PRD-001",
-    image: "/branding/product-placeholder.png",
+    image: "/products/smash-burger.png",
     name: "Smash Burger",
     description: "Pão brioche, burger artesanal, queijo e molho da casa.",
     categoryId: "CAT-001",
@@ -95,7 +95,7 @@ export const mockProducts: Product[] = [
   },
   {
     id: "PRD-002",
-    image: "/branding/product-placeholder.png",
+    image: "/products/bowl-fit.png",
     name: "Bowl Fit",
     description: "Frango grelhado, arroz integral, legumes e molho leve.",
     categoryId: "CAT-002",
@@ -105,7 +105,7 @@ export const mockProducts: Product[] = [
   },
   {
     id: "PRD-003",
-    image: "/branding/product-placeholder.png",
+    image: "/products/pizza-marguerita.png",
     name: "Pizza Marguerita",
     description: "Molho artesanal, muçarela, tomate fresco e manjericão.",
     categoryId: "CAT-003",
@@ -115,7 +115,7 @@ export const mockProducts: Product[] = [
   },
   {
     id: "PRD-004",
-    image: "/branding/product-placeholder.png",
+    image: "/products/brownie-da-casa.png",
     name: "Brownie da Casa",
     description: "Brownie macio com calda e finalização especial.",
     categoryId: "CAT-004",
@@ -125,7 +125,7 @@ export const mockProducts: Product[] = [
   },
   {
     id: "PRD-005",
-    image: "/branding/product-placeholder.png",
+    image: "/products/suco-verde.png",
     name: "Suco Verde",
     description: "Suco natural com couve, limão, maçã e gengibre.",
     categoryId: "CAT-005",
@@ -361,12 +361,7 @@ function hasProductCategoryField(value: unknown) {
 
 function isProduct(value: unknown): value is Product {
   return (
-    hasStringFields(value, [
-      "id",
-      "image",
-      "name",
-      "description",
-    ]) &&
+    hasStringFields(value, ["id", "image", "name", "description"]) &&
     hasProductCategoryField(value) &&
     parseProductPrice(value.price) !== null &&
     isOneOf(value.stock, Object.values(ProductStock)) &&
@@ -524,10 +519,7 @@ function normalizeLegacyOrderDatetime(value: string) {
 
 function isOrder(value: unknown): value is RawOrder {
   return (
-    hasStringFields(value, [
-      "id",
-      "customer",
-    ]) &&
+    hasStringFields(value, ["id", "customer"]) &&
     hasOrderTableField(value) &&
     hasOrderItemsField(value) &&
     hasOrderDatetimeField(value) &&
@@ -549,13 +541,14 @@ function normalizeLegacyOrderItems(items: string): OrderItem[] {
       const quantity = match ? Number(match[1]) : 1
       const name = match?.[2]?.trim() || trimmedItem
       const product = mockProducts.find((currentProduct) =>
-        name.toLocaleLowerCase("pt-BR").includes(
-          currentProduct.name.toLocaleLowerCase("pt-BR")
-        )
+        name
+          .toLocaleLowerCase("pt-BR")
+          .includes(currentProduct.name.toLocaleLowerCase("pt-BR"))
       )
 
       return {
-        productId: product?.id ?? `LEGACY-${String(index + 1).padStart(3, "0")}`,
+        productId:
+          product?.id ?? `LEGACY-${String(index + 1).padStart(3, "0")}`,
         name,
         quantity: Number.isFinite(quantity) && quantity > 0 ? quantity : 1,
         valor: product?.price ?? 0,
