@@ -19,6 +19,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
+import { Input } from "@/components/ui/input"
 import {
   Table,
   TableBody,
@@ -39,6 +40,8 @@ import { formatProductPrice } from "@/helpers/currency"
 
 type ProductFilter = "Todos" | "Ativos" | "Inativos" | "Baixo estoque"
 
+const ALL_CATEGORIES_FILTER = "all"
+
 type AdminProductsCrudProps = {
   categories: Category[]
   initialProducts: Product[]
@@ -55,6 +58,14 @@ function getBadgeClasses(value: ProductStatus | ProductStock) {
     case ProductStock.Unavailable:
       return "bg-destructive-muted text-destructive"
   }
+}
+
+function normalizeSearchText(value: string) {
+  return value
+    .trim()
+    .toLocaleLowerCase("pt-BR")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
 }
 
 async function requestProducts(
@@ -89,6 +100,10 @@ export function AdminProductsCrud({
 }: AdminProductsCrudProps) {
   const [products, setProducts] = useState(initialProducts)
   const [filter, setFilter] = useState<ProductFilter>("Todos")
+  const [selectedCategoryId, setSelectedCategoryId] = useState(
+    ALL_CATEGORIES_FILTER
+  )
+  const [productNameFilter, setProductNameFilter] = useState("")
   const [message, setMessage] = useState<string | null>(null)
   const [productPendingDelete, setProductPendingDelete] =
     useState<Product | null>(null)
@@ -110,21 +125,24 @@ export function AdminProductsCrud({
   }, [])
 
   const filteredProducts = useMemo(() => {
-    switch (filter) {
-      case "Ativos":
-        return products.filter(
-          (product) => product.status === ProductStatus.Active
-        )
-      case "Inativos":
-        return products.filter(
-          (product) => product.status === ProductStatus.Inactive
-        )
-      case "Baixo estoque":
-        return products.filter((product) => product.stock === ProductStock.Low)
-      case "Todos":
-        return products
-    }
-  }, [filter, products])
+    const normalizedProductNameFilter = normalizeSearchText(productNameFilter)
+
+    return products.filter((product) => {
+      const matchesProductFilter =
+        filter === "Todos" ||
+        (filter === "Ativos" && product.status === ProductStatus.Active) ||
+        (filter === "Inativos" && product.status === ProductStatus.Inactive) ||
+        (filter === "Baixo estoque" && product.stock === ProductStock.Low)
+      const matchesCategory =
+        selectedCategoryId === ALL_CATEGORIES_FILTER ||
+        product.categoryId === selectedCategoryId
+      const matchesName =
+        !normalizedProductNameFilter ||
+        normalizeSearchText(product.name).includes(normalizedProductNameFilter)
+
+      return matchesProductFilter && matchesCategory && matchesName
+    })
+  }, [filter, productNameFilter, products, selectedCategoryId])
 
   function confirmProductDeletion(product: Product) {
     setMessage(null)
@@ -183,7 +201,7 @@ export function AdminProductsCrud({
 
         <section>
           <Card className="rounded-3xl border border-primary/15 p-0 shadow-sm">
-            <CardHeader className="flex flex-col gap-4 border-b border-primary/15 bg-primary-muted/45 p-6 md:flex-row md:items-center md:justify-between">
+            <CardHeader className="flex flex-col gap-4 border-b border-primary/15 bg-primary-muted/45 p-6">
               <div>
                 <CardTitle className="text-lg font-semibold">
                   Produtos cadastrados
@@ -192,19 +210,70 @@ export function AdminProductsCrud({
                   Visualize, filtre e mantenha os itens disponíveis no sistema.
                 </CardDescription>
               </div>
-              <div className="flex flex-wrap gap-2">
-                {(
-                  ["Todos", "Ativos", "Inativos", "Baixo estoque"] as const
-                ).map((currentFilter) => (
-                  <Button
-                    key={currentFilter}
-                    onClick={() => setFilter(currentFilter)}
-                    type="button"
-                    variant={filter === currentFilter ? "default" : "outline"}
-                  >
-                    {currentFilter}
-                  </Button>
-                ))}
+              <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <div className="grid gap-1.5">
+                    <label
+                      className="text-xs font-medium"
+                      htmlFor="categoryFilter"
+                    >
+                      Categoria
+                    </label>
+                    <select
+                      className="h-9 min-w-48 rounded-md border border-input bg-input/20 px-2 text-xs outline-none transition-colors focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/30"
+                      id="categoryFilter"
+                      onChange={(event) =>
+                        setSelectedCategoryId(event.target.value)
+                      }
+                      value={selectedCategoryId}
+                    >
+                      <option value={ALL_CATEGORIES_FILTER}>
+                        Todas as categorias
+                      </option>
+                      {categories.map((category) => (
+                        <option key={category.id} value={category.id}>
+                          {category.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div className="grid gap-1.5">
+                    <label
+                      className="text-xs font-medium"
+                      htmlFor="productNameFilter"
+                    >
+                      Produto
+                    </label>
+                    <Input
+                      className="h-9 min-w-64"
+                      id="productNameFilter"
+                      onChange={(event) =>
+                        setProductNameFilter(event.target.value)
+                      }
+                      placeholder="Filtrar por nome"
+                      type="search"
+                      value={productNameFilter}
+                    />
+                  </div>
+                </div>
+
+                <div className="flex flex-wrap gap-2">
+                  {(
+                    ["Todos", "Ativos", "Inativos", "Baixo estoque"] as const
+                  ).map((currentFilter) => (
+                    <Button
+                      key={currentFilter}
+                      onClick={() => setFilter(currentFilter)}
+                      type="button"
+                      variant={
+                        filter === currentFilter ? "default" : "outline"
+                      }
+                    >
+                      {currentFilter}
+                    </Button>
+                  ))}
+                </div>
               </div>
             </CardHeader>
 
