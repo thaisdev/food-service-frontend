@@ -5,6 +5,7 @@ import { RiAddLine, RiCloseLine, RiEditLine, RiEyeLine } from "@remixicon/react"
 import { useEffect, useMemo, useState, useTransition } from "react"
 
 import { Badge } from "@/components/ui/badge"
+import { TablePagination } from "@/components/table-pagination"
 import { Button } from "@/components/ui/button"
 import {
   Card,
@@ -13,6 +14,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
+import { Input } from "@/components/ui/input"
 import {
   Table,
   TableBody,
@@ -26,8 +28,11 @@ import { formatDatetime } from "@/helpers/datetime"
 import { formatOrderItems, formatTable } from "@/helpers/order"
 import { canCancelOrder } from "@/helpers/order-status"
 import { OrderStatus, parseOrders, type Order } from "@/lib/data-schema"
+import type { PaginatedResponse } from "@/lib/api-pagination"
 
 type OrderFilter = "Todos" | OrderStatus
+
+const ORDERS_PAGE_SIZE = 10
 
 type OrdersManagerProps = {
   initialOrders: Order[]
@@ -46,6 +51,24 @@ function getStatusClasses(status: OrderStatus) {
     case OrderStatus.Waiting:
       return "bg-destructive-muted text-destructive"
   }
+}
+
+function getOrderDateFilterValue(datetime: string) {
+  const date = new Date(datetime)
+
+  if (Number.isNaN(date.getTime())) {
+    return ""
+  }
+
+  const year = date.getFullYear()
+  const month = String(date.getMonth() + 1).padStart(2, "0")
+  const day = String(date.getDate()).padStart(2, "0")
+
+  return `${year}-${month}-${day}`
+}
+
+function getTodayDateFilterValue() {
+  return getOrderDateFilterValue(new Date().toISOString())
 }
 
 async function requestOrders(
@@ -72,9 +95,52 @@ async function requestOrders(
   return parseOrders(JSON.stringify(await response.json())) ?? fallbackOrders
 }
 
+function parsePaginatedOrders(value: unknown): PaginatedResponse<Order> | null {
+  if (!value || typeof value !== "object") {
+    return null
+  }
+
+  const data = value as {
+    items?: unknown
+    pagination?: {
+      page?: unknown
+      pageSize?: unknown
+      totalItems?: unknown
+      totalPages?: unknown
+    }
+  }
+  const orders = parseOrders(data.items ? JSON.stringify(data.items) : null)
+
+  if (
+    !orders ||
+    !data.pagination ||
+    typeof data.pagination.page !== "number" ||
+    typeof data.pagination.pageSize !== "number" ||
+    typeof data.pagination.totalItems !== "number" ||
+    typeof data.pagination.totalPages !== "number"
+  ) {
+    return null
+  }
+
+  return {
+    items: orders,
+    pagination: {
+      page: data.pagination.page,
+      pageSize: data.pagination.pageSize,
+      totalItems: data.pagination.totalItems,
+      totalPages: data.pagination.totalPages,
+    },
+  }
+}
+
 export function OrdersManager({ initialOrders }: OrdersManagerProps) {
-  const [orders, setOrders] = useState(initialOrders)
+  const [orders, setOrders] = useState(initialOrders.slice(0, ORDERS_PAGE_SIZE))
   const [filter, setFilter] = useState<OrderFilter>("Todos")
+  const [dateFilter, setDateFilter] = useState("")
+  const todayDateFilter = useMemo(() => getTodayDateFilterValue(), [])
+  const [currentPage, setCurrentPage] = useState(1)
+  const [totalItems, setTotalItems] = useState(initialOrders.length)
+  const [refreshKey, setRefreshKey] = useState(0)
   const [orderPendingCancel, setOrderPendingCancel] = useState<Order | null>(
     null
   )
@@ -82,10 +148,9 @@ export function OrdersManager({ initialOrders }: OrdersManagerProps) {
   const [isPending, startTransition] = useTransition()
 
   useEffect(() => {
-    function updateOrders(event: Event) {
-      const orderEvent = event as CustomEvent<Order[]>
-
-      setOrders(orderEvent.detail)
+    function updateOrders() {
+      setCurrentPage(1)
+      setRefreshKey((key) => key + 1)
       setMessage(null)
     }
 
@@ -96,13 +161,34 @@ export function OrdersManager({ initialOrders }: OrdersManagerProps) {
     }
   }, [])
 
-  const filteredOrders = useMemo(() => {
-    if (filter === "Todos") {
-      return orders
+  useEffect(() => {
+    const searchParams = new URLSearchParams({
+      page: String(currentPage),
+      pageSize: String(ORDERS_PAGE_SIZE),
+    })
+
+    if (filter !== "Todos") {
+      searchParams.set("status", filter)
     }
 
-    return orders.filter((order) => order.status === filter)
-  }, [filter, orders])
+    if (dateFilter) {
+      searchParams.set("date", dateFilter)
+    }
+
+    fetch(`/api/orders?${searchParams.toString()}`, { cache: "no-store" })
+      .then((response) => (response.ok ? response.json() : null))
+      .then((data) => {
+        const paginatedOrders = parsePaginatedOrders(data)
+
+        if (!paginatedOrders) {
+          return
+        }
+
+        setOrders(paginatedOrders.items)
+        setTotalItems(paginatedOrders.pagination.totalItems)
+        setCurrentPage(paginatedOrders.pagination.page)
+      })
+  }, [currentPage, dateFilter, filter, refreshKey])
 
   function getOrderActionAvailability(order: Order) {
     const isCanceled = order.status === OrderStatus.Canceled
@@ -143,7 +229,9 @@ export function OrdersManager({ initialOrders }: OrdersManagerProps) {
           orders
         )
 
-        setOrders(nextOrders)
+        setOrders(nextOrders.slice(0, ORDERS_PAGE_SIZE))
+        setCurrentPage(1)
+        setRefreshKey((key) => key + 1)
         setOrderPendingCancel(null)
         setMessage("Pedido cancelado.")
       } catch (error) {
@@ -183,7 +271,7 @@ export function OrdersManager({ initialOrders }: OrdersManagerProps) {
 
         <section>
           <Card className="rounded-3xl border border-info/15 p-0 shadow-sm">
-            <CardHeader className="flex flex-col gap-4 border-b border-info/15 bg-info-muted/45 p-6 md:flex-row md:items-center md:justify-between">
+            <CardHeader className="flex flex-col gap-4 border-b border-info/15 bg-info-muted/45 p-6">
               <div>
                 <CardTitle className="text-lg font-semibold">
                   Pedidos cadastrados
@@ -192,19 +280,43 @@ export function OrdersManager({ initialOrders }: OrdersManagerProps) {
                   Visualize, filtre e mantenha a fila operacional do sistema.
                 </CardDescription>
               </div>
-              <div className="flex flex-wrap gap-2">
-                {(["Todos", ...Object.values(OrderStatus)] as const).map(
-                  (currentFilter) => (
-                    <Button
-                      key={currentFilter}
-                      onClick={() => setFilter(currentFilter)}
-                      type="button"
-                      variant={filter === currentFilter ? "default" : "outline"}
-                    >
-                      {currentFilter}
-                    </Button>
-                  )
-                )}
+              <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
+                <div className="grid gap-1.5">
+                  <label className="text-xs font-medium" htmlFor="dateFilter">
+                    Data
+                  </label>
+                  <Input
+                    className="h-9 max-w-48"
+                    id="dateFilter"
+                    max={todayDateFilter}
+                    onChange={(event) => {
+                      setDateFilter(event.target.value)
+                      setCurrentPage(1)
+                    }}
+                    type="date"
+                    value={dateFilter}
+                  />
+                </div>
+
+                <div className="flex flex-wrap gap-2">
+                  {(["Todos", ...Object.values(OrderStatus)] as const).map(
+                    (currentFilter) => (
+                      <Button
+                        key={currentFilter}
+                        onClick={() => {
+                          setFilter(currentFilter)
+                          setCurrentPage(1)
+                        }}
+                        type="button"
+                        variant={
+                          filter === currentFilter ? "default" : "outline"
+                        }
+                      >
+                        {currentFilter}
+                      </Button>
+                    )
+                  )}
+                </div>
               </div>
             </CardHeader>
 
@@ -222,7 +334,7 @@ export function OrdersManager({ initialOrders }: OrdersManagerProps) {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {filteredOrders.map((order) => (
+                  {orders.map((order) => (
                     <TableRow key={order.id}>
                       {(() => {
                         const actionAvailability =
@@ -322,6 +434,12 @@ export function OrdersManager({ initialOrders }: OrdersManagerProps) {
                 </TableBody>
               </Table>
             </CardContent>
+            <TablePagination
+              currentPage={currentPage}
+              onPageChange={setCurrentPage}
+              pageSize={ORDERS_PAGE_SIZE}
+              totalItems={totalItems}
+            />
           </Card>
         </section>
       </div>

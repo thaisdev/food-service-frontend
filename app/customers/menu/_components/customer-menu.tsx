@@ -14,6 +14,7 @@ import {
   CardDescription,
   CardTitle,
 } from "@/components/ui/card"
+import { Input } from "@/components/ui/input"
 import {
   readCustomerCart,
   writeCustomerCart,
@@ -22,13 +23,53 @@ import {
 import { useCategories, useProducts } from "@/hooks/use-api-data"
 import { useSessionAccess } from "@/hooks/use-session-access"
 import { formatProductPrice } from "@/helpers/currency"
+import { cn } from "@/lib/utils"
 import {
+  CategoryStatus,
   ProductStatus,
   ProductStock,
   getProductCategoryName,
   type Product,
 } from "@/lib/data-schema"
 import { SessionModule } from "@/lib/session-access"
+
+const ALL_CATEGORIES_FILTER = "all"
+
+function getCategoryFilterClasses(isSelected: boolean) {
+  return cn(
+    "inline-flex h-8 items-center rounded-full border px-3 text-xs font-medium transition-colors",
+    isSelected
+      ? "border-primary bg-primary text-primary-foreground hover:bg-primary-hover"
+      : "border-primary/20 bg-card text-primary hover:border-primary/35 hover:bg-primary-muted/60"
+  )
+}
+
+function normalizeSearchText(value: string) {
+  return value
+    .trim()
+    .toLocaleLowerCase("pt-BR")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+}
+
+function sortProductsByCategory(products: Product[], categoryIds: string[]) {
+  const categoryOrder = new Map(
+    categoryIds.map((categoryId, index) => [categoryId, index])
+  )
+
+  return [...products].sort((firstProduct, secondProduct) => {
+    const firstCategoryOrder =
+      categoryOrder.get(firstProduct.categoryId) ?? Number.MAX_SAFE_INTEGER
+    const secondCategoryOrder =
+      categoryOrder.get(secondProduct.categoryId) ?? Number.MAX_SAFE_INTEGER
+
+    if (firstCategoryOrder !== secondCategoryOrder) {
+      return firstCategoryOrder - secondCategoryOrder
+    }
+
+    return firstProduct.name.localeCompare(secondProduct.name, "pt-BR")
+  })
+}
 
 function addProductToCart(product: Product) {
   const cartItems = readCustomerCart()
@@ -57,10 +98,48 @@ export function CustomerMenu() {
   const categories = useCategories()
   const products = useProducts()
   const [cartItems, setCartItems] = useState<CustomerCartItem[]>([])
-  const menuItems = products.filter(
-    (product) =>
-      product.status === ProductStatus.Active &&
-      product.stock !== ProductStock.Unavailable
+  const [selectedCategoryId, setSelectedCategoryId] = useState(
+    ALL_CATEGORIES_FILTER
+  )
+  const [productNameFilter, setProductNameFilter] = useState("")
+  const menuItems = useMemo(
+    () => {
+      const categoryIds = categories.map((category) => category.id)
+      const availableProducts = products.filter(
+        (product) =>
+          product.status === ProductStatus.Active &&
+          product.stock !== ProductStock.Unavailable
+      )
+
+      return sortProductsByCategory(availableProducts, categoryIds)
+    },
+    [categories, products]
+  )
+  const menuCategories = useMemo(
+    () =>
+      categories.filter(
+        (category) =>
+          category.status === CategoryStatus.Active &&
+          menuItems.some((product) => product.categoryId === category.id)
+      ),
+    [categories, menuItems]
+  )
+  const filteredMenuItems = useMemo(
+    () => {
+      const normalizedProductNameFilter = normalizeSearchText(productNameFilter)
+
+      return menuItems.filter((product) => {
+        const matchesCategory =
+          selectedCategoryId === ALL_CATEGORIES_FILTER ||
+          product.categoryId === selectedCategoryId
+        const matchesName =
+          !normalizedProductNameFilter ||
+          normalizeSearchText(product.name).includes(normalizedProductNameFilter)
+
+        return matchesCategory && matchesName
+      })
+    },
+    [menuItems, productNameFilter, selectedCategoryId]
   )
   const customerName =
     access?.module === SessionModule.Customers ? access.name : "Cliente"
@@ -120,8 +199,46 @@ export function CustomerMenu() {
           </Card>
         </section>
 
+        <section className="grid gap-3" aria-label="Filtros do cardápio">
+          <Input
+            aria-label="Filtrar por nome do produto"
+            className="h-10 max-w-md rounded-full border-primary/20 bg-card px-4 text-sm"
+            onChange={(event) => setProductNameFilter(event.target.value)}
+            placeholder="Buscar produto pelo nome"
+            type="search"
+            value={productNameFilter}
+          />
+
+          <div className="flex flex-wrap gap-2" aria-label="Categorias">
+            <button
+              aria-pressed={selectedCategoryId === ALL_CATEGORIES_FILTER}
+              className={getCategoryFilterClasses(
+                selectedCategoryId === ALL_CATEGORIES_FILTER
+              )}
+              onClick={() => setSelectedCategoryId(ALL_CATEGORIES_FILTER)}
+              type="button"
+            >
+              Todas as categorias
+            </button>
+
+            {menuCategories.map((category) => (
+              <button
+                aria-pressed={selectedCategoryId === category.id}
+                className={getCategoryFilterClasses(
+                  selectedCategoryId === category.id
+                )}
+                key={category.id}
+                onClick={() => setSelectedCategoryId(category.id)}
+                type="button"
+              >
+                {category.name}
+              </button>
+            ))}
+          </div>
+        </section>
+
         <section className="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
-          {menuItems.map((item) => (
+          {filteredMenuItems.map((item) => (
             <Card
               key={item.id}
               className="grid grid-cols-[7rem_minmax(0,1fr)] overflow-hidden rounded-2xl border border-primary/15 p-0 shadow-sm transition-colors hover:border-success/35 md:block md:rounded-3xl"

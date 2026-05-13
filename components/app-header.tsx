@@ -109,19 +109,16 @@ export function AppHeader() {
             </Button>
           ) : null}
 
-          {(isAdmin || isCustomers) && (
+          {isAdmin ? (
             <Button
               type="button"
               variant="ghost"
-              className={cn(
-                "text-white hover:bg-white/10 hover:text-white",
-                isCustomers && "hover:bg-destructive/25"
-              )}
+              className="text-white hover:bg-white/10 hover:text-white"
               onClick={handleSignOut}
             >
-              {isAdmin ? "Sair" : "Pedir a conta"}
+              Sair
             </Button>
-          )}
+          ) : null}
 
           <Button
             type="button"
