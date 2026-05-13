@@ -235,7 +235,7 @@ export function CategoriesManager({
             <Button
               onClick={startCategoryCreation}
               type="button"
-              variant="outline"
+              className="bg-success text-success-foreground hover:bg-success/90"
             >
               <RiAddLine aria-hidden />
               Nova categoria

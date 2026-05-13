@@ -6,6 +6,7 @@ import {
   RiArrowRightLine,
   RiCheckboxCircleLine,
   RiExternalLinkLine,
+  RiRefreshLine,
   RiShoppingBag3Line,
   RiTimeLine,
 } from "@remixicon/react"
@@ -140,6 +141,7 @@ export function AdminDashboard({
   const [orders, setOrders] = useState(initialOrders)
   const [message, setMessage] = useState<string | null>(null)
   const [updatingOrderId, setUpdatingOrderId] = useState<string | null>(null)
+  const [isRefreshingOrders, setIsRefreshingOrders] = useState(false)
   const [isPending, startTransition] = useTransition()
   const todayKey = getTodayKey(new Date())
 
@@ -241,6 +243,31 @@ export function AdminDashboard({
     })
   }
 
+  async function refreshOrders() {
+    setMessage(null)
+    setIsRefreshingOrders(true)
+
+    try {
+      const nextOrders = await requestOrders(
+        "/api/orders",
+        { method: "GET" },
+        orders
+      )
+
+      setOrders(nextOrders)
+      window.dispatchEvent(
+        new CustomEvent<Order[]>("admin-orders:changed", {
+          detail: nextOrders,
+        })
+      )
+      setMessage("Pedidos atualizados.")
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : "Erro inesperado.")
+    } finally {
+      setIsRefreshingOrders(false)
+    }
+  }
+
   return (
     <main className="min-h-svh bg-[image:var(--page-gradient)] px-6 py-10">
       <div className="mx-auto flex w-full max-w-[1800px] flex-col gap-8">
@@ -256,11 +283,22 @@ export function AdminDashboard({
               </p>
             </div>
             <div className="flex flex-wrap gap-2">
-              <Button asChild>
+              <Button
+                asChild
+                className="bg-success text-success-foreground hover:bg-success/90"
+              >
                 <Link href="/admin/orders/new?returnTo=/admin/dashboard">
                   <RiAddLine aria-hidden />
                   Novo pedido
                 </Link>
+              </Button>
+              <Button
+                disabled={isRefreshingOrders}
+                onClick={refreshOrders}
+                type="button"
+              >
+                <RiRefreshLine aria-hidden />
+                {isRefreshingOrders ? "Atualizando..." : "Atualizar pedidos"}
               </Button>
               <Button asChild variant="outline">
                 <Link href="/admin/orders">

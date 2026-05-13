@@ -254,7 +254,10 @@ export function OrdersManager({ initialOrders }: OrdersManagerProps) {
                 Cadastre, edite, acompanhe status e cancele pedidos.
               </p>
             </div>
-            <Button asChild>
+            <Button
+              asChild
+              className="bg-success text-success-foreground hover:bg-success/90"
+            >
               <Link href="/admin/orders/new">
                 <RiAddLine aria-hidden />
                 Novo pedido
