@@ -89,7 +89,9 @@ async function requestProducts(
   )
 }
 
-function parsePaginatedProducts(value: unknown): PaginatedResponse<Product> | null {
+function parsePaginatedProducts(
+  value: unknown
+): PaginatedResponse<Product> | null {
   if (!value || typeof value !== "object") {
     return null
   }
@@ -103,9 +105,7 @@ function parsePaginatedProducts(value: unknown): PaginatedResponse<Product> | nu
       totalPages?: unknown
     }
   }
-  const products = parseProducts(
-    data.items ? JSON.stringify(data.items) : null
-  )
+  const products = parseProducts(data.items ? JSON.stringify(data.items) : null)
 
   if (
     !products ||
@@ -246,7 +246,10 @@ export function AdminProductsCrud({
                 Cadastre, edite e remova itens do cardápio.
               </p>
             </div>
-            <Button asChild variant="outline">
+            <Button
+              asChild
+              className="bg-success text-success-foreground hover:bg-success/90"
+            >
               <Link href="/admin/products/new">
                 <RiAddLine aria-hidden />
                 Novo produto
@@ -282,7 +285,7 @@ export function AdminProductsCrud({
                       Categoria
                     </label>
                     <select
-                      className="h-9 min-w-48 rounded-md border border-input bg-input/20 px-2 text-xs outline-none transition-colors focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/30"
+                      className="h-9 min-w-48 rounded-md border border-input bg-input/20 px-2 text-xs transition-colors outline-none focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/30"
                       id="categoryFilter"
                       onChange={(event) => {
                         setSelectedCategoryId(event.target.value)
@@ -333,9 +336,7 @@ export function AdminProductsCrud({
                         setCurrentPage(1)
                       }}
                       type="button"
-                      variant={
-                        filter === currentFilter ? "default" : "outline"
-                      }
+                      variant={filter === currentFilter ? "default" : "outline"}
                     >
                       {currentFilter}
                     </Button>
