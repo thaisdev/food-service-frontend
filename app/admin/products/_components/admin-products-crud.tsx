@@ -44,18 +44,6 @@ type AdminProductsCrudProps = {
   initialProducts: Product[]
 }
 
-const metricColors = [
-  "border-success/25 bg-success-muted/65 shadow-success/5",
-  "border-primary/25 bg-primary-muted/70 shadow-primary/5",
-  "border-warning/20 bg-warning-muted/45 shadow-warning/5",
-]
-
-const stockInsightColors = [
-  "border-destructive/25 bg-destructive-muted/60 text-destructive",
-  "border-success/25 bg-success-muted/65 text-success",
-  "border-warning/25 bg-warning-muted/65 text-warning",
-]
-
 function getBadgeClasses(value: ProductStatus | ProductStock) {
   switch (value) {
     case ProductStatus.Active:

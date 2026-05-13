@@ -14,19 +14,6 @@ export enum CategoryStatus {
   Inactive = "Inativa",
 }
 
-export const PRODUCT_CATEGORIES = [
-  "Lanches",
-  "Saudável",
-  "Pizzas",
-  "Sobremesas",
-  "Bebidas",
-  "Pratos",
-  "Combos",
-  "Acompanhamentos",
-] as const
-
-export type ProductCategory = (typeof PRODUCT_CATEGORIES)[number]
-
 export type Category = {
   id: string
   name: string
@@ -75,7 +62,6 @@ export type Order = {
 }
 
 type RawOrder = Omit<Order, "items"> & {
-  channel?: string
   datetime?: string
   items: OrderItem[] | string
   table?: number | string
@@ -465,9 +451,7 @@ function hasOrderDatetimeField(value: unknown) {
 function hasOrderTableField(value: unknown) {
   return (
     isRecord(value) &&
-    (typeof value.table === "number" ||
-      typeof value.table === "string" ||
-      typeof value.channel === "string")
+    (typeof value.table === "number" || typeof value.table === "string")
   )
 }
 
@@ -566,7 +550,7 @@ function normalizeOrder(value: unknown): Order | null {
   return {
     id: value.id,
     customer: value.customer,
-    table: parseOrderTable(value.table ?? value.channel) ?? 1,
+    table: parseOrderTable(value.table) ?? 1,
     items:
       typeof value.items === "string"
         ? normalizeLegacyOrderItems(value.items)

@@ -57,8 +57,6 @@ export function CustomerOrders() {
   const { isLoading, orders } = useOrders()
   const customerOrders = filterCustomerOrders(orders, access)
   const total = customerOrders.reduce((sum, order) => sum + order.total, 0)
-  const customerName =
-    access?.module === SessionModule.Customers ? access.name : "Cliente"
 
   return (
     <main className="min-h-[calc(100svh-73px)] bg-[image:var(--page-gradient)] px-6 py-10">
