@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { RiCloseLine, RiSaveLine } from "@remixicon/react"
+import { RiAddLine, RiCloseLine, RiSaveLine } from "@remixicon/react"
 import { FormEvent, useMemo, useState, useTransition } from "react"
 
 import { Button } from "@/components/ui/button"
@@ -22,6 +22,7 @@ import {
   formatOrderItems,
   type SelectedOrderItem,
 } from "@/helpers/order"
+import { getEditableOrderStatuses } from "@/helpers/order-status"
 import {
   OrderStatus,
   parseOrders,
@@ -30,9 +31,12 @@ import {
 } from "@/lib/data-schema"
 
 type AdminOrderFormModalProps = {
+  closeHref?: string
   order?: Order
   products?: Product[]
 }
+
+type SubmitAction = "continue" | "close"
 
 async function requestOrderSave(
   payload:
@@ -60,6 +64,7 @@ async function requestOrderSave(
 }
 
 export function AdminOrderFormModal({
+  closeHref = "/admin/orders",
   order,
   products = [],
 }: AdminOrderFormModalProps) {
@@ -78,6 +83,10 @@ export function AdminOrderFormModal({
   const calculatedTotal = useMemo(
     () => calculateOrderTotal(orderItems),
     [orderItems]
+  )
+  const editableStatuses = useMemo(
+    () => (order ? getEditableOrderStatuses(order.status) : []),
+    [order]
   )
 
   function updateTable(value: string) {
@@ -135,10 +144,24 @@ export function AdminOrderFormModal({
     )
   }
 
+  function resetNewOrderForm() {
+    setCustomer("")
+    setTable(1)
+    setSelectedItems([])
+  }
+
+  function getSubmitAction(event: FormEvent<HTMLFormElement>): SubmitAction {
+    const submitter = (event.nativeEvent as SubmitEvent)
+      .submitter as HTMLButtonElement | null
+
+    return submitter?.value === "continue" ? "continue" : "close"
+  }
+
   function submitOrder(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
     setMessage(null)
 
+    const submitAction = getSubmitAction(event)
     const payload = order
       ? {
           id: order.id,
@@ -168,7 +191,13 @@ export function AdminOrderFormModal({
           )
         }
 
-        router.replace("/admin/orders")
+        if (!order && submitAction === "continue") {
+          resetNewOrderForm()
+          setMessage("Pedido cadastrado. Você pode cadastrar mais pedidos.")
+          return
+        }
+
+        router.replace(closeHref)
         router.refresh()
       } catch (error) {
         setMessage(error instanceof Error ? error.message : "Erro inesperado.")
@@ -193,7 +222,7 @@ export function AdminOrderFormModal({
             </CardDescription>
           </div>
           <Button asChild size="icon-sm" title="Fechar modal" variant="ghost">
-            <Link href="/admin/orders">
+            <Link href={closeHref}>
               <RiCloseLine aria-hidden />
             </Link>
           </Button>
@@ -240,7 +269,7 @@ export function AdminOrderFormModal({
                       }
                       value={status}
                     >
-                      {Object.values(OrderStatus).map((currentStatus) => (
+                      {editableStatuses.map((currentStatus) => (
                         <option key={currentStatus} value={currentStatus}>
                           {currentStatus}
                         </option>
@@ -396,20 +425,44 @@ export function AdminOrderFormModal({
             ) : null}
 
             <div className="flex flex-wrap justify-end gap-2 pt-2">
-              <Button
-                className="bg-success text-success-foreground hover:bg-success/90"
-                disabled={isPending}
-                type="submit"
-              >
-                <RiSaveLine aria-hidden />
-                {order ? "Salvar" : "Cadastrar"}
-              </Button>
-              <Button asChild variant="outline">
-                <Link href="/admin/orders">
-                  <RiCloseLine aria-hidden />
-                  Cancelar
-                </Link>
-              </Button>
+              {order ? (
+                <Button
+                  className="bg-success text-success-foreground hover:bg-success/90"
+                  disabled={isPending}
+                  type="submit"
+                >
+                  <RiSaveLine aria-hidden />
+                  Salvar
+                </Button>
+              ) : (
+                <>
+                  <Button asChild variant="outline">
+                    <Link href={closeHref}>
+                      <RiCloseLine aria-hidden />
+                      Cancelar
+                    </Link>
+                  </Button>
+                  <Button
+                    disabled={isPending}
+                    name="submitAction"
+                    type="submit"
+                    value="continue"
+                  >
+                    <RiAddLine aria-hidden />
+                    Cadastrar mais pedidos
+                  </Button>
+                  <Button
+                    className="bg-success text-success-foreground hover:bg-success/90"
+                    disabled={isPending}
+                    name="submitAction"
+                    type="submit"
+                    value="close"
+                  >
+                    <RiSaveLine aria-hidden />
+                    Salvar e fechar
+                  </Button>
+                </>
+              )}
             </div>
           </form>
         </CardContent>

@@ -35,7 +35,7 @@ type AdminProductFormModalProps = {
 
 function createEmptyForm(categoryId: string): ProductFormData {
   return {
-    image: "/branding/product-placeholder.png",
+    image: "/products/product-placeholder.png",
     name: "",
     description: "",
     categoryId,
@@ -72,7 +72,8 @@ export function AdminProductFormModal({
 }: AdminProductFormModalProps) {
   const router = useRouter()
   const categoryOptions =
-    product && !categories.some((category) => category.id === product.categoryId)
+    product &&
+    !categories.some((category) => category.id === product.categoryId)
       ? [
           {
             id: product.categoryId,
@@ -82,7 +83,8 @@ export function AdminProductFormModal({
         ]
       : categories
   const productCategory =
-    product && categoryOptions.some((category) => category.id === product.categoryId)
+    product &&
+    categoryOptions.some((category) => category.id === product.categoryId)
       ? product.categoryId
       : (categoryOptions[0]?.id ?? "")
   const [formData, setFormData] = useState<ProductFormData>(

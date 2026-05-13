@@ -25,10 +25,10 @@ function getStatusClasses(status: OrderStatus) {
       return "bg-success-muted text-success"
     case OrderStatus.Preparing:
       return "bg-warning-muted text-warning"
-    case OrderStatus.OutForDelivery:
-      return "bg-info-muted text-info"
     case OrderStatus.Finished:
       return "bg-muted text-muted-foreground"
+    case OrderStatus.Canceled:
+      return "bg-destructive-muted text-destructive"
     case OrderStatus.Waiting:
       return "bg-destructive-muted text-destructive"
   }
@@ -63,51 +63,21 @@ export function CustomerOrders() {
   return (
     <main className="min-h-[calc(100svh-73px)] bg-[image:var(--page-gradient)] px-6 py-10">
       <div className="mx-auto flex w-full max-w-[1800px] flex-col gap-8">
-        <section className="flex flex-col gap-4 rounded-3xl border border-success/20 bg-card/90 p-8 shadow-sm shadow-success/5 md:flex-row md:items-end md:justify-between">
-          <div className="max-w-2xl space-y-2">
-            <Badge className="bg-success text-success-foreground">
-              Módulo do cliente
-            </Badge>
-            <h1 className="font-heading text-3xl font-semibold tracking-tight md:text-4xl">
-              Meus pedidos
-            </h1>
-            <p className="text-sm leading-6 text-muted-foreground md:text-base">
-              Consulte os pedidos enviados por {customerName}, com status,
-              itens, observações e totais.
-            </p>
-          </div>
-          <Button asChild variant="outline">
-            <Link href="/customers/menu">Voltar ao cardápio</Link>
-          </Button>
-        </section>
+        <section className="grid gap-4">
+          <Card className="rounded-3xl border border-primary/25 bg-primary-muted/45 p-2 shadow-sm shadow-primary/5">
+            <CardContent className="p-4">
+              <p className="text-sm text-brand-muted">
+                Total consumido:
+                <strong className="mt-3 block text-3xl font-semibold">
+                  {formatCurrency(total)}
+                </strong>
+              </p>
 
-        <section className="grid gap-4 md:grid-cols-3">
-          <Card className="rounded-2xl border border-info/25 bg-info-muted/55 p-2">
-            <CardContent className="p-4">
-              <p className="text-sm text-muted-foreground">Pedidos enviados</p>
-              <strong className="mt-3 block text-3xl font-semibold">
-                {customerOrders.length}
-              </strong>
-            </CardContent>
-          </Card>
-          <Card className="rounded-2xl border border-success/25 bg-success-muted/55 p-2">
-            <CardContent className="p-4">
-              <p className="text-sm text-muted-foreground">Total consumido</p>
-              <strong className="mt-3 block text-3xl font-semibold">
-                {formatCurrency(total)}
-              </strong>
-            </CardContent>
-          </Card>
-          <Card className="rounded-2xl border border-warning/25 bg-warning-muted/55 p-2">
-            <CardContent className="p-4">
-              <p className="text-sm text-muted-foreground">Em andamento</p>
-              <strong className="mt-3 block text-3xl font-semibold">
-                {
-                  customerOrders.filter(
-                    (order) => order.status !== OrderStatus.Finished
-                  ).length
-                }
-              </strong>
+              <div className="mt-6 flex flex-wrap gap-2">
+                <Button asChild className="bg-success">
+                  <Link href="/customers/menu">Voltar ao cardápio</Link>
+                </Button>
+              </div>
             </CardContent>
           </Card>
         </section>

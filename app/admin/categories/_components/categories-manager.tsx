@@ -1,5 +1,6 @@
 "use client"
 
+import Link from "next/link"
 import {
   RiAddLine,
   RiCloseLine,
@@ -30,8 +31,6 @@ import {
 } from "@/components/ui/table"
 import {
   CategoryStatus,
-  ProductStatus,
-  ProductStock,
   parseCategories,
   type Category,
   type Product,
@@ -62,19 +61,6 @@ function getCategoryBadgeClasses(status: CategoryStatus) {
   }
 }
 
-function getProductBadgeClasses(value: ProductStatus | ProductStock) {
-  switch (value) {
-    case ProductStatus.Active:
-    case ProductStock.Available:
-      return "bg-success-muted text-success"
-    case ProductStock.Low:
-      return "bg-warning-muted text-warning"
-    case ProductStatus.Inactive:
-    case ProductStock.Unavailable:
-      return "bg-destructive-muted text-destructive"
-  }
-}
-
 async function requestCategories(
   endpoint: string,
   options: RequestInit,
@@ -97,8 +83,7 @@ async function requestCategories(
   }
 
   return (
-    parseCategories(JSON.stringify(await response.json())) ??
-    fallbackCategories
+    parseCategories(JSON.stringify(await response.json())) ?? fallbackCategories
   )
 }
 
@@ -112,7 +97,6 @@ export function CategoriesManager({
   const [editingCategory, setEditingCategory] = useState<Category | null>(null)
   const [categoryPendingDelete, setCategoryPendingDelete] =
     useState<Category | null>(null)
-  const [viewingCategory, setViewingCategory] = useState<Category | null>(null)
   const [isFormOpen, setIsFormOpen] = useState(false)
   const [message, setMessage] = useState<string | null>(null)
   const [isPending, startTransition] = useTransition()
@@ -139,16 +123,6 @@ export function CategoriesManager({
         return categories
     }
   }, [categories, filter])
-
-  const viewingProducts = useMemo(() => {
-    if (!viewingCategory) {
-      return []
-    }
-
-    return initialProducts.filter(
-      (product) => product.categoryId === viewingCategory.id
-    )
-  }, [initialProducts, viewingCategory])
 
   const pendingDeleteProducts = useMemo(() => {
     if (!categoryPendingDelete) {
@@ -213,7 +187,9 @@ export function CategoriesManager({
         )
 
         setCategories(nextCategories)
-        setMessage(editingCategory ? "Categoria atualizada." : "Categoria criada.")
+        setMessage(
+          editingCategory ? "Categoria atualizada." : "Categoria criada."
+        )
         closeForm()
       } catch (error) {
         setMessage(error instanceof Error ? error.message : "Erro inesperado.")
@@ -248,9 +224,6 @@ export function CategoriesManager({
         <section className="flex flex-col gap-4 rounded-3xl border border-primary/20 bg-card/85 p-8 shadow-sm shadow-primary/5 backdrop-blur">
           <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
             <div className="max-w-2xl space-y-2">
-              <span className="inline-flex w-fit rounded-full bg-primary px-3 py-1 text-xs font-medium text-primary-foreground">
-                Catálogo administrativo
-              </span>
               <h1 className="font-heading text-3xl font-semibold tracking-tight md:text-4xl">
                 Gerencie as categorias do cardápio
               </h1>
@@ -259,7 +232,11 @@ export function CategoriesManager({
                 os produtos do menu.
               </p>
             </div>
-            <Button onClick={startCategoryCreation} type="button" variant="outline">
+            <Button
+              onClick={startCategoryCreation}
+              type="button"
+              variant="outline"
+            >
               <RiAddLine aria-hidden />
               Nova categoria
             </Button>
@@ -328,20 +305,27 @@ export function CategoriesManager({
                         {productCountByCategory[category.id] ?? 0}
                       </TableCell>
                       <TableCell>
-                        <Badge className={getCategoryBadgeClasses(category.status)}>
+                        <Badge
+                          className={getCategoryBadgeClasses(category.status)}
+                        >
                           {category.status}
                         </Badge>
                       </TableCell>
                       <TableCell className="px-6 text-right">
                         <div className="inline-flex gap-1">
                           <Button
-                            onClick={() => setViewingCategory(category)}
+                            asChild
                             size="icon-sm"
                             title="Ver produtos da categoria"
-                            type="button"
                             variant="ghost"
                           >
-                            <RiEyeLine aria-hidden />
+                            <Link
+                              href={`/admin/categories/products/${encodeURIComponent(
+                                category.id
+                              )}`}
+                            >
+                              <RiEyeLine aria-hidden />
+                            </Link>
                           </Button>
                           <Button
                             onClick={() => startCategoryEdition(category)}
@@ -483,94 +467,6 @@ export function CategoriesManager({
         </div>
       ) : null}
 
-      {viewingCategory ? (
-        <div
-          aria-modal="true"
-          className="fixed inset-0 z-50 flex items-center justify-center bg-foreground/45 p-4 backdrop-blur-sm"
-          role="dialog"
-        >
-          <Card className="max-h-[calc(100svh-2rem)] w-full max-w-4xl overflow-hidden rounded-2xl border border-primary/15 p-0 shadow-xl">
-            <CardHeader className="flex flex-row items-start justify-between gap-4 border-b border-primary/15 bg-primary-muted/45 p-6">
-              <div>
-                <CardTitle className="text-lg font-semibold">
-                  Produtos em {viewingCategory.name}
-                </CardTitle>
-                <CardDescription className="text-sm">
-                  Itens cadastrados com esta categoria no catálogo.
-                </CardDescription>
-              </div>
-              <Button
-                onClick={() => setViewingCategory(null)}
-                size="icon-sm"
-                title="Fechar modal"
-                type="button"
-                variant="ghost"
-              >
-                <RiCloseLine aria-hidden />
-              </Button>
-            </CardHeader>
-
-            <CardContent className="max-h-[calc(100svh-9rem)] overflow-y-auto p-0">
-              {viewingProducts.length ? (
-                <div className="pb-1">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead className="px-6">Código</TableHead>
-                        <TableHead>Produto</TableHead>
-                        <TableHead>Preço</TableHead>
-                        <TableHead>Estoque</TableHead>
-                        <TableHead className="px-6">Status</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {viewingProducts.map((product) => (
-                        <TableRow key={product.id}>
-                          <TableCell className="px-6 font-medium">
-                            {product.id}
-                          </TableCell>
-                          <TableCell>
-                            <div className="min-w-64">
-                              <p className="font-medium">{product.name}</p>
-                              <p className="max-w-96 truncate text-xs text-muted-foreground">
-                                {product.description}
-                              </p>
-                            </div>
-                          </TableCell>
-                          <TableCell className="font-medium">
-                            {formatProductPrice(product.price)}
-                          </TableCell>
-                          <TableCell>
-                            <Badge
-                              className={getProductBadgeClasses(product.stock)}
-                            >
-                              {product.stock}
-                            </Badge>
-                          </TableCell>
-                          <TableCell className="px-6">
-                            <Badge
-                              className={getProductBadgeClasses(product.status)}
-                            >
-                              {product.status}
-                            </Badge>
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </div>
-              ) : (
-                <div className="p-6">
-                  <p className="rounded-2xl border border-primary/15 bg-primary-muted/35 p-4 text-sm text-muted-foreground">
-                    Nenhum produto vinculado a esta categoria.
-                  </p>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        </div>
-      ) : null}
-
       {categoryPendingDelete ? (
         <div
           aria-modal="true"
@@ -606,9 +502,8 @@ export function CategoriesManager({
                   {categoryPendingDelete.name}
                 </p>
                 <p className="mt-1 text-xs text-muted-foreground">
-                  {categoryPendingDelete.id} ·{" "}
-                  {pendingDeleteProducts.length}{" "}
-                  produtos serão removidos do catálogo
+                  {categoryPendingDelete.id} · {pendingDeleteProducts.length}{" "}
+                  produtos serão removidos do cardápio junto com esta categoria.
                 </p>
               </div>
 

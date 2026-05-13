@@ -12,7 +12,6 @@ import {
   Card,
   CardContent,
   CardDescription,
-  CardHeader,
   CardTitle,
 } from "@/components/ui/card"
 import {
@@ -95,22 +94,7 @@ export function CustomerMenu() {
   return (
     <main className="min-h-[calc(100svh-73px)] bg-[image:var(--page-gradient)] px-6 py-10">
       <div className="mx-auto flex w-full max-w-[1800px] flex-col gap-8">
-        <section className="grid gap-4 lg:grid-cols-[1.3fr_0.7fr]">
-          <Card className="rounded-3xl border border-success/20 bg-card/90 p-4 shadow-sm shadow-success/5">
-            <CardHeader>
-              <Badge className="bg-success text-success-foreground">
-                Módulo do cliente
-              </Badge>
-              <CardTitle className="mt-2 font-heading text-3xl font-semibold tracking-tight md:text-4xl">
-                Cardápio digital e pedidos
-              </CardTitle>
-              <CardDescription className="max-w-2xl text-sm leading-6 md:text-base">
-                Escolha os produtos do seu pedido, acompanhe os destaques da
-                casa e envie tudo direto para a equipe de atendimento.
-              </CardDescription>
-            </CardHeader>
-          </Card>
-
+        <section className="grid gap-4">
           <Card className="rounded-3xl border border-primary/25 bg-primary-muted/45 p-2 shadow-sm shadow-primary/5">
             <CardContent className="p-4">
               <p className="text-sm text-brand-muted">Atendimento atual</p>
@@ -140,33 +124,33 @@ export function CustomerMenu() {
           {menuItems.map((item) => (
             <Card
               key={item.id}
-              className="overflow-hidden rounded-3xl border border-primary/15 p-0 shadow-sm transition-colors hover:border-success/35"
+              className="grid grid-cols-[7rem_minmax(0,1fr)] overflow-hidden rounded-2xl border border-primary/15 p-0 shadow-sm transition-colors hover:border-success/35 md:block md:rounded-3xl"
             >
-              <div className="relative aspect-[4/3] w-full bg-muted/30">
+              <div className="relative min-h-32 w-full bg-muted/30 md:aspect-[4/3] md:min-h-0">
                 <Image
                   src={item.image}
                   alt={item.name}
                   fill
-                  className="object-cover"
-                  sizes="(max-width: 1279px) 50vw, 25vw"
+                  className="object-contain p-2 md:object-cover md:p-0"
+                  sizes="(max-width: 767px) 112px, (max-width: 1279px) 50vw, 25vw"
                 />
               </div>
 
-              <CardContent className="space-y-4 p-5">
-                <div>
+              <CardContent className="flex min-w-0 flex-col justify-between gap-3 p-4 md:gap-4 md:p-5">
+                <div className="min-w-0">
                   <Badge className="bg-primary-muted text-primary">
                     {getProductCategoryName(item, categories)}
                   </Badge>
-                  <CardTitle className="mt-3 text-lg font-semibold">
+                  <CardTitle className="mt-2 text-base font-semibold md:mt-3 md:text-lg">
                     {item.name}
                   </CardTitle>
-                  <CardDescription className="mt-2 text-sm leading-6">
+                  <CardDescription className="mt-1 line-clamp-2 text-sm leading-5 md:mt-2 md:line-clamp-none md:leading-6">
                     {item.description}
                   </CardDescription>
                 </div>
 
-                <div className="flex items-center justify-between gap-3">
-                  <strong className="text-lg font-semibold">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <strong className="text-base font-semibold md:text-lg">
                     {formatProductPrice(item.price)}
                   </strong>
                   <Button

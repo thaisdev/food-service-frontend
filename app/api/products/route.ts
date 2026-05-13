@@ -18,7 +18,7 @@ import {
 
 export const runtime = "nodejs"
 
-const defaultProductImage = "/branding/product-placeholder.png"
+const defaultProductImage = "/products/product-placeholder.png"
 
 function filterVisibleProducts(products: Product[]) {
   return products.filter((product) => !product.deletedAt)

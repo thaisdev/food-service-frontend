@@ -17,7 +17,7 @@ const fontMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "Food Service",
-  description: "Painel administrativo do Food Service.",
+  description: "Módulo administrativo do Food Service.",
   icons: {
     icon: "/branding/food-service-logo-app-icon-primary.svg",
     shortcut: "/branding/food-service-logo-app-icon-primary.svg",
