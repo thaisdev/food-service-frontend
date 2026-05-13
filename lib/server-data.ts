@@ -1,7 +1,4 @@
 import {
-  mockCategories,
-  mockOrders,
-  mockProducts,
   parseCategories,
   parseOrders,
   parseProducts,
@@ -10,12 +7,12 @@ import {
   type Order,
   type Product,
 } from "@/lib/data-schema"
-import {
-  readServerJsonStore,
-  writeServerJsonStore,
-} from "@/lib/server-json-store"
+import { readServerStore, writeServerStore } from "@/lib/server-firestore-store"
 
-function normalizeProductCategoryIds(products: Product[], categories: Category[]) {
+function normalizeProductCategoryIds(
+  products: Product[],
+  categories: Category[]
+) {
   let changed = false
   const nextProducts = products.map((product) => {
     const categoryId = resolveProductCategoryId(product, categories)
@@ -37,11 +34,9 @@ function normalizeProductCategoryIds(products: Product[], categories: Category[]
 
 export async function getProducts() {
   const [products, categories] = await Promise.all([
-    readServerJsonStore({
-      exampleFile: "products.example.json",
-      fallbackData: mockProducts,
+    readServerStore({
+      collectionName: "products",
       parse: parseProducts,
-      runtimeFile: "products.json",
     }),
     getCategories(),
   ])
@@ -55,11 +50,9 @@ export async function getProducts() {
 }
 
 export function getRawProducts() {
-  return readServerJsonStore({
-    exampleFile: "products.example.json",
-    fallbackData: mockProducts,
+  return readServerStore({
+    collectionName: "products",
     parse: parseProducts,
-    runtimeFile: "products.json",
   })
 }
 
@@ -70,15 +63,13 @@ export function getVisibleProducts() {
 }
 
 export function saveProducts(products: Product[]) {
-  return writeServerJsonStore("products.json", products)
+  return writeServerStore("products", products)
 }
 
 export function getCategories() {
-  return readServerJsonStore({
-    exampleFile: "categories.example.json",
-    fallbackData: mockCategories,
+  return readServerStore({
+    collectionName: "categories",
     parse: parseCategories,
-    runtimeFile: "categories.json",
   })
 }
 
@@ -89,22 +80,22 @@ export function getVisibleCategories() {
 }
 
 export function saveCategories(categories: Category[]) {
-  return writeServerJsonStore("categories.json", categories)
+  return writeServerStore("categories", categories)
 }
 
 export function getOrders() {
-  return readServerJsonStore({
-    exampleFile: "orders.example.json",
-    fallbackData: mockOrders,
+  return readServerStore({
+    collectionName: "orders",
     parse: parseOrders,
-    runtimeFile: "orders.json",
   })
 }
 
 export function getVisibleOrders() {
-  return getOrders().then((orders) => orders.filter((order) => !order.deletedAt))
+  return getOrders().then((orders) =>
+    orders.filter((order) => !order.deletedAt)
+  )
 }
 
 export function saveOrders(orders: Order[]) {
-  return writeServerJsonStore("orders.json", orders)
+  return writeServerStore("orders", orders)
 }
