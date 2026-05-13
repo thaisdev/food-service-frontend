@@ -5,6 +5,7 @@ import { RiAddLine, RiCloseLine, RiEditLine, RiEyeLine } from "@remixicon/react"
 import { useEffect, useMemo, useState, useTransition } from "react"
 
 import { Badge } from "@/components/ui/badge"
+import { TablePagination } from "@/components/table-pagination"
 import { Button } from "@/components/ui/button"
 import {
   Card,
@@ -27,8 +28,11 @@ import { formatDatetime } from "@/helpers/datetime"
 import { formatOrderItems, formatTable } from "@/helpers/order"
 import { canCancelOrder } from "@/helpers/order-status"
 import { OrderStatus, parseOrders, type Order } from "@/lib/data-schema"
+import type { PaginatedResponse } from "@/lib/api-pagination"
 
 type OrderFilter = "Todos" | OrderStatus
+
+const ORDERS_PAGE_SIZE = 10
 
 type OrdersManagerProps = {
   initialOrders: Order[]
@@ -91,11 +95,52 @@ async function requestOrders(
   return parseOrders(JSON.stringify(await response.json())) ?? fallbackOrders
 }
 
+function parsePaginatedOrders(value: unknown): PaginatedResponse<Order> | null {
+  if (!value || typeof value !== "object") {
+    return null
+  }
+
+  const data = value as {
+    items?: unknown
+    pagination?: {
+      page?: unknown
+      pageSize?: unknown
+      totalItems?: unknown
+      totalPages?: unknown
+    }
+  }
+  const orders = parseOrders(data.items ? JSON.stringify(data.items) : null)
+
+  if (
+    !orders ||
+    !data.pagination ||
+    typeof data.pagination.page !== "number" ||
+    typeof data.pagination.pageSize !== "number" ||
+    typeof data.pagination.totalItems !== "number" ||
+    typeof data.pagination.totalPages !== "number"
+  ) {
+    return null
+  }
+
+  return {
+    items: orders,
+    pagination: {
+      page: data.pagination.page,
+      pageSize: data.pagination.pageSize,
+      totalItems: data.pagination.totalItems,
+      totalPages: data.pagination.totalPages,
+    },
+  }
+}
+
 export function OrdersManager({ initialOrders }: OrdersManagerProps) {
-  const [orders, setOrders] = useState(initialOrders)
+  const [orders, setOrders] = useState(initialOrders.slice(0, ORDERS_PAGE_SIZE))
   const [filter, setFilter] = useState<OrderFilter>("Todos")
   const [dateFilter, setDateFilter] = useState("")
   const todayDateFilter = useMemo(() => getTodayDateFilterValue(), [])
+  const [currentPage, setCurrentPage] = useState(1)
+  const [totalItems, setTotalItems] = useState(initialOrders.length)
+  const [refreshKey, setRefreshKey] = useState(0)
   const [orderPendingCancel, setOrderPendingCancel] = useState<Order | null>(
     null
   )
@@ -103,10 +148,9 @@ export function OrdersManager({ initialOrders }: OrdersManagerProps) {
   const [isPending, startTransition] = useTransition()
 
   useEffect(() => {
-    function updateOrders(event: Event) {
-      const orderEvent = event as CustomEvent<Order[]>
-
-      setOrders(orderEvent.detail)
+    function updateOrders() {
+      setCurrentPage(1)
+      setRefreshKey((key) => key + 1)
       setMessage(null)
     }
 
@@ -117,15 +161,34 @@ export function OrdersManager({ initialOrders }: OrdersManagerProps) {
     }
   }, [])
 
-  const filteredOrders = useMemo(() => {
-    return orders.filter((order) => {
-      const matchesStatus = filter === "Todos" || order.status === filter
-      const matchesDate =
-        !dateFilter || getOrderDateFilterValue(order.datetime) === dateFilter
-
-      return matchesStatus && matchesDate
+  useEffect(() => {
+    const searchParams = new URLSearchParams({
+      page: String(currentPage),
+      pageSize: String(ORDERS_PAGE_SIZE),
     })
-  }, [dateFilter, filter, orders])
+
+    if (filter !== "Todos") {
+      searchParams.set("status", filter)
+    }
+
+    if (dateFilter) {
+      searchParams.set("date", dateFilter)
+    }
+
+    fetch(`/api/orders?${searchParams.toString()}`, { cache: "no-store" })
+      .then((response) => (response.ok ? response.json() : null))
+      .then((data) => {
+        const paginatedOrders = parsePaginatedOrders(data)
+
+        if (!paginatedOrders) {
+          return
+        }
+
+        setOrders(paginatedOrders.items)
+        setTotalItems(paginatedOrders.pagination.totalItems)
+        setCurrentPage(paginatedOrders.pagination.page)
+      })
+  }, [currentPage, dateFilter, filter, refreshKey])
 
   function getOrderActionAvailability(order: Order) {
     const isCanceled = order.status === OrderStatus.Canceled
@@ -166,7 +229,9 @@ export function OrdersManager({ initialOrders }: OrdersManagerProps) {
           orders
         )
 
-        setOrders(nextOrders)
+        setOrders(nextOrders.slice(0, ORDERS_PAGE_SIZE))
+        setCurrentPage(1)
+        setRefreshKey((key) => key + 1)
         setOrderPendingCancel(null)
         setMessage("Pedido cancelado.")
       } catch (error) {
@@ -224,7 +289,10 @@ export function OrdersManager({ initialOrders }: OrdersManagerProps) {
                     className="h-9 max-w-48"
                     id="dateFilter"
                     max={todayDateFilter}
-                    onChange={(event) => setDateFilter(event.target.value)}
+                    onChange={(event) => {
+                      setDateFilter(event.target.value)
+                      setCurrentPage(1)
+                    }}
                     type="date"
                     value={dateFilter}
                   />
@@ -235,7 +303,10 @@ export function OrdersManager({ initialOrders }: OrdersManagerProps) {
                     (currentFilter) => (
                       <Button
                         key={currentFilter}
-                        onClick={() => setFilter(currentFilter)}
+                        onClick={() => {
+                          setFilter(currentFilter)
+                          setCurrentPage(1)
+                        }}
                         type="button"
                         variant={
                           filter === currentFilter ? "default" : "outline"
@@ -263,7 +334,7 @@ export function OrdersManager({ initialOrders }: OrdersManagerProps) {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {filteredOrders.map((order) => (
+                  {orders.map((order) => (
                     <TableRow key={order.id}>
                       {(() => {
                         const actionAvailability =
@@ -363,6 +434,12 @@ export function OrdersManager({ initialOrders }: OrdersManagerProps) {
                 </TableBody>
               </Table>
             </CardContent>
+            <TablePagination
+              currentPage={currentPage}
+              onPageChange={setCurrentPage}
+              pageSize={ORDERS_PAGE_SIZE}
+              totalItems={totalItems}
+            />
           </Card>
         </section>
       </div>

@@ -2,6 +2,11 @@ import { NextResponse } from "next/server"
 
 import { delay } from "@/lib/api-delay"
 import {
+  normalizeSearchText,
+  paginateItems,
+  parsePaginationParams,
+} from "@/lib/api-pagination"
+import {
   ProductStatus,
   ProductStock,
   parseProductPrice,
@@ -105,12 +110,38 @@ async function readProductRequest(request: Request) {
   }
 }
 
-export async function GET() {
+export async function GET(request: Request) {
   await delay()
 
+  const { searchParams } = new URL(request.url)
   const products = await getVisibleProducts()
 
-  return NextResponse.json(products)
+  if (!searchParams.has("page")) {
+    return NextResponse.json(products)
+  }
+
+  const categoryId = searchParams.get("categoryId") ?? ""
+  const name = normalizeSearchText(searchParams.get("name") ?? "")
+  const status = searchParams.get("status")
+  const stock = searchParams.get("stock")
+  const filteredProducts = products.filter((product) => {
+    const matchesCategory = !categoryId || product.categoryId === categoryId
+    const matchesName =
+      !name || normalizeSearchText(product.name).includes(name)
+    const matchesStatus =
+      !status ||
+      (Object.values(ProductStatus).includes(status as ProductStatus) &&
+        product.status === status)
+    const matchesStock =
+      !stock ||
+      (Object.values(ProductStock).includes(stock as ProductStock) &&
+        product.stock === stock)
+
+    return matchesCategory && matchesName && matchesStatus && matchesStock
+  })
+  const { page, pageSize } = parsePaginationParams(searchParams)
+
+  return NextResponse.json(paginateItems(filteredProducts, page, pageSize))
 }
 
 export async function POST(request: Request) {

@@ -8,9 +8,10 @@ import {
   RiDeleteBinLine,
   RiEditLine,
 } from "@remixicon/react"
-import { useEffect, useMemo, useState, useTransition } from "react"
+import { useEffect, useState, useTransition } from "react"
 
 import { Badge } from "@/components/ui/badge"
+import { TablePagination } from "@/components/table-pagination"
 import { Button } from "@/components/ui/button"
 import {
   Card,
@@ -37,10 +38,12 @@ import {
   type Product,
 } from "@/lib/data-schema"
 import { formatProductPrice } from "@/helpers/currency"
+import type { PaginatedResponse } from "@/lib/api-pagination"
 
 type ProductFilter = "Todos" | "Ativos" | "Inativos" | "Baixo estoque"
 
 const ALL_CATEGORIES_FILTER = "all"
+const PRODUCTS_PAGE_SIZE = 10
 
 type AdminProductsCrudProps = {
   categories: Category[]
@@ -58,14 +61,6 @@ function getBadgeClasses(value: ProductStatus | ProductStock) {
     case ProductStock.Unavailable:
       return "bg-destructive-muted text-destructive"
   }
-}
-
-function normalizeSearchText(value: string) {
-  return value
-    .trim()
-    .toLocaleLowerCase("pt-BR")
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
 }
 
 async function requestProducts(
@@ -94,26 +89,70 @@ async function requestProducts(
   )
 }
 
+function parsePaginatedProducts(value: unknown): PaginatedResponse<Product> | null {
+  if (!value || typeof value !== "object") {
+    return null
+  }
+
+  const data = value as {
+    items?: unknown
+    pagination?: {
+      page?: unknown
+      pageSize?: unknown
+      totalItems?: unknown
+      totalPages?: unknown
+    }
+  }
+  const products = parseProducts(
+    data.items ? JSON.stringify(data.items) : null
+  )
+
+  if (
+    !products ||
+    !data.pagination ||
+    typeof data.pagination.page !== "number" ||
+    typeof data.pagination.pageSize !== "number" ||
+    typeof data.pagination.totalItems !== "number" ||
+    typeof data.pagination.totalPages !== "number"
+  ) {
+    return null
+  }
+
+  return {
+    items: products,
+    pagination: {
+      page: data.pagination.page,
+      pageSize: data.pagination.pageSize,
+      totalItems: data.pagination.totalItems,
+      totalPages: data.pagination.totalPages,
+    },
+  }
+}
+
 export function AdminProductsCrud({
   categories,
   initialProducts,
 }: AdminProductsCrudProps) {
-  const [products, setProducts] = useState(initialProducts)
+  const [products, setProducts] = useState(
+    initialProducts.slice(0, PRODUCTS_PAGE_SIZE)
+  )
   const [filter, setFilter] = useState<ProductFilter>("Todos")
   const [selectedCategoryId, setSelectedCategoryId] = useState(
     ALL_CATEGORIES_FILTER
   )
   const [productNameFilter, setProductNameFilter] = useState("")
+  const [currentPage, setCurrentPage] = useState(1)
+  const [totalItems, setTotalItems] = useState(initialProducts.length)
+  const [refreshKey, setRefreshKey] = useState(0)
   const [message, setMessage] = useState<string | null>(null)
   const [productPendingDelete, setProductPendingDelete] =
     useState<Product | null>(null)
   const [isPending, startTransition] = useTransition()
 
   useEffect(() => {
-    function updateProducts(event: Event) {
-      const productEvent = event as CustomEvent<Product[]>
-
-      setProducts(productEvent.detail)
+    function updateProducts() {
+      setCurrentPage(1)
+      setRefreshKey((key) => key + 1)
       setMessage(null)
     }
 
@@ -124,25 +163,46 @@ export function AdminProductsCrud({
     }
   }, [])
 
-  const filteredProducts = useMemo(() => {
-    const normalizedProductNameFilter = normalizeSearchText(productNameFilter)
-
-    return products.filter((product) => {
-      const matchesProductFilter =
-        filter === "Todos" ||
-        (filter === "Ativos" && product.status === ProductStatus.Active) ||
-        (filter === "Inativos" && product.status === ProductStatus.Inactive) ||
-        (filter === "Baixo estoque" && product.stock === ProductStock.Low)
-      const matchesCategory =
-        selectedCategoryId === ALL_CATEGORIES_FILTER ||
-        product.categoryId === selectedCategoryId
-      const matchesName =
-        !normalizedProductNameFilter ||
-        normalizeSearchText(product.name).includes(normalizedProductNameFilter)
-
-      return matchesProductFilter && matchesCategory && matchesName
+  useEffect(() => {
+    const searchParams = new URLSearchParams({
+      page: String(currentPage),
+      pageSize: String(PRODUCTS_PAGE_SIZE),
     })
-  }, [filter, productNameFilter, products, selectedCategoryId])
+
+    if (filter === "Ativos") {
+      searchParams.set("status", ProductStatus.Active)
+    }
+
+    if (filter === "Inativos") {
+      searchParams.set("status", ProductStatus.Inactive)
+    }
+
+    if (filter === "Baixo estoque") {
+      searchParams.set("stock", ProductStock.Low)
+    }
+
+    if (selectedCategoryId !== ALL_CATEGORIES_FILTER) {
+      searchParams.set("categoryId", selectedCategoryId)
+    }
+
+    if (productNameFilter.trim()) {
+      searchParams.set("name", productNameFilter)
+    }
+
+    fetch(`/api/products?${searchParams.toString()}`, { cache: "no-store" })
+      .then((response) => (response.ok ? response.json() : null))
+      .then((data) => {
+        const paginatedProducts = parsePaginatedProducts(data)
+
+        if (!paginatedProducts) {
+          return
+        }
+
+        setProducts(paginatedProducts.items)
+        setTotalItems(paginatedProducts.pagination.totalItems)
+        setCurrentPage(paginatedProducts.pagination.page)
+      })
+  }, [currentPage, filter, productNameFilter, refreshKey, selectedCategoryId])
 
   function confirmProductDeletion(product: Product) {
     setMessage(null)
@@ -161,7 +221,9 @@ export function AdminProductsCrud({
           products
         )
 
-        setProducts(nextProducts)
+        setProducts(nextProducts.slice(0, PRODUCTS_PAGE_SIZE))
+        setCurrentPage(1)
+        setRefreshKey((key) => key + 1)
 
         setMessage("Produto ocultado.")
       } catch (error) {
@@ -222,9 +284,10 @@ export function AdminProductsCrud({
                     <select
                       className="h-9 min-w-48 rounded-md border border-input bg-input/20 px-2 text-xs outline-none transition-colors focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/30"
                       id="categoryFilter"
-                      onChange={(event) =>
+                      onChange={(event) => {
                         setSelectedCategoryId(event.target.value)
-                      }
+                        setCurrentPage(1)
+                      }}
                       value={selectedCategoryId}
                     >
                       <option value={ALL_CATEGORIES_FILTER}>
@@ -248,9 +311,10 @@ export function AdminProductsCrud({
                     <Input
                       className="h-9 min-w-64"
                       id="productNameFilter"
-                      onChange={(event) =>
+                      onChange={(event) => {
                         setProductNameFilter(event.target.value)
-                      }
+                        setCurrentPage(1)
+                      }}
                       placeholder="Filtrar por nome"
                       type="search"
                       value={productNameFilter}
@@ -264,7 +328,10 @@ export function AdminProductsCrud({
                   ).map((currentFilter) => (
                     <Button
                       key={currentFilter}
-                      onClick={() => setFilter(currentFilter)}
+                      onClick={() => {
+                        setFilter(currentFilter)
+                        setCurrentPage(1)
+                      }}
                       type="button"
                       variant={
                         filter === currentFilter ? "default" : "outline"
@@ -291,7 +358,7 @@ export function AdminProductsCrud({
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {filteredProducts.map((product) => (
+                  {products.map((product) => (
                     <TableRow key={product.id}>
                       <TableCell className="px-6 font-medium">
                         {product.id}
@@ -360,6 +427,12 @@ export function AdminProductsCrud({
                 </TableBody>
               </Table>
             </CardContent>
+            <TablePagination
+              currentPage={currentPage}
+              onPageChange={setCurrentPage}
+              pageSize={PRODUCTS_PAGE_SIZE}
+              totalItems={totalItems}
+            />
           </Card>
         </section>
       </div>
