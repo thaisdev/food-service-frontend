@@ -13,6 +13,8 @@ import {
 import { getOrders, getVisibleOrders, saveOrders } from "@/lib/server-data"
 
 export const runtime = "nodejs"
+export const dynamic = "force-dynamic"
+export const revalidate = 0
 
 function filterVisibleOrders(orders: Order[]) {
   return orders.filter((order) => !order.deletedAt)
