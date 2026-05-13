@@ -13,6 +13,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
+import { Input } from "@/components/ui/input"
 import {
   Table,
   TableBody,
@@ -48,6 +49,24 @@ function getStatusClasses(status: OrderStatus) {
   }
 }
 
+function getOrderDateFilterValue(datetime: string) {
+  const date = new Date(datetime)
+
+  if (Number.isNaN(date.getTime())) {
+    return ""
+  }
+
+  const year = date.getFullYear()
+  const month = String(date.getMonth() + 1).padStart(2, "0")
+  const day = String(date.getDate()).padStart(2, "0")
+
+  return `${year}-${month}-${day}`
+}
+
+function getTodayDateFilterValue() {
+  return getOrderDateFilterValue(new Date().toISOString())
+}
+
 async function requestOrders(
   endpoint: string,
   options: RequestInit,
@@ -75,6 +94,8 @@ async function requestOrders(
 export function OrdersManager({ initialOrders }: OrdersManagerProps) {
   const [orders, setOrders] = useState(initialOrders)
   const [filter, setFilter] = useState<OrderFilter>("Todos")
+  const [dateFilter, setDateFilter] = useState("")
+  const todayDateFilter = useMemo(() => getTodayDateFilterValue(), [])
   const [orderPendingCancel, setOrderPendingCancel] = useState<Order | null>(
     null
   )
@@ -97,12 +118,14 @@ export function OrdersManager({ initialOrders }: OrdersManagerProps) {
   }, [])
 
   const filteredOrders = useMemo(() => {
-    if (filter === "Todos") {
-      return orders
-    }
+    return orders.filter((order) => {
+      const matchesStatus = filter === "Todos" || order.status === filter
+      const matchesDate =
+        !dateFilter || getOrderDateFilterValue(order.datetime) === dateFilter
 
-    return orders.filter((order) => order.status === filter)
-  }, [filter, orders])
+      return matchesStatus && matchesDate
+    })
+  }, [dateFilter, filter, orders])
 
   function getOrderActionAvailability(order: Order) {
     const isCanceled = order.status === OrderStatus.Canceled
@@ -183,7 +206,7 @@ export function OrdersManager({ initialOrders }: OrdersManagerProps) {
 
         <section>
           <Card className="rounded-3xl border border-info/15 p-0 shadow-sm">
-            <CardHeader className="flex flex-col gap-4 border-b border-info/15 bg-info-muted/45 p-6 md:flex-row md:items-center md:justify-between">
+            <CardHeader className="flex flex-col gap-4 border-b border-info/15 bg-info-muted/45 p-6">
               <div>
                 <CardTitle className="text-lg font-semibold">
                   Pedidos cadastrados
@@ -192,19 +215,37 @@ export function OrdersManager({ initialOrders }: OrdersManagerProps) {
                   Visualize, filtre e mantenha a fila operacional do sistema.
                 </CardDescription>
               </div>
-              <div className="flex flex-wrap gap-2">
-                {(["Todos", ...Object.values(OrderStatus)] as const).map(
-                  (currentFilter) => (
-                    <Button
-                      key={currentFilter}
-                      onClick={() => setFilter(currentFilter)}
-                      type="button"
-                      variant={filter === currentFilter ? "default" : "outline"}
-                    >
-                      {currentFilter}
-                    </Button>
-                  )
-                )}
+              <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
+                <div className="grid gap-1.5">
+                  <label className="text-xs font-medium" htmlFor="dateFilter">
+                    Data
+                  </label>
+                  <Input
+                    className="h-9 max-w-48"
+                    id="dateFilter"
+                    max={todayDateFilter}
+                    onChange={(event) => setDateFilter(event.target.value)}
+                    type="date"
+                    value={dateFilter}
+                  />
+                </div>
+
+                <div className="flex flex-wrap gap-2">
+                  {(["Todos", ...Object.values(OrderStatus)] as const).map(
+                    (currentFilter) => (
+                      <Button
+                        key={currentFilter}
+                        onClick={() => setFilter(currentFilter)}
+                        type="button"
+                        variant={
+                          filter === currentFilter ? "default" : "outline"
+                        }
+                      >
+                        {currentFilter}
+                      </Button>
+                    )
+                  )}
+                </div>
               </div>
             </CardHeader>
 
