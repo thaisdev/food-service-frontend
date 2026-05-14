@@ -210,21 +210,12 @@ export function AdminOrderFormModal({
     setSelectedCategoryId(ALL_CATEGORIES_FILTER)
   }
 
-function getSubmitAction(event: FormEvent<HTMLFormElement>): SubmitAction {
+  function getSubmitAction(event: FormEvent<HTMLFormElement>): SubmitAction {
     const submitter = (event.nativeEvent as SubmitEvent)
       .submitter as HTMLButtonElement | null
 
     return submitter?.value === "continue" ? "continue" : "close"
-}
-
-function hasInvalidQuantity(items: SelectedOrderItem[]) {
-  return items.some(
-    (item) =>
-      typeof item.quantity !== "number" ||
-      !Number.isFinite(item.quantity) ||
-      item.quantity <= 0
-  )
-}
+  }
 
   function hasInvalidQuantity(items: SelectedOrderItem[]) {
     return items.some(
