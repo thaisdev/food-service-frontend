@@ -36,12 +36,37 @@ import { useSessionAccess } from "@/hooks/use-session-access"
 import { type OrderItem } from "@/lib/data-schema"
 import { SessionModule } from "@/lib/session-access"
 
+type EditableCartItem = Omit<CustomerCartItem, "quantity"> & {
+  quantity: number | ""
+}
+
+function normalizeCartItems(cartItems: EditableCartItem[]): CustomerCartItem[] {
+  return cartItems.map((item) => ({
+    ...item,
+    quantity:
+      typeof item.quantity === "number" &&
+      Number.isFinite(item.quantity) &&
+      item.quantity > 0
+        ? item.quantity
+        : 1,
+  }))
+}
+
+function hasInvalidQuantity(cartItems: EditableCartItem[]) {
+  return cartItems.some(
+    (item) =>
+      typeof item.quantity !== "number" ||
+      !Number.isFinite(item.quantity) ||
+      item.quantity <= 0
+  )
+}
+
 export function CustomerCartModal() {
   const router = useRouter()
   const products = useProducts()
   const access = useSessionAccess()
   const [cartItems, setCartItems] =
-    useState<CustomerCartItem[]>(readCustomerCart)
+    useState<EditableCartItem[]>(readCustomerCart)
   const [message, setMessage] = useState<string | null>(null)
   const [isPending, startTransition] = useTransition()
   const customerName =
@@ -67,12 +92,23 @@ export function CustomerCartModal() {
       }
 
       if (field === "quantity") {
+        if (!value) {
+          return {
+            ...item,
+            quantity: "" as const,
+          }
+        }
+
         const quantity = Number(value)
 
-        return {
-          ...item,
-          quantity: Number.isFinite(quantity) && quantity > 0 ? quantity : 1,
+        if (Number.isFinite(quantity) && quantity > 0) {
+          return {
+            ...item,
+            quantity,
+          }
         }
+
+        return item
       }
 
       return {
@@ -82,14 +118,14 @@ export function CustomerCartModal() {
     })
 
     setCartItems(nextItems)
-    writeCustomerCart(nextItems)
+    writeCustomerCart(normalizeCartItems(nextItems))
   }
 
   function removeCartItem(productId: string) {
     const nextItems = cartItems.filter((item) => item.productId !== productId)
 
     setCartItems(nextItems)
-    writeCustomerCart(nextItems)
+    writeCustomerCart(normalizeCartItems(nextItems))
   }
 
   function submitOrder(event: FormEvent<HTMLFormElement>) {
@@ -98,6 +134,11 @@ export function CustomerCartModal() {
 
     if (!orderItems.length) {
       setMessage("Adicione ao menos um item ao carrinho.")
+      return
+    }
+
+    if (hasInvalidQuantity(cartItems)) {
+      setMessage("Informe a quantidade dos produtos no carrinho.")
       return
     }
 
