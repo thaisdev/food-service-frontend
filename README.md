@@ -4,6 +4,8 @@ Este projeto é uma aplicação fictícia de Food Service criada para praticar e
 
 A proposta é simular uma aplicação real, com foco em boas práticas de organização, componentização, tipagem, reutilização de código e construção de interfaces modernas.
 
+O projeto utiliza a Vercel para hospedagem e o Firestore do Firebase para persistência dos dados. A aplicação pode ser visitada em: https://food-service-frontend.vercel.app/
+
 ## Tecnologias
 
 - Next.js
