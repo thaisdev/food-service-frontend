@@ -89,6 +89,26 @@ function removeUndefinedFields(value) {
   return value
 }
 
+function getCurrentLocalDate() {
+  return new Intl.DateTimeFormat("en-CA", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+  }).format(new Date())
+}
+
+function setOrdersCurrentDate(data) {
+  const currentDate = getCurrentLocalDate()
+
+  return data.map((item) => ({
+    ...item,
+    datetime:
+      typeof item.datetime === "string"
+        ? item.datetime.replace(/^\d{4}-\d{2}-\d{2}/, currentDate)
+        : item.datetime,
+  }))
+}
+
 async function readExampleData(fileName) {
   const filePath = path.join(projectRoot, "data", fileName)
   const data = JSON.parse(await readFile(filePath, "utf8"))
@@ -165,7 +185,11 @@ async function main() {
   const db = getFirestore(app)
 
   for (const { collectionName, fileName } of collections) {
-    const data = await readExampleData(fileName)
+    const exampleData = await readExampleData(fileName)
+    const data =
+      collectionName === "orders"
+        ? setOrdersCurrentDate(exampleData)
+        : exampleData
 
     await seedCollection(db, collectionName, data)
     console.log(`${collectionName}: ${data.length} documentos gravados`)
