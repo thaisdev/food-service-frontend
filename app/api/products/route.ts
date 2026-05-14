@@ -7,6 +7,7 @@ import {
   parsePaginationParams,
 } from "@/lib/api-pagination"
 import {
+  CategoryStatus,
   ProductStatus,
   ProductStock,
   parseProductPrice,
@@ -57,6 +58,23 @@ function getCategoryId(body: Partial<Product>, categories: Category[]) {
   }
 
   return ""
+}
+
+function getRequestedCategoryId(body: Partial<Product>) {
+  return typeof body.categoryId === "string" ? body.categoryId.trim() : ""
+}
+
+function getActiveCategories(categories: Category[]) {
+  return categories.filter(
+    (category) => category.status === CategoryStatus.Active
+  )
+}
+
+function getInvalidCategoryResponse() {
+  return NextResponse.json(
+    { message: "Selecione uma categoria ativa para o produto." },
+    { status: 400 }
+  )
 }
 
 function createProductFromBody(
@@ -142,11 +160,16 @@ export async function POST(request: Request) {
 
   const products = await getProducts()
   const categories = await getVisibleCategories()
+  const activeCategories = getActiveCategories(categories)
   const product = createProductFromBody(
     body,
     createProductId(products),
-    categories
+    activeCategories
   )
+
+  if (!getRequestedCategoryId(body) || !product.categoryId) {
+    return getInvalidCategoryResponse()
+  }
 
   if (!isValidProduct(product)) {
     return NextResponse.json(
@@ -174,7 +197,34 @@ export async function PUT(request: Request) {
 
   const products = await getProducts()
   const categories = await getVisibleCategories()
-  const product = createProductFromBody(body, body.id, categories)
+  const currentProduct = products.find((product) => product.id === body.id)
+
+  if (!currentProduct) {
+    return NextResponse.json(
+      { message: "Produto não encontrado." },
+      { status: 404 }
+    )
+  }
+
+  const requestedCategoryId = getRequestedCategoryId(body)
+  const isKeepingCurrentCategory =
+    requestedCategoryId === currentProduct.categoryId
+  const allowedCategories = isKeepingCurrentCategory
+    ? [
+        ...getActiveCategories(categories),
+        {
+          id: currentProduct.categoryId,
+          name: currentProduct.categoryId,
+          description: "",
+          status: CategoryStatus.Inactive,
+        },
+      ]
+    : getActiveCategories(categories)
+  const product = createProductFromBody(body, body.id, allowedCategories)
+
+  if (!requestedCategoryId || !product.categoryId) {
+    return getInvalidCategoryResponse()
+  }
 
   if (!isValidProduct(product)) {
     return NextResponse.json(
@@ -183,26 +233,16 @@ export async function PUT(request: Request) {
     )
   }
 
-  let foundProduct = false
   const nextProducts = products.map((currentProduct) => {
     if (currentProduct.id !== product.id) {
       return currentProduct
     }
-
-    foundProduct = true
 
     return {
       ...product,
       deletedAt: currentProduct.deletedAt,
     }
   })
-
-  if (!foundProduct) {
-    return NextResponse.json(
-      { message: "Produto não encontrado." },
-      { status: 404 }
-    )
-  }
 
   return NextResponse.json(
     filterVisibleProducts(await saveProducts(nextProducts))

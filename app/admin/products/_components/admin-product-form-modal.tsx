@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import {
+  CategoryStatus,
   ProductStatus,
   ProductStock,
   parseProductPrice,
@@ -31,6 +32,10 @@ type ProductSavePayload = Omit<Product, "id"> | Product
 type AdminProductFormModalProps = {
   categories?: Category[]
   product?: Product
+}
+
+type CategoryOption = Pick<Category, "id" | "name"> & {
+  isInactive?: boolean
 }
 
 function createEmptyForm(categoryId: string): ProductFormData {
@@ -71,22 +76,38 @@ export function AdminProductFormModal({
   product,
 }: AdminProductFormModalProps) {
   const router = useRouter()
-  const categoryOptions =
+  const activeCategoryOptions: CategoryOption[] = categories
+    .filter((category) => category.status === CategoryStatus.Active)
+    .map((category) => ({
+      id: category.id,
+      name: category.name,
+    }))
+  const currentProductCategory = product
+    ? categories.find((category) => category.id === product.categoryId)
+    : undefined
+  const shouldIncludeCurrentCategory =
     product &&
-    !categories.some((category) => category.id === product.categoryId)
-      ? [
-          {
-            id: product.categoryId,
-            name: product.categoryId,
-          },
-          ...categories,
-        ]
-      : categories
+    !activeCategoryOptions.some(
+      (category) => category.id === product.categoryId
+    )
+  const categoryOptions = shouldIncludeCurrentCategory
+    ? [
+        {
+          id: product.categoryId,
+          isInactive:
+            currentProductCategory?.status === CategoryStatus.Inactive,
+          name: currentProductCategory?.name ?? product.categoryId,
+        },
+        ...activeCategoryOptions,
+      ]
+    : activeCategoryOptions
   const productCategory =
     product &&
     categoryOptions.some((category) => category.id === product.categoryId)
       ? product.categoryId
       : (categoryOptions[0]?.id ?? "")
+  const hasActiveCategories = activeCategoryOptions.length > 0
+  const canSubmitProduct = Boolean(product || hasActiveCategories)
   const [formData, setFormData] = useState<ProductFormData>(
     product
       ? {
@@ -110,6 +131,13 @@ export function AdminProductFormModal({
   function submitProduct(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
     setMessage(null)
+
+    if (!canSubmitProduct) {
+      setMessage(
+        "Ative ou crie uma categoria ativa antes de cadastrar produtos."
+      )
+      return
+    }
 
     const price = parseProductPrice(formData.price)
 
@@ -203,6 +231,7 @@ export function AdminProductFormModal({
                 </label>
                 <select
                   className="h-7 w-full rounded-md border border-input bg-input/20 px-2 text-xs transition-colors outline-none focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/30"
+                  disabled={!canSubmitProduct}
                   id="categoryId"
                   onChange={(event) =>
                     updateFormData("categoryId", event.target.value)
@@ -212,10 +241,18 @@ export function AdminProductFormModal({
                 >
                   {categoryOptions.map((category) => (
                     <option key={category.id} value={category.id}>
-                      {category.name}
+                      {category.isInactive
+                        ? `${category.name} (inativa)`
+                        : category.name}
                     </option>
                   ))}
                 </select>
+                {!canSubmitProduct ? (
+                  <p className="text-xs text-muted-foreground">
+                    Ative ou crie uma categoria ativa antes de cadastrar
+                    produtos.
+                  </p>
+                ) : null}
               </div>
               <div className="grid gap-2">
                 <label className="text-xs font-medium" htmlFor="price">
@@ -306,7 +343,7 @@ export function AdminProductFormModal({
             <div className="flex flex-wrap justify-end gap-2 pt-2">
               <Button
                 className="bg-success text-success-foreground hover:bg-success/90"
-                disabled={isPending}
+                disabled={isPending || !canSubmitProduct}
                 type="submit"
               >
                 <RiSaveLine aria-hidden />
