@@ -109,7 +109,7 @@ export function AppHeader() {
             </Button>
           ) : null}
 
-          {isAdmin ? (
+          {isAdmin || isCustomers ? (
             <Button
               type="button"
               variant="ghost"
