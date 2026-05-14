@@ -1,36 +1,36 @@
 "use client"
 
-import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { RiAddLine, RiCloseLine, RiSaveLine } from "@remixicon/react"
 import { FormEvent, useMemo, useState, useTransition } from "react"
 
-import { Button } from "@/components/ui/button"
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card"
-import { Checkbox } from "@/components/ui/checkbox"
-import { Input } from "@/components/ui/input"
-import { formatCurrency, formatProductPrice } from "@/helpers/currency"
+import { Card, CardContent } from "@/components/ui/card"
+import { formatCurrency } from "@/helpers/currency"
 import {
   calculateOrderTotal,
   createOrderItems,
-  formatOrderItems,
   type SelectedOrderItem,
 } from "@/helpers/order"
 import { getEditableOrderStatuses } from "@/helpers/order-status"
+import { normalizeSearchText } from "@/lib/api-pagination"
 import {
   OrderStatus,
-  parseOrders,
-  getProductCategoryName,
   type Category,
   type Order,
   type Product,
 } from "@/lib/data-schema"
+
+import {
+  createOrderSavePayload,
+  getSubmitAction,
+  hasInvalidQuantity,
+  requestOrderSave,
+} from "../_helpers/order-form"
+import { AdminOrderFormModalHeader } from "./admin-order-form-modal-header"
+import { EditOrderFields } from "./edit-order-fields"
+import { NewOrderFields } from "./new-order-fields"
+import { OrderFormActions } from "./order-form-actions"
+import { OrderFormMessage } from "./order-form-message"
+import { OrderItemsPicker } from "./order-items-picker"
 
 const ALL_CATEGORIES_FILTER = "all"
 
@@ -39,33 +39,6 @@ type AdminOrderFormModalProps = {
   closeHref?: string
   order?: Order
   products?: Product[]
-}
-
-type SubmitAction = "continue" | "close"
-
-async function requestOrderSave(
-  payload:
-    | Pick<Order, "customer" | "items" | "table">
-    | Pick<Order, "id" | "status" | "table">
-) {
-  const isEditing = "id" in payload
-  const response = await fetch("/api/orders", {
-    body: JSON.stringify(payload),
-    headers: {
-      "Content-Type": "application/json",
-    },
-    method: isEditing ? "PUT" : "POST",
-  })
-
-  if (!response.ok) {
-    const message =
-      ((await response.json().catch(() => null)) as { message?: string } | null)
-        ?.message ?? "Não foi possível salvar o pedido."
-
-    throw new Error(message)
-  }
-
-  return parseOrders(JSON.stringify(await response.json()))
 }
 
 export function AdminOrderFormModal({
@@ -120,14 +93,6 @@ export function AdminOrderFormModal({
       return matchesName && matchesCategory
     })
   }, [productNameFilter, products, selectedCategoryId])
-
-  function normalizeSearchText(value: string) {
-    return value
-      .trim()
-      .toLocaleLowerCase("pt-BR")
-      .normalize("NFD")
-      .replace(/[\u0300-\u036f]/g, "")
-  }
 
   function updateTable(value: string) {
     if (!value) {
@@ -210,43 +175,19 @@ export function AdminOrderFormModal({
     setSelectedCategoryId(ALL_CATEGORIES_FILTER)
   }
 
-  function getSubmitAction(event: FormEvent<HTMLFormElement>): SubmitAction {
-    const submitter = (event.nativeEvent as SubmitEvent)
-      .submitter as HTMLButtonElement | null
-
-    return submitter?.value === "continue" ? "continue" : "close"
-  }
-
-  function hasInvalidQuantity(items: SelectedOrderItem[]) {
-    return items.some(
-      (item) =>
-        typeof item.quantity !== "number" ||
-        !Number.isFinite(item.quantity) ||
-        item.quantity <= 0
-    )
-  }
-
   function submitOrder(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
     setMessage(null)
     setIsErrorMessage(false)
 
     const submitAction = getSubmitAction(event)
-    const normalizedTable =
-      typeof table === "number" && Number.isInteger(table) && table > 0
-        ? table
-        : 1
-    const payload = order
-      ? {
-          id: order.id,
-          status,
-          table: normalizedTable,
-        }
-      : {
-          customer: customer.trim(),
-          items: orderItems,
-          table: normalizedTable,
-        }
+    const payload = createOrderSavePayload({
+      customer,
+      order,
+      orderItems,
+      status,
+      table,
+    })
 
     if (!order && !orderItems.length) {
       setIsErrorMessage(true)
@@ -295,310 +236,45 @@ export function AdminOrderFormModal({
       role="dialog"
     >
       <Card className="max-h-[calc(100svh-2rem)] w-full max-w-2xl overflow-hidden rounded-2xl border border-info/15 p-0 shadow-xl">
-        <CardHeader className="flex flex-row items-start justify-between gap-4 border-b border-info/15 bg-info-muted/45 p-6">
-          <div>
-            <CardTitle className="text-lg font-semibold">
-              {order ? "Editar pedido" : "Novo pedido"}
-            </CardTitle>
-            <CardDescription className="text-sm">
-              As alterações são enviadas para a API e gravadas no Firestore.
-            </CardDescription>
-          </div>
-          <Button asChild size="icon-sm" title="Fechar modal" variant="ghost">
-            <Link href={closeHref}>
-              <RiCloseLine aria-hidden />
-            </Link>
-          </Button>
-        </CardHeader>
+        <AdminOrderFormModalHeader
+          closeHref={closeHref}
+          isEditing={Boolean(order)}
+        />
 
         <CardContent className="max-h-[calc(100svh-9rem)] overflow-y-auto p-6">
           <form className="space-y-4" onSubmit={submitOrder}>
             {order ? (
-              <>
-                <div className="rounded-2xl border border-border/70 bg-muted/35 p-4">
-                  <p className="text-sm font-medium">
-                    {order.id} · {order.customer}
-                  </p>
-                  <p className="mt-1 text-xs text-muted-foreground">
-                    {formatOrderItems(order.items)}
-                  </p>
-                </div>
-
-                <div className="grid gap-4 md:grid-cols-2">
-                  <div className="grid gap-2">
-                    <label className="text-xs font-medium" htmlFor="table">
-                      Mesa
-                    </label>
-                    <Input
-                      id="table"
-                      min={1}
-                      onChange={(event) => updateTable(event.target.value)}
-                      placeholder="1"
-                      required
-                      type="number"
-                      value={table}
-                    />
-                  </div>
-
-                  <div className="grid gap-2">
-                    <label className="text-xs font-medium" htmlFor="status">
-                      Status
-                    </label>
-                    <select
-                      className="h-7 w-full rounded-md border border-input bg-input/20 px-2 text-xs transition-colors outline-none focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/30"
-                      id="status"
-                      onChange={(event) =>
-                        setStatus(event.target.value as OrderStatus)
-                      }
-                      value={status}
-                    >
-                      {editableStatuses.map((currentStatus) => (
-                        <option key={currentStatus} value={currentStatus}>
-                          {currentStatus}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                </div>
-              </>
+              <EditOrderFields
+                editableStatuses={editableStatuses}
+                onStatusChange={setStatus}
+                onTableChange={updateTable}
+                order={order}
+                status={status}
+                table={table}
+              />
             ) : (
               <>
-                <div className="grid gap-4 md:grid-cols-2">
-                  <div className="grid gap-2">
-                    <label className="text-xs font-medium" htmlFor="customer">
-                      Cliente
-                    </label>
-                    <Input
-                      id="customer"
-                      onChange={(event) => setCustomer(event.target.value)}
-                      required
-                      value={customer}
-                    />
-                  </div>
+                <NewOrderFields
+                  customer={customer}
+                  onCustomerChange={setCustomer}
+                  onTableChange={updateTable}
+                  table={table}
+                />
 
-                  <div className="grid gap-2">
-                    <label className="text-xs font-medium" htmlFor="table">
-                      Mesa
-                    </label>
-                    <Input
-                      id="table"
-                      min={1}
-                      onChange={(event) => updateTable(event.target.value)}
-                      placeholder="1"
-                      required
-                      type="number"
-                      value={table}
-                    />
-                  </div>
-                </div>
-
-                <div className="rounded-2xl border border-border/70 bg-muted/20 p-4">
-                  <div className="flex flex-col gap-3 border-b border-border/70 pb-4">
-                    <span className="text-xs font-medium">Itens</span>
-                    <div className="grid gap-3 md:grid-cols-[1fr_14rem]">
-                      <div className="grid gap-2">
-                        <label
-                          className="text-xs font-medium"
-                          htmlFor="productNameFilter"
-                        >
-                          Produto
-                        </label>
-                        <Input
-                          id="productNameFilter"
-                          onChange={(event) =>
-                            setProductNameFilter(event.target.value)
-                          }
-                          placeholder="Pesquisar por nome"
-                          value={productNameFilter}
-                        />
-                      </div>
-
-                      <div className="grid gap-2">
-                        <label
-                          className="text-xs font-medium"
-                          htmlFor="productCategoryFilter"
-                        >
-                          Categoria
-                        </label>
-                        <select
-                          className="h-9 w-full rounded-md border border-input bg-input/20 px-3 text-sm transition-colors outline-none focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/30"
-                          id="productCategoryFilter"
-                          onChange={(event) =>
-                            setSelectedCategoryId(event.target.value)
-                          }
-                          value={selectedCategoryId}
-                        >
-                          <option value={ALL_CATEGORIES_FILTER}>Todas</option>
-                          {productCategories.map((category) => (
-                            <option key={category.id} value={category.id}>
-                              {category.name}
-                            </option>
-                          ))}
-                        </select>
-                      </div>
-                    </div>
-                  </div>
-
-                  {selectedItems.length ? (
-                    <div className="mt-4 grid gap-3 border-b border-border/70 pb-4">
-                      <span className="text-xs font-medium">
-                        Itens selecionados
-                      </span>
-                      <div className="grid gap-3">
-                        {selectedItems.map((item) => {
-                          const product = products.find(
-                            (currentProduct) =>
-                              currentProduct.id === item.productId
-                          )
-
-                          if (!product) {
-                            return null
-                          }
-
-                          const quantity =
-                            typeof item.quantity === "number" &&
-                            Number.isFinite(item.quantity)
-                              ? item.quantity
-                              : 0
-
-                          return (
-                            <div
-                              className="rounded-xl border border-info/15 bg-info-muted/30 p-3"
-                              key={`selected-${item.productId}`}
-                            >
-                              <div className="flex flex-col gap-2 md:flex-row md:items-start md:justify-between">
-                                <div className="min-w-0">
-                                  <p className="text-sm font-medium">
-                                    {product.name}
-                                  </p>
-                                  <p className="mt-1 text-xs text-muted-foreground">
-                                    Quantidade: {item.quantity || "-"}
-                                  </p>
-                                  <p className="mt-1 text-xs text-muted-foreground">
-                                    Observação:{" "}
-                                    {item.observation.trim() ||
-                                      "Sem observação"}
-                                  </p>
-                                </div>
-                                <div className="text-sm font-medium md:text-right">
-                                  <p>{formatProductPrice(product.price)}</p>
-                                  <p className="mt-1 text-xs text-muted-foreground">
-                                    Subtotal:{" "}
-                                    {formatCurrency(product.price * quantity)}
-                                  </p>
-                                </div>
-                              </div>
-                            </div>
-                          )
-                        })}
-                      </div>
-                    </div>
-                  ) : null}
-
-                  <div className="mt-4 max-h-80 overflow-y-auto pr-1">
-                    {products.length ? (
-                      filteredProducts.length ? (
-                        <div className="grid gap-3">
-                          {filteredProducts.map((product) => {
-                            const selectedItem = selectedItems.find(
-                              (item) => item.productId === product.id
-                            )
-                            const isSelected = Boolean(selectedItem)
-
-                            return (
-                              <div
-                                key={product.id}
-                                className="rounded-xl border border-border/70 bg-card/80 p-3"
-                              >
-                                <label
-                                  className="flex min-w-0 items-start gap-3"
-                                  htmlFor={`order-product-${product.id}`}
-                                >
-                                  <Checkbox
-                                    checked={isSelected}
-                                    id={`order-product-${product.id}`}
-                                    onCheckedChange={(checked) =>
-                                      toggleProduct(product, checked === true)
-                                    }
-                                  />
-                                  <span className="min-w-0">
-                                    <span className="block text-sm font-medium">
-                                      {product.name}
-                                    </span>
-                                    <span className="mt-1 block text-xs text-muted-foreground">
-                                      {formatProductPrice(product.price)}
-                                    </span>
-                                    <span className="mt-1 block text-xs text-muted-foreground">
-                                      {getProductCategoryName(
-                                        product,
-                                        categories
-                                      )}
-                                    </span>
-                                  </span>
-                                </label>
-
-                                {selectedItem ? (
-                                  <div className="mt-3 grid gap-3 md:grid-cols-[8rem_1fr]">
-                                    <div className="grid gap-2">
-                                      <label
-                                        className="text-xs font-medium"
-                                        htmlFor={`order-product-quantity-${product.id}`}
-                                      >
-                                        Quantidade
-                                      </label>
-                                      <Input
-                                        id={`order-product-quantity-${product.id}`}
-                                        min={1}
-                                        onChange={(event) =>
-                                          updateSelectedItem(
-                                            product.id,
-                                            "quantity",
-                                            event.target.value
-                                          )
-                                        }
-                                        type="number"
-                                        value={selectedItem.quantity}
-                                      />
-                                    </div>
-
-                                    <div className="grid gap-2">
-                                      <label
-                                        className="text-xs font-medium"
-                                        htmlFor={`order-product-observation-${product.id}`}
-                                      >
-                                        Observações
-                                      </label>
-                                      <Input
-                                        id={`order-product-observation-${product.id}`}
-                                        onChange={(event) =>
-                                          updateSelectedItem(
-                                            product.id,
-                                            "observation",
-                                            event.target.value
-                                          )
-                                        }
-                                        placeholder="Ex: Sem cebola"
-                                        value={selectedItem.observation}
-                                      />
-                                    </div>
-                                  </div>
-                                ) : null}
-                              </div>
-                            )
-                          })}
-                        </div>
-                      ) : (
-                        <p className="rounded-xl border border-warning/20 bg-warning-muted/45 p-4 text-sm text-muted-foreground">
-                          Nenhum produto encontrado para os filtros informados.
-                        </p>
-                      )
-                    ) : (
-                      <p className="rounded-xl border border-warning/20 bg-warning-muted/45 p-4 text-sm text-muted-foreground">
-                        Cadastre produtos antes de montar os itens do pedido.
-                      </p>
-                    )}
-                  </div>
-                </div>
+                <OrderItemsPicker
+                  allCategoriesFilter={ALL_CATEGORIES_FILTER}
+                  categories={categories}
+                  filteredProducts={filteredProducts}
+                  onCategoryFilterChange={setSelectedCategoryId}
+                  onProductNameFilterChange={setProductNameFilter}
+                  onProductToggle={toggleProduct}
+                  onSelectedItemChange={updateSelectedItem}
+                  productCategories={productCategories}
+                  productNameFilter={productNameFilter}
+                  products={products}
+                  selectedCategoryId={selectedCategoryId}
+                  selectedItems={selectedItems}
+                />
 
                 <div className="rounded-2xl border border-info/15 bg-info-muted/35 p-4">
                   <p className="text-xs text-muted-foreground">Total</p>
@@ -609,58 +285,13 @@ export function AdminOrderFormModal({
               </>
             )}
 
-            {message ? (
-              <p
-                className={
-                  isErrorMessage
-                    ? "rounded-md border border-destructive/20 bg-destructive-muted/40 px-3 py-2 text-xs text-destructive"
-                    : "rounded-md border border-info/20 bg-info-muted/40 px-3 py-2 text-xs text-muted-foreground"
-                }
-              >
-                {message}
-              </p>
-            ) : null}
+            <OrderFormMessage isError={isErrorMessage} message={message} />
 
-            <div className="flex flex-wrap justify-end gap-2 pt-2">
-              {order ? (
-                <Button
-                  className="bg-success text-success-foreground hover:bg-success/90"
-                  disabled={isPending}
-                  type="submit"
-                >
-                  <RiSaveLine aria-hidden />
-                  Salvar
-                </Button>
-              ) : (
-                <>
-                  <Button asChild variant="outline">
-                    <Link href={closeHref}>
-                      <RiCloseLine aria-hidden />
-                      Cancelar
-                    </Link>
-                  </Button>
-                  <Button
-                    disabled={isPending}
-                    name="submitAction"
-                    type="submit"
-                    value="continue"
-                  >
-                    <RiAddLine aria-hidden />
-                    Cadastrar mais pedidos
-                  </Button>
-                  <Button
-                    className="bg-success text-success-foreground hover:bg-success/90"
-                    disabled={isPending}
-                    name="submitAction"
-                    type="submit"
-                    value="close"
-                  >
-                    <RiSaveLine aria-hidden />
-                    Salvar e fechar
-                  </Button>
-                </>
-              )}
-            </div>
+            <OrderFormActions
+              closeHref={closeHref}
+              isEditing={Boolean(order)}
+              isPending={isPending}
+            />
           </form>
         </CardContent>
       </Card>
