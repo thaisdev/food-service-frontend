@@ -71,11 +71,7 @@ function getTodayDateFilterValue() {
   return getOrderDateFilterValue(new Date().toISOString())
 }
 
-async function requestOrders(
-  endpoint: string,
-  options: RequestInit,
-  fallbackOrders: Order[]
-) {
+async function requestOrders(endpoint: string, options: RequestInit) {
   const response = await fetch(endpoint, {
     ...options,
     headers: {
@@ -92,7 +88,13 @@ async function requestOrders(
     throw new Error(message)
   }
 
-  return parseOrders(JSON.stringify(await response.json())) ?? fallbackOrders
+  const orders = parseOrders(JSON.stringify(await response.json()))
+
+  if (!orders) {
+    throw new Error("Resposta invalida da API de pedidos.")
+  }
+
+  return orders
 }
 
 function parsePaginatedOrders(value: unknown): PaginatedResponse<Order> | null {
@@ -216,18 +218,14 @@ export function OrdersManager({ initialOrders }: OrdersManagerProps) {
 
     startTransition(async () => {
       try {
-        const nextOrders = await requestOrders(
-          "/api/orders",
-          {
-            body: JSON.stringify({
-              id: order.id,
-              status: OrderStatus.Canceled,
-              table: order.table,
-            }),
-            method: "PUT",
-          },
-          orders
-        )
+        const nextOrders = await requestOrders("/api/orders", {
+          body: JSON.stringify({
+            id: order.id,
+            status: OrderStatus.Canceled,
+            table: order.table,
+          }),
+          method: "PUT",
+        })
 
         setOrders(nextOrders.slice(0, ORDERS_PAGE_SIZE))
         setCurrentPage(1)
@@ -492,7 +490,6 @@ export function OrdersManager({ initialOrders }: OrdersManagerProps) {
                   type="button"
                   variant="outline"
                 >
-                  <RiCloseLine aria-hidden />
                   Voltar
                 </Button>
                 <Button
