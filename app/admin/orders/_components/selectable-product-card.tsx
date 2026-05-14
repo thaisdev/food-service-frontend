@@ -1,9 +1,11 @@
+import { Badge } from "@/components/ui/badge"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Input } from "@/components/ui/input"
 import { formatProductPrice } from "@/helpers/currency"
 import { type SelectedOrderItem } from "@/helpers/order"
 import {
   getProductCategoryName,
+  ProductStock,
   type Category,
   type Product,
 } from "@/lib/data-schema"
@@ -28,22 +30,35 @@ export function SelectableProductCard({
   selectedItem,
 }: SelectableProductCardProps) {
   const isSelected = Boolean(selectedItem)
+  const isUnavailable = product.stock === ProductStock.Unavailable
 
   return (
-    <div className="rounded-xl border border-border/70 bg-card/80 p-3">
+    <div
+      className="rounded-xl border border-border/70 bg-card/80 p-3 data-[disabled=true]:bg-muted/35 data-[disabled=true]:opacity-75"
+      data-disabled={isUnavailable}
+    >
       <label
-        className="flex min-w-0 items-start gap-3"
+        className="flex min-w-0 items-start gap-3 data-[disabled=true]:cursor-not-allowed"
+        data-disabled={isUnavailable}
         htmlFor={`order-product-${product.id}`}
       >
         <Checkbox
           checked={isSelected}
+          disabled={isUnavailable}
           id={`order-product-${product.id}`}
           onCheckedChange={(checked) =>
             onProductToggle(product, checked === true)
           }
         />
         <span className="min-w-0">
-          <span className="block text-sm font-medium">{product.name}</span>
+          <span className="flex flex-wrap items-center gap-2">
+            <span className="text-sm font-medium">{product.name}</span>
+            {isUnavailable ? (
+              <Badge className="bg-warning-muted text-warning">
+                Estoque indisponível
+              </Badge>
+            ) : null}
+          </span>
           <span className="mt-1 block text-xs text-muted-foreground">
             {formatProductPrice(product.price)}
           </span>

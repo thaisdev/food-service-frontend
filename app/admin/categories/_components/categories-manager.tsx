@@ -1,6 +1,7 @@
 "use client"
 
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 import {
   RiAddLine,
   RiCloseLine,
@@ -64,6 +65,7 @@ function getCategoryBadgeClasses(status: CategoryStatus) {
 async function requestCategories(endpoint: string, options: RequestInit) {
   const response = await fetch(endpoint, {
     ...options,
+    cache: "no-store",
     headers: {
       "Content-Type": "application/json",
       ...options.headers,
@@ -91,6 +93,7 @@ export function CategoriesManager({
   initialCategories,
   initialProducts,
 }: CategoriesManagerProps) {
+  const router = useRouter()
   const [categories, setCategories] = useState(initialCategories)
   const [filter, setFilter] = useState<CategoryFilter>("Todas")
   const [formData, setFormData] = useState<CategoryFormData>(emptyForm)
@@ -183,6 +186,7 @@ export function CategoriesManager({
         })
 
         setCategories(nextCategories)
+        router.refresh()
         setMessage(
           editingCategory ? "Categoria atualizada." : "Categoria criada."
         )
@@ -204,6 +208,7 @@ export function CategoriesManager({
         )
 
         setCategories(nextCategories)
+        router.refresh()
         setCategoryPendingDelete(null)
         setMessage("Categoria e produtos vinculados removidos.")
       } catch (error) {

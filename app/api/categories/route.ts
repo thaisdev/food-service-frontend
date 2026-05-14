@@ -14,6 +14,8 @@ import {
 } from "@/lib/server-data"
 
 export const runtime = "nodejs"
+export const dynamic = "force-dynamic"
+export const revalidate = 0
 
 function filterVisibleCategories(categories: Category[]) {
   return categories.filter((category) => !category.deletedAt)
