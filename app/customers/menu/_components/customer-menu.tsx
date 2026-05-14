@@ -2,7 +2,7 @@
 
 import Image from "next/image"
 import Link from "next/link"
-import { useRouter } from "next/navigation"
+import { usePathname, useRouter } from "next/navigation"
 import { RiShoppingCartLine } from "@remixicon/react"
 import { useEffect, useMemo, useState } from "react"
 
@@ -18,7 +18,6 @@ import { Input } from "@/components/ui/input"
 import {
   readCustomerCart,
   writeCustomerCart,
-  type CustomerCartItem,
 } from "@/app/customers/menu/_helpers/cart"
 import { useCategoriesData, useProductsData } from "@/hooks/use-api-data"
 import { useSessionAccess } from "@/hooks/use-session-access"
@@ -94,10 +93,10 @@ function addProductToCart(product: Product) {
 
 export function CustomerMenu() {
   const router = useRouter()
+  const pathname = usePathname()
   const access = useSessionAccess()
   const { categories, isLoading: isLoadingCategories } = useCategoriesData()
   const { isLoading: isLoadingProducts, products } = useProductsData()
-  const [cartItems, setCartItems] = useState<CustomerCartItem[]>([])
   const [selectedCategoryId, setSelectedCategoryId] = useState(
     ALL_CATEGORIES_FILTER
   )
@@ -140,26 +139,29 @@ export function CustomerMenu() {
     access?.module === SessionModule.Customers ? access.name : "Cliente"
   const tableNumber =
     access?.module === SessionModule.Customers ? access.table : "--"
-  const cartQuantity = useMemo(
-    () => cartItems.reduce((total, item) => total + item.quantity, 0),
-    [cartItems]
-  )
+  const cartQuantity =
+    access?.module === SessionModule.Customers
+      ? access.cart.reduce((total, item) => total + item.quantity, 0)
+      : 0
   const isLoadingMenu = isLoadingCategories || isLoadingProducts
 
   useEffect(() => {
-    function syncCart() {
-      setCartItems(readCustomerCart())
+    if (access === undefined) {
+      return
     }
 
-    syncCart()
-    window.addEventListener("customer-cart:changed", syncCart)
-    window.addEventListener("storage", syncCart)
+    if (!access) {
+      if (pathname !== "/customers/menu/login") {
+        router.replace("/customers/menu/login")
+      }
 
-    return () => {
-      window.removeEventListener("customer-cart:changed", syncCart)
-      window.removeEventListener("storage", syncCart)
+      return
     }
-  }, [])
+
+    if (access.module === SessionModule.Admin) {
+      router.replace("/admin/dashboard")
+    }
+  }, [access, pathname, router])
 
   function addItem(product: Product) {
     addProductToCart(product)

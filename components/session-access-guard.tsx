@@ -3,7 +3,11 @@
 import { ReactNode, useEffect } from "react"
 import { useRouter } from "next/navigation"
 
-import { getModuleHome, type SessionAccess } from "@/lib/session-access"
+import {
+  getModuleHome,
+  SessionModule,
+  type SessionAccess,
+} from "@/lib/session-access"
 import { useSessionAccess } from "@/hooks/use-session-access"
 
 type SessionAccessGuardProps = {
@@ -25,7 +29,9 @@ export function SessionAccessGuard({
     }
 
     if (!access) {
-      router.replace("/")
+      router.replace(
+        module === SessionModule.Customers ? "/customers/menu/login" : "/"
+      )
       return
     }
 
