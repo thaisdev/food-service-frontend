@@ -61,7 +61,11 @@ function getCategoryBadgeClasses(status: CategoryStatus) {
   }
 }
 
-async function requestCategories(endpoint: string, options: RequestInit) {
+async function requestCategories(
+  endpoint: string,
+  options: RequestInit,
+  fallbackCategories: Category[]
+) {
   const response = await fetch(endpoint, {
     ...options,
     headers: {
@@ -78,13 +82,9 @@ async function requestCategories(endpoint: string, options: RequestInit) {
     throw new Error(message)
   }
 
-  const categories = parseCategories(JSON.stringify(await response.json()))
-
-  if (!categories) {
-    throw new Error("Resposta invalida da API de categorias.")
-  }
-
-  return categories
+  return (
+    parseCategories(JSON.stringify(await response.json())) ?? fallbackCategories
+  )
 }
 
 export function CategoriesManager({
@@ -177,10 +177,14 @@ export function CategoriesManager({
 
     startTransition(async () => {
       try {
-        const nextCategories = await requestCategories("/api/categories", {
-          body: JSON.stringify(payload),
-          method: editingCategory ? "PUT" : "POST",
-        })
+        const nextCategories = await requestCategories(
+          "/api/categories",
+          {
+            body: JSON.stringify(payload),
+            method: editingCategory ? "PUT" : "POST",
+          },
+          categories
+        )
 
         setCategories(nextCategories)
         setMessage(
@@ -200,7 +204,8 @@ export function CategoriesManager({
       try {
         const nextCategories = await requestCategories(
           `/api/categories?id=${encodeURIComponent(category.id)}`,
-          { method: "DELETE" }
+          { method: "DELETE" },
+          categories
         )
 
         setCategories(nextCategories)
@@ -365,7 +370,7 @@ export function CategoriesManager({
                   {editingCategory ? "Editar categoria" : "Nova categoria"}
                 </CardTitle>
                 <CardDescription className="text-sm">
-                  As alterações são enviadas para a API e gravadas no Firestore.
+                  As alterações são enviadas para a API e gravadas no mock.
                 </CardDescription>
               </div>
               <Button

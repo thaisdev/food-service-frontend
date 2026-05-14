@@ -1,15 +1,8 @@
 export const SESSION_ACCESS_KEY = "food-service:access"
-export const SESSION_ACCESS_CHANGE_EVENT = "session-access:changed"
 
 export enum SessionModule {
   Admin = "admin",
   Customers = "customers",
-}
-
-export type SessionCartItem = {
-  productId: string
-  quantity: number
-  observation: string
 }
 
 export type SessionAccess =
@@ -21,25 +14,10 @@ export type SessionAccess =
       module: SessionModule.Customers
       name: string
       table: string
-      cart: SessionCartItem[]
     }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null
-}
-
-function parseSessionCartItems(value: unknown): SessionCartItem[] {
-  if (!Array.isArray(value)) {
-    return []
-  }
-
-  return value.filter(
-    (item): item is SessionCartItem =>
-      isRecord(item) &&
-      typeof item.productId === "string" &&
-      typeof item.quantity === "number" &&
-      typeof item.observation === "string"
-  )
 }
 
 export function parseSessionAccess(
@@ -78,7 +56,6 @@ export function parseSessionAccess(
         module: SessionModule.Customers,
         name: access.name.trim(),
         table: access.table.trim(),
-        cart: parseSessionCartItems(access.cart),
       }
     }
   } catch {
@@ -105,12 +82,10 @@ export function getSessionAccess(): SessionAccess | null {
 
 export function setSessionAccess(access: SessionAccess) {
   window.sessionStorage.setItem(SESSION_ACCESS_KEY, JSON.stringify(access))
-  window.dispatchEvent(new Event(SESSION_ACCESS_CHANGE_EVENT))
 }
 
 export function clearSessionAccess() {
   window.sessionStorage.removeItem(SESSION_ACCESS_KEY)
-  window.dispatchEvent(new Event(SESSION_ACCESS_CHANGE_EVENT))
 }
 
 export function getModuleHome(module: SessionAccess["module"]) {

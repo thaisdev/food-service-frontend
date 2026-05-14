@@ -22,8 +22,6 @@ import {
 } from "@/lib/server-data"
 
 export const runtime = "nodejs"
-export const dynamic = "force-dynamic"
-export const revalidate = 0
 
 const defaultProductImage = "/products/product-placeholder.png"
 
@@ -46,6 +44,21 @@ function createProductId(products: Product[]) {
   return `PRD-${String(nextNumber).padStart(3, "0")}`
 }
 
+const defaultCategoryNames = [
+  "Lanches",
+  "Saudável",
+  "Pizzas",
+  "Sobremesas",
+  "Bebidas",
+  "Pratos",
+  "Combos",
+  "Acompanhamentos",
+]
+
+function getDefaultCategoryId(categories: Category[]) {
+  return categories[0]?.id ?? defaultCategoryNames[0]
+}
+
 function getCategoryId(body: Partial<Product>, categories: Category[]) {
   const requestedCategoryId =
     typeof body.categoryId === "string" && body.categoryId.trim()
@@ -56,7 +69,7 @@ function getCategoryId(body: Partial<Product>, categories: Category[]) {
     return requestedCategoryId
   }
 
-  return ""
+  return getDefaultCategoryId(categories)
 }
 
 function createProductFromBody(

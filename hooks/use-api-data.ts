@@ -3,6 +3,9 @@
 import { useEffect, useState } from "react"
 
 import {
+  mockOrders,
+  mockCategories,
+  mockProducts,
   parseCategories,
   parseOrders,
   parseProducts,
@@ -13,38 +16,33 @@ import {
 
 async function fetchJsonData<T>(
   endpoint: string,
-  parse: (rawData: string | null) => T[] | null
+  parse: (rawData: string | null) => T[] | null,
+  fallbackData: T[]
 ) {
   try {
     const response = await fetch(endpoint, { cache: "no-store" })
 
     if (!response.ok) {
-      return []
+      return fallbackData
     }
 
     const rawData = JSON.stringify(await response.json())
 
-    return parse(rawData) ?? []
+    return parse(rawData) ?? fallbackData
   } catch {
-    return []
+    return fallbackData
   }
 }
 
 export function useProducts() {
-  return useProductsData().products
-}
-
-export function useProductsData() {
-  const [products, setProducts] = useState<Product[]>([])
-  const [isLoading, setIsLoading] = useState(true)
+  const [products, setProducts] = useState<Product[]>(mockProducts)
 
   useEffect(() => {
     let isCurrent = true
 
-    fetchJsonData("/api/products", parseProducts).then((data) => {
+    fetchJsonData("/api/products", parseProducts, mockProducts).then((data) => {
       if (isCurrent) {
         setProducts(data)
-        setIsLoading(false)
       }
     })
 
@@ -53,43 +51,39 @@ export function useProductsData() {
     }
   }, [])
 
-  return { isLoading, products }
+  return products
 }
 
 export function useCategories() {
-  return useCategoriesData().categories
-}
-
-export function useCategoriesData() {
-  const [categories, setCategories] = useState<Category[]>([])
-  const [isLoading, setIsLoading] = useState(true)
+  const [categories, setCategories] = useState<Category[]>(mockCategories)
 
   useEffect(() => {
     let isCurrent = true
 
-    fetchJsonData("/api/categories", parseCategories).then((data) => {
-      if (isCurrent) {
-        setCategories(data)
-        setIsLoading(false)
+    fetchJsonData("/api/categories", parseCategories, mockCategories).then(
+      (data) => {
+        if (isCurrent) {
+          setCategories(data)
+        }
       }
-    })
+    )
 
     return () => {
       isCurrent = false
     }
   }, [])
 
-  return { categories, isLoading }
+  return categories
 }
 
 export function useOrders() {
-  const [orders, setOrders] = useState<Order[]>([])
+  const [orders, setOrders] = useState<Order[]>(mockOrders)
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
     let isCurrent = true
 
-    fetchJsonData("/api/orders", parseOrders).then((data) => {
+    fetchJsonData("/api/orders", parseOrders, mockOrders).then((data) => {
       if (isCurrent) {
         setOrders(data)
         setIsLoading(false)
