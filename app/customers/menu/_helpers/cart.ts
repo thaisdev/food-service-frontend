@@ -1,9 +1,16 @@
-export const CUSTOMER_CART_KEY = "food-service:customer-cart"
+import {
+  getSessionAccess,
+  SessionModule,
+  setSessionAccess,
+  type SessionCartItem,
+} from "@/lib/session-access"
 
-export type CustomerCartItem = {
-  productId: string
-  quantity: number
-  observation: string
+export const CUSTOMER_CART_CHANGED_EVENT = "customer-cart:changed"
+
+export type CustomerCartItem = SessionCartItem
+
+function dispatchCustomerCartChange() {
+  window.dispatchEvent(new Event(CUSTOMER_CART_CHANGED_EVENT))
 }
 
 export function readCustomerCart() {
@@ -11,37 +18,25 @@ export function readCustomerCart() {
     return []
   }
 
-  try {
-    const data = JSON.parse(
-      window.localStorage.getItem(CUSTOMER_CART_KEY) ?? "[]"
-    ) as unknown
+  const access = getSessionAccess()
 
-    if (!Array.isArray(data)) {
-      return []
-    }
-
-    return data.filter(
-      (item): item is CustomerCartItem =>
-        typeof item === "object" &&
-        item !== null &&
-        "productId" in item &&
-        "quantity" in item &&
-        "observation" in item &&
-        typeof item.productId === "string" &&
-        typeof item.quantity === "number" &&
-        typeof item.observation === "string"
-    )
-  } catch {
-    return []
-  }
+  return access?.module === SessionModule.Customers ? access.cart : []
 }
 
 export function writeCustomerCart(cartItems: CustomerCartItem[]) {
-  window.localStorage.setItem(CUSTOMER_CART_KEY, JSON.stringify(cartItems))
-  window.dispatchEvent(new Event("customer-cart:changed"))
+  const access = getSessionAccess()
+
+  if (access?.module !== SessionModule.Customers) {
+    return
+  }
+
+  setSessionAccess({
+    ...access,
+    cart: cartItems,
+  })
+  dispatchCustomerCartChange()
 }
 
 export function clearCustomerCart() {
-  window.localStorage.removeItem(CUSTOMER_CART_KEY)
-  window.dispatchEvent(new Event("customer-cart:changed"))
+  writeCustomerCart([])
 }
