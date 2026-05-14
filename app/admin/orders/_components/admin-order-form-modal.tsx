@@ -14,6 +14,8 @@ import { getEditableOrderStatuses } from "@/helpers/order-status"
 import { normalizeSearchText } from "@/lib/api-pagination"
 import {
   OrderStatus,
+  ProductStatus,
+  ProductStock,
   type Category,
   type Order,
   type Product,
@@ -72,17 +74,24 @@ export function AdminOrderFormModal({
     () => (order ? getEditableOrderStatuses(order.status) : []),
     [order]
   )
+  const visibleOrderProducts = useMemo(
+    () =>
+      products.filter((product) => product.status !== ProductStatus.Inactive),
+    [products]
+  )
   const productCategories = useMemo(
     () =>
       categories.filter((category) =>
-        products.some((product) => product.categoryId === category.id)
+        visibleOrderProducts.some(
+          (product) => product.categoryId === category.id
+        )
       ),
-    [categories, products]
+    [categories, visibleOrderProducts]
   )
   const filteredProducts = useMemo(() => {
     const normalizedProductNameFilter = normalizeSearchText(productNameFilter)
 
-    return products.filter((product) => {
+    return visibleOrderProducts.filter((product) => {
       const matchesName =
         !normalizedProductNameFilter ||
         normalizeSearchText(product.name).includes(normalizedProductNameFilter)
@@ -92,7 +101,7 @@ export function AdminOrderFormModal({
 
       return matchesName && matchesCategory
     })
-  }, [productNameFilter, products, selectedCategoryId])
+  }, [productNameFilter, selectedCategoryId, visibleOrderProducts])
 
   function updateTable(value: string) {
     if (!value) {
@@ -108,6 +117,10 @@ export function AdminOrderFormModal({
   }
 
   function toggleProduct(product: Product, checked: boolean) {
+    if (product.stock === ProductStock.Unavailable) {
+      return
+    }
+
     setSelectedItems((currentItems) => {
       if (!checked) {
         return currentItems.filter((item) => item.productId !== product.id)
