@@ -157,7 +157,7 @@ export function AdminProductFormModal({
               {product ? "Editar produto" : "Novo produto"}
             </CardTitle>
             <CardDescription className="text-sm">
-              As alterações são enviadas para a API e gravadas no mock.
+              As alterações são enviadas para a API e gravadas no Firestore.
             </CardDescription>
           </div>
           <Button asChild size="icon-sm" title="Fechar modal" variant="ghost">

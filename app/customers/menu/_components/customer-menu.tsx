@@ -20,7 +20,7 @@ import {
   writeCustomerCart,
   type CustomerCartItem,
 } from "@/app/customers/menu/_helpers/cart"
-import { useCategories, useProducts } from "@/hooks/use-api-data"
+import { useCategoriesData, useProductsData } from "@/hooks/use-api-data"
 import { useSessionAccess } from "@/hooks/use-session-access"
 import { formatProductPrice } from "@/helpers/currency"
 import { cn } from "@/lib/utils"
@@ -95,26 +95,24 @@ function addProductToCart(product: Product) {
 export function CustomerMenu() {
   const router = useRouter()
   const access = useSessionAccess()
-  const categories = useCategories()
-  const products = useProducts()
+  const { categories, isLoading: isLoadingCategories } = useCategoriesData()
+  const { isLoading: isLoadingProducts, products } = useProductsData()
   const [cartItems, setCartItems] = useState<CustomerCartItem[]>([])
   const [selectedCategoryId, setSelectedCategoryId] = useState(
     ALL_CATEGORIES_FILTER
   )
   const [productNameFilter, setProductNameFilter] = useState("")
-  const menuItems = useMemo(
-    () => {
-      const categoryIds = categories.map((category) => category.id)
-      const availableProducts = products.filter(
-        (product) =>
-          product.status === ProductStatus.Active &&
-          product.stock !== ProductStock.Unavailable
-      )
+  const menuItems = useMemo(() => {
+    const categoryIds = categories.map((category) => category.id)
+    const availableProducts = products.filter(
+      (product) =>
+        !product.deletedAt &&
+        product.status === ProductStatus.Active &&
+        product.stock !== ProductStock.Unavailable
+    )
 
-      return sortProductsByCategory(availableProducts, categoryIds)
-    },
-    [categories, products]
-  )
+    return sortProductsByCategory(availableProducts, categoryIds)
+  }, [categories, products])
   const menuCategories = useMemo(
     () =>
       categories.filter(
@@ -124,23 +122,20 @@ export function CustomerMenu() {
       ),
     [categories, menuItems]
   )
-  const filteredMenuItems = useMemo(
-    () => {
-      const normalizedProductNameFilter = normalizeSearchText(productNameFilter)
+  const filteredMenuItems = useMemo(() => {
+    const normalizedProductNameFilter = normalizeSearchText(productNameFilter)
 
-      return menuItems.filter((product) => {
-        const matchesCategory =
-          selectedCategoryId === ALL_CATEGORIES_FILTER ||
-          product.categoryId === selectedCategoryId
-        const matchesName =
-          !normalizedProductNameFilter ||
-          normalizeSearchText(product.name).includes(normalizedProductNameFilter)
+    return menuItems.filter((product) => {
+      const matchesCategory =
+        selectedCategoryId === ALL_CATEGORIES_FILTER ||
+        product.categoryId === selectedCategoryId
+      const matchesName =
+        !normalizedProductNameFilter ||
+        normalizeSearchText(product.name).includes(normalizedProductNameFilter)
 
-        return matchesCategory && matchesName
-      })
-    },
-    [menuItems, productNameFilter, selectedCategoryId]
-  )
+      return matchesCategory && matchesName
+    })
+  }, [menuItems, productNameFilter, selectedCategoryId])
   const customerName =
     access?.module === SessionModule.Customers ? access.name : "Cliente"
   const tableNumber =
@@ -149,6 +144,7 @@ export function CustomerMenu() {
     () => cartItems.reduce((total, item) => total + item.quantity, 0),
     [cartItems]
   )
+  const isLoadingMenu = isLoadingCategories || isLoadingProducts
 
   useEffect(() => {
     function syncCart() {
@@ -199,89 +195,130 @@ export function CustomerMenu() {
           </Card>
         </section>
 
-        <section className="grid gap-3" aria-label="Filtros do cardápio">
-          <Input
-            aria-label="Filtrar por nome do produto"
-            className="h-10 max-w-md rounded-full border-primary/20 bg-card px-4 text-sm"
-            onChange={(event) => setProductNameFilter(event.target.value)}
-            placeholder="Buscar produto pelo nome"
-            type="search"
-            value={productNameFilter}
-          />
-
-          <div className="flex flex-wrap gap-2" aria-label="Categorias">
-            <button
-              aria-pressed={selectedCategoryId === ALL_CATEGORIES_FILTER}
-              className={getCategoryFilterClasses(
-                selectedCategoryId === ALL_CATEGORIES_FILTER
-              )}
-              onClick={() => setSelectedCategoryId(ALL_CATEGORIES_FILTER)}
-              type="button"
-            >
-              Todas as categorias
-            </button>
-
-            {menuCategories.map((category) => (
-              <button
-                aria-pressed={selectedCategoryId === category.id}
-                className={getCategoryFilterClasses(
-                  selectedCategoryId === category.id
-                )}
-                key={category.id}
-                onClick={() => setSelectedCategoryId(category.id)}
-                type="button"
-              >
-                {category.name}
-              </button>
-            ))}
-          </div>
-        </section>
-
-        <section className="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
-          {filteredMenuItems.map((item) => (
-            <Card
-              key={item.id}
-              className="grid grid-cols-[7rem_minmax(0,1fr)] overflow-hidden rounded-2xl border border-primary/15 p-0 shadow-sm transition-colors hover:border-success/35 md:block md:rounded-3xl"
-            >
-              <div className="relative min-h-32 w-full bg-muted/30 md:aspect-[4/3] md:min-h-0">
-                <Image
-                  src={item.image}
-                  alt={item.name}
-                  fill
-                  className="object-contain p-2 md:object-cover md:p-0"
-                  sizes="(max-width: 767px) 112px, (max-width: 1279px) 50vw, 25vw"
-                />
+        {isLoadingMenu ? (
+          <>
+            <section className="grid gap-3" aria-label="Carregando filtros">
+              <div className="h-10 max-w-md animate-pulse rounded-full bg-muted" />
+              <div className="flex flex-wrap gap-2">
+                {[0, 1, 2, 3].map((item) => (
+                  <div
+                    className="h-8 w-28 animate-pulse rounded-full bg-muted"
+                    key={item}
+                  />
+                ))}
               </div>
+            </section>
 
-              <CardContent className="flex min-w-0 flex-col justify-between gap-3 p-4 md:gap-4 md:p-5">
-                <div className="min-w-0">
-                  <Badge className="bg-primary-muted text-primary">
-                    {getProductCategoryName(item, categories)}
-                  </Badge>
-                  <CardTitle className="mt-2 text-base font-semibold md:mt-3 md:text-lg">
-                    {item.name}
-                  </CardTitle>
-                  <CardDescription className="mt-1 line-clamp-2 text-sm leading-5 md:mt-2 md:line-clamp-none md:leading-6">
-                    {item.description}
-                  </CardDescription>
-                </div>
+            <section className="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
+              {[0, 1, 2, 3, 4, 5, 6, 7].map((item) => (
+                <Card
+                  className="grid grid-cols-[7rem_minmax(0,1fr)] overflow-hidden rounded-2xl border border-primary/15 p-0 shadow-sm md:block md:rounded-3xl"
+                  key={item}
+                >
+                  <div className="min-h-32 w-full animate-pulse bg-muted md:aspect-[4/3] md:min-h-0" />
+                  <CardContent className="flex min-w-0 flex-col justify-between gap-3 p-4 md:gap-4 md:p-5">
+                    <div className="space-y-3">
+                      <div className="h-5 w-24 animate-pulse rounded-full bg-muted" />
+                      <div className="h-5 w-36 animate-pulse rounded bg-muted" />
+                      <div className="h-4 w-full animate-pulse rounded bg-muted" />
+                      <div className="h-4 w-3/4 animate-pulse rounded bg-muted" />
+                    </div>
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="h-5 w-20 animate-pulse rounded bg-muted" />
+                      <div className="h-9 w-24 animate-pulse rounded-md bg-muted" />
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </section>
+          </>
+        ) : (
+          <>
+            <section className="grid gap-3" aria-label="Filtros do cardápio">
+              <Input
+                aria-label="Filtrar por nome do produto"
+                className="h-10 max-w-md rounded-full border-primary/20 bg-card px-4 text-sm"
+                onChange={(event) => setProductNameFilter(event.target.value)}
+                placeholder="Buscar produto pelo nome"
+                type="search"
+                value={productNameFilter}
+              />
 
-                <div className="flex flex-wrap items-center justify-between gap-2">
-                  <strong className="text-base font-semibold md:text-lg">
-                    {formatProductPrice(item.price)}
-                  </strong>
-                  <Button
-                    className="bg-success text-success-foreground hover:bg-green/90"
-                    onClick={() => addItem(item)}
+              <div className="flex flex-wrap gap-2" aria-label="Categorias">
+                <button
+                  aria-pressed={selectedCategoryId === ALL_CATEGORIES_FILTER}
+                  className={getCategoryFilterClasses(
+                    selectedCategoryId === ALL_CATEGORIES_FILTER
+                  )}
+                  onClick={() => setSelectedCategoryId(ALL_CATEGORIES_FILTER)}
+                  type="button"
+                >
+                  Todas as categorias
+                </button>
+
+                {menuCategories.map((category) => (
+                  <button
+                    aria-pressed={selectedCategoryId === category.id}
+                    className={getCategoryFilterClasses(
+                      selectedCategoryId === category.id
+                    )}
+                    key={category.id}
+                    onClick={() => setSelectedCategoryId(category.id)}
                     type="button"
                   >
-                    Adicionar
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </section>
+                    {category.name}
+                  </button>
+                ))}
+              </div>
+            </section>
+
+            <section className="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
+              {filteredMenuItems.map((item) => (
+                <Card
+                  key={item.id}
+                  className="grid grid-cols-[7rem_minmax(0,1fr)] overflow-hidden rounded-2xl border border-primary/15 p-0 shadow-sm transition-colors hover:border-success/35 md:block md:rounded-3xl"
+                >
+                  <div className="relative min-h-32 w-full bg-muted/30 md:aspect-[4/3] md:min-h-0">
+                    <Image
+                      src={item.image}
+                      alt={item.name}
+                      fill
+                      className="object-contain p-2 md:object-cover md:p-0"
+                      sizes="(max-width: 767px) 112px, (max-width: 1279px) 50vw, 25vw"
+                    />
+                  </div>
+
+                  <CardContent className="flex min-w-0 flex-col justify-between gap-3 p-4 md:gap-4 md:p-5">
+                    <div className="min-w-0">
+                      <Badge className="bg-primary-muted text-primary">
+                        {getProductCategoryName(item, categories)}
+                      </Badge>
+                      <CardTitle className="mt-2 text-base font-semibold md:mt-3 md:text-lg">
+                        {item.name}
+                      </CardTitle>
+                      <CardDescription className="mt-1 line-clamp-2 text-sm leading-5 md:mt-2 md:line-clamp-none md:leading-6">
+                        {item.description}
+                      </CardDescription>
+                    </div>
+
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                      <strong className="text-base font-semibold md:text-lg">
+                        {formatProductPrice(item.price)}
+                      </strong>
+                      <Button
+                        className="bg-success text-success-foreground hover:bg-green/90"
+                        onClick={() => addItem(item)}
+                        type="button"
+                      >
+                        Adicionar
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </section>
+          </>
+        )}
       </div>
     </main>
   )

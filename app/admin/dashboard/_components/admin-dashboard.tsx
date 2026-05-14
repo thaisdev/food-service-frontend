@@ -110,11 +110,7 @@ function getNextStatus(status: OrderStatus) {
   return currentIndex >= 0 ? ORDER_STATUS_FLOW[currentIndex + 1] : undefined
 }
 
-async function requestOrders(
-  endpoint: string,
-  options: RequestInit,
-  fallbackOrders: Order[]
-) {
+async function requestOrders(endpoint: string, options: RequestInit) {
   const response = await fetch(endpoint, {
     ...options,
     headers: {
@@ -131,7 +127,13 @@ async function requestOrders(
     throw new Error(message)
   }
 
-  return parseOrders(JSON.stringify(await response.json())) ?? fallbackOrders
+  const orders = parseOrders(JSON.stringify(await response.json()))
+
+  if (!orders) {
+    throw new Error("Resposta invalida da API de pedidos.")
+  }
+
+  return orders
 }
 
 export function AdminDashboard({
@@ -215,18 +217,14 @@ export function AdminDashboard({
 
     startTransition(async () => {
       try {
-        const nextOrders = await requestOrders(
-          "/api/orders",
-          {
-            body: JSON.stringify({
-              id: order.id,
-              status: nextStatus,
-              table: order.table,
-            }),
-            method: "PUT",
-          },
-          orders
-        )
+        const nextOrders = await requestOrders("/api/orders", {
+          body: JSON.stringify({
+            id: order.id,
+            status: nextStatus,
+            table: order.table,
+          }),
+          method: "PUT",
+        })
 
         setOrders(nextOrders)
         window.dispatchEvent(
@@ -248,11 +246,7 @@ export function AdminDashboard({
     setIsRefreshingOrders(true)
 
     try {
-      const nextOrders = await requestOrders(
-        "/api/orders",
-        { method: "GET" },
-        orders
-      )
+      const nextOrders = await requestOrders("/api/orders", { method: "GET" })
 
       setOrders(nextOrders)
       window.dispatchEvent(

@@ -63,11 +63,7 @@ function getBadgeClasses(value: ProductStatus | ProductStock) {
   }
 }
 
-async function requestProducts(
-  endpoint: string,
-  options: RequestInit,
-  fallbackProducts: Product[]
-) {
+async function requestProducts(endpoint: string, options: RequestInit) {
   const response = await fetch(endpoint, {
     ...options,
     headers: {
@@ -84,9 +80,13 @@ async function requestProducts(
     throw new Error(message)
   }
 
-  return (
-    parseProducts(JSON.stringify(await response.json())) ?? fallbackProducts
-  )
+  const products = parseProducts(JSON.stringify(await response.json()))
+
+  if (!products) {
+    throw new Error("Resposta invalida da API de produtos.")
+  }
+
+  return products
 }
 
 function parsePaginatedProducts(
@@ -217,8 +217,7 @@ export function AdminProductsCrud({
       try {
         const nextProducts = await requestProducts(
           `/api/products?id=${encodeURIComponent(product.id)}`,
-          { method: "DELETE" },
-          products
+          { method: "DELETE" }
         )
 
         setProducts(nextProducts.slice(0, PRODUCTS_PAGE_SIZE))

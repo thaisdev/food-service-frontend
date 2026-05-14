@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation"
 import { RiCloseLine } from "@remixicon/react"
 import { useState } from "react"
 
+import { clearCustomerCart } from "@/app/customers/menu/_helpers/cart"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import {
@@ -64,6 +65,7 @@ export function CustomerOrders() {
   const total = customerOrders.reduce((sum, order) => sum + order.total, 0)
 
   function confirmBillRequest() {
+    clearCustomerCart()
     clearSessionAccess()
     router.push("/")
   }
