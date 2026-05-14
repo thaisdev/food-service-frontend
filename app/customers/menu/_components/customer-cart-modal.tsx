@@ -214,73 +214,7 @@ export function CustomerCartModal() {
                   )
 
                   if (!product) {
-                    return (
-                      <div
-                        key={item.productId}
-                        className="rounded-2xl border border-border/70 bg-card/80 p-4"
-                      >
-                        <div className="flex items-start justify-between gap-3">
-                          <div className="min-w-0 flex-1 space-y-2">
-                            <div className="h-4 w-40 animate-pulse rounded bg-muted" />
-                            <div className="h-3 w-24 animate-pulse rounded bg-muted" />
-                          </div>
-                          <Button
-                            onClick={() => removeCartItem(item.productId)}
-                            size="icon-sm"
-                            title="Remover item"
-                            type="button"
-                            variant="destructive"
-                          >
-                            <RiDeleteBinLine aria-hidden />
-                          </Button>
-                        </div>
-
-                        <div className="mt-3 grid gap-3 md:grid-cols-[8rem_1fr]">
-                          <div className="grid gap-2">
-                            <label
-                              className="text-xs font-medium"
-                              htmlFor={`cart-quantity-${item.productId}`}
-                            >
-                              Quantidade
-                            </label>
-                            <Input
-                              id={`cart-quantity-${item.productId}`}
-                              min={1}
-                              onChange={(event) =>
-                                updateCartItem(
-                                  item.productId,
-                                  "quantity",
-                                  event.target.value
-                                )
-                              }
-                              type="number"
-                              value={item.quantity}
-                            />
-                          </div>
-
-                          <div className="grid gap-2">
-                            <label
-                              className="text-xs font-medium"
-                              htmlFor={`cart-observation-${item.productId}`}
-                            >
-                              Observações
-                            </label>
-                            <Input
-                              id={`cart-observation-${item.productId}`}
-                              onChange={(event) =>
-                                updateCartItem(
-                                  item.productId,
-                                  "observation",
-                                  event.target.value
-                                )
-                              }
-                              placeholder="Ex: Sem cebola"
-                              value={item.observation}
-                            />
-                          </div>
-                        </div>
-                      </div>
-                    )
+                    return null
                   }
 
                   return (

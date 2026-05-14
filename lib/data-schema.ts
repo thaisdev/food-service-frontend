@@ -68,6 +68,233 @@ type RawOrder = Omit<Order, "items"> & {
   time?: string
 }
 
+export const mockProducts: Product[] = [
+  {
+    id: "PRD-001",
+    image: "/products/smash-burger.png",
+    name: "Smash Burger",
+    description: "Pão brioche, burger artesanal, queijo e molho da casa.",
+    categoryId: "CAT-001",
+    price: 28.9,
+    stock: ProductStock.Available,
+    status: ProductStatus.Active,
+  },
+  {
+    id: "PRD-002",
+    image: "/products/bowl-fit.png",
+    name: "Bowl Fit",
+    description: "Frango grelhado, arroz integral, legumes e molho leve.",
+    categoryId: "CAT-002",
+    price: 24.5,
+    stock: ProductStock.Available,
+    status: ProductStatus.Active,
+  },
+  {
+    id: "PRD-003",
+    image: "/products/pizza-marguerita.png",
+    name: "Pizza Marguerita",
+    description: "Molho artesanal, muçarela, tomate fresco e manjericão.",
+    categoryId: "CAT-003",
+    price: 52,
+    stock: ProductStock.Low,
+    status: ProductStatus.Active,
+  },
+  {
+    id: "PRD-004",
+    image: "/products/brownie-da-casa.png",
+    name: "Brownie da Casa",
+    description: "Brownie macio com calda e finalização especial.",
+    categoryId: "CAT-004",
+    price: 12,
+    stock: ProductStock.Available,
+    status: ProductStatus.Active,
+  },
+  {
+    id: "PRD-005",
+    image: "/products/suco-verde.png",
+    name: "Suco Verde",
+    description: "Suco natural com couve, limão, maçã e gengibre.",
+    categoryId: "CAT-005",
+    price: 9.5,
+    stock: ProductStock.Unavailable,
+    status: ProductStatus.Inactive,
+  },
+]
+
+export const mockCategories: Category[] = [
+  {
+    id: "CAT-001",
+    name: "Lanches",
+    description: "Hambúrgueres, sanduíches e opções rápidas.",
+    status: CategoryStatus.Active,
+  },
+  {
+    id: "CAT-002",
+    name: "Saudável",
+    description: "Pratos leves, bowls e combinações balanceadas.",
+    status: CategoryStatus.Active,
+  },
+  {
+    id: "CAT-003",
+    name: "Pizzas",
+    description: "Pizzas inteiras e sabores especiais.",
+    status: CategoryStatus.Active,
+  },
+  {
+    id: "CAT-004",
+    name: "Sobremesas",
+    description: "Doces, bolos e finalizações da casa.",
+    status: CategoryStatus.Active,
+  },
+  {
+    id: "CAT-005",
+    name: "Bebidas",
+    description: "Sucos, refrigerantes, águas e bebidas geladas.",
+    status: CategoryStatus.Active,
+  },
+  {
+    id: "CAT-006",
+    name: "Pratos",
+    description: "Refeições completas para salão.",
+    status: CategoryStatus.Active,
+  },
+  {
+    id: "CAT-007",
+    name: "Combos",
+    description: "Combinações promocionais e kits do cardápio.",
+    status: CategoryStatus.Active,
+  },
+  {
+    id: "CAT-008",
+    name: "Acompanhamentos",
+    description: "Porções extras, entradas e complementos.",
+    status: CategoryStatus.Active,
+  },
+]
+
+export const mockOrders: Order[] = [
+  {
+    id: "#1028",
+    customer: "Mariana Costa",
+    table: 1,
+    items: [
+      {
+        productId: "PRD-001",
+        name: "Smash Burger",
+        quantity: 2,
+        valor: 28.9,
+        observation: "",
+      },
+      {
+        productId: "LEGACY-001",
+        name: "Batata Rustica",
+        quantity: 1,
+        valor: 29.1,
+        observation: "",
+      },
+    ],
+    total: 86.9,
+    status: OrderStatus.Preparing,
+    datetime: "2026-05-10T12:40:00.000-03:00",
+  },
+  {
+    id: "#1027",
+    customer: "Lucas Almeida",
+    table: 2,
+    items: [
+      {
+        productId: "PRD-002",
+        name: "Bowl Fit",
+        quantity: 1,
+        valor: 24.5,
+        observation: "",
+      },
+      {
+        productId: "PRD-005",
+        name: "Suco Verde",
+        quantity: 1,
+        valor: 9.5,
+        observation: "",
+      },
+    ],
+    total: 34,
+    status: OrderStatus.Ready,
+    datetime: "2026-05-10T12:32:00.000-03:00",
+  },
+  {
+    id: "#1026",
+    customer: "Fernanda Rocha",
+    table: 8,
+    items: [
+      {
+        productId: "LEGACY-002",
+        name: "Taco de Frango",
+        quantity: 3,
+        valor: 17,
+        observation: "",
+      },
+      {
+        productId: "LEGACY-003",
+        name: "Refrigerante",
+        quantity: 2,
+        valor: 11,
+        observation: "",
+      },
+    ],
+    total: 73,
+    status: OrderStatus.Waiting,
+    datetime: "2026-05-10T12:25:00.000-03:00",
+  },
+  {
+    id: "#1025",
+    customer: "Rafael Souza",
+    table: 4,
+    items: [
+      {
+        productId: "PRD-003",
+        name: "Pizza Marguerita",
+        quantity: 1,
+        valor: 52,
+        observation: "",
+      },
+      {
+        productId: "PRD-004",
+        name: "Brownie da Casa",
+        quantity: 1,
+        valor: 12,
+        observation: "",
+      },
+    ],
+    total: 64,
+    status: OrderStatus.Ready,
+    datetime: "2026-05-10T12:18:00.000-03:00",
+  },
+  {
+    id: "#1024",
+    customer: "Carla Mendes",
+    table: 3,
+    items: [
+      {
+        productId: "LEGACY-004",
+        name: "Prato Executivo",
+        quantity: 2,
+        valor: 34,
+        observation: "",
+      },
+      {
+        productId: "LEGACY-005",
+        name: "Agua com gas",
+        quantity: 2,
+        valor: 12,
+        observation: "",
+      },
+    ],
+    total: 92,
+    status: OrderStatus.Finished,
+    datetime: "2026-05-10T12:05:00.000-03:00",
+  },
+]
+
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null
 }
@@ -188,8 +415,11 @@ export function resolveProductCategoryId(
       currentCategory.id === product.categoryId ||
       currentCategory.name === product.categoryId
   )
+  const fallbackCategory = mockCategories.find(
+    (currentCategory) => currentCategory.name === product.categoryId
+  )
 
-  return category?.id ?? product.categoryId
+  return category?.id ?? fallbackCategory?.id ?? product.categoryId
 }
 
 export function getProductCategoryName(
@@ -294,12 +524,18 @@ function normalizeLegacyOrderItems(items: string): OrderItem[] {
       const match = trimmedItem.match(/^(\d+)x\s+(.+?)(?:\s+\((.*)\))?$/)
       const quantity = match ? Number(match[1]) : 1
       const name = match?.[2]?.trim() || trimmedItem
+      const product = mockProducts.find((currentProduct) =>
+        name
+          .toLocaleLowerCase("pt-BR")
+          .includes(currentProduct.name.toLocaleLowerCase("pt-BR"))
+      )
 
       return {
-        productId: `LEGACY-${String(index + 1).padStart(3, "0")}`,
+        productId:
+          product?.id ?? `LEGACY-${String(index + 1).padStart(3, "0")}`,
         name,
         quantity: Number.isFinite(quantity) && quantity > 0 ? quantity : 1,
-        valor: 0,
+        valor: product?.price ?? 0,
         observation: match?.[3]?.trim() ?? "",
       }
     })
