@@ -7,6 +7,7 @@ Este arquivo define as regras que agentes de IA devem seguir ao implementar, rev
 - Utilizar sempre as melhores práticas de React, Next.js e TypeScript.
 - Reutilizar componentes, funções, estilos e tipos sempre que possível.
 - Evitar componentes muito grandes. Separar blocos de UI, comportamento ou composição em componentes menores quando isso melhorar a leitura.
+- Separar em componentes menores blocos renderizados dentro de repetições, condicionais, tabs, dialogs, cards, listas ou seções repetidas sempre que isso reduzir complexidade e melhorar a manutenção.
 - Evitar programação defensiva com condições desnecessárias, mantendo a complexidade cognitiva baixa.
 - Remover types, funções, constantes, componentes, imports e arquivos que não estejam sendo utilizados.
 
@@ -22,7 +23,9 @@ Este arquivo define as regras que agentes de IA devem seguir ao implementar, rev
 
 - Dar preferência a Server Components sempre que o componente não precisar de estado no cliente, efeitos, eventos de interação ou APIs exclusivas do navegador.
 - Usar Client Components apenas quando houver necessidade real de interatividade no cliente.
+- Extrair componentes filhos sempre que isso permitir manter o componente pai como Server Component ou reduzir o escopo de `"use client"`.
 - Manter componentes com pouca lógica. Extrair regras de negócio, transformações, handlers complexos e integrações para hooks, utils ou helpers.
+- Arquivos de componente devem conter prioritariamente o componente, suas props e a composição visual, mantendo a menor quantidade possível de lógica auxiliar local.
 - Preservar os padrões nativos do Next.js para rotas, layouts, carregamento de dados, metadata e composição de páginas.
 - Toda rota que realiza requisição ao backend deve ter um arquivo `loading.tsx` correspondente para exibir um skeleton enquanto os dados carregam.
 
@@ -57,6 +60,7 @@ Este arquivo define as regras que agentes de IA devem seguir ao implementar, rev
 - Utilizar vertical slice para arquivos exclusivos de um contexto, página ou fluxo específico.
 - A arquitetura de pastas deve seguir vertical slice: helpers, hooks, components, tipos e constantes específicos de uma página ou fluxo devem ficar junto à pasta da página que os utiliza.
 - Utilizar pastas privadas com prefixo underline, como `_components`, `_hooks`, `_helpers` e `_types`, para arquivos internos ao slice que devem ser ignorados pelo roteamento.
+- Componentes filhos extraídos de uma página ou fluxo devem ficar próximos ao slice em `_components`, evitando concentrar muitos blocos de UI no mesmo arquivo.
 - Promover arquivos para pastas na raiz do projeto apenas quando forem compartilhados por mais de uma página, módulo ou contexto.
 - Evitar criar abstrações globais antes de existir uso real compartilhado.
 - Manter componentes base do shadcn/ui em `components/ui` e componentes compartilhados de aplicação em `components`.
@@ -66,6 +70,7 @@ Este arquivo define as regras que agentes de IA devem seguir ao implementar, rev
 
 - Extrair lógica de estado e comportamento reutilizável para hooks.
 - Extrair funções puras, formatadores, mapeamentos e transformações para utils/helpers.
+- Funções que não dependem do ciclo de vida, estado ou JSX do componente devem ficar fora do arquivo do componente, em `_helpers`, `_utils`, `_hooks` ou equivalentes do slice, e ser importadas onde forem usadas.
 - Funções de transformação de objeto, formatação de texto, cálculos e regras auxiliares devem ser extraídas para uma pasta de helpers.
 - Separar helpers por contexto e responsabilidade, com arquivos como `datetime.ts`, `calc.ts`, `format.ts`, `mapper.ts` ou equivalentes.
 - Evitar que hooks e helpers conheçam detalhes de UI quando puderem ser independentes.
@@ -83,6 +88,9 @@ Este arquivo define as regras que agentes de IA devem seguir ao implementar, rev
 - Executar `npm run lint` e `npm run typecheck` quando aplicável, relatando qualquer falha que não puder ser corrigida no momento.
 - Verificar se não ficaram types, funções, constantes, componentes, imports ou arquivos sem uso.
 - Verificar se o componente poderia continuar como Server Component.
+- Verificar se o escopo de `"use client"` está restrito ao menor componente possível.
+- Verificar se componentes grandes, blocos em repetições, condicionais e seções repetidas foram extraídos para componentes menores quando apropriado.
+- Verificar se o arquivo de componente contém apenas lógica essencial para renderização e composição visual.
 - Verificar se toda rota com requisição ao backend possui `loading.tsx` com skeleton.
 - Verificar se relacionamentos entre dados usam chaves/IDs em vez de cópias desnecessárias de objetos relacionados.
 - Verificar se dados persistidos usam tipos puros e se as formatações estão restritas à exibição para o usuário.

@@ -13,26 +13,13 @@ import {
 import { formatCurrency } from "@/helpers/currency"
 import { formatDatetime } from "@/helpers/datetime"
 import { formatOrderItems, formatTable } from "@/helpers/order"
-import { OrderStatus, type Order } from "@/lib/data-schema"
+import { type Order } from "@/lib/data-schema"
+
+import { getStatusClasses } from "../_helpers/order-status-style"
 
 type OrderDetailsModalProps = {
   closeHref?: string
   order: Order
-}
-
-function getStatusClasses(status: OrderStatus) {
-  switch (status) {
-    case OrderStatus.Ready:
-      return "bg-success-muted text-success"
-    case OrderStatus.Preparing:
-      return "bg-warning-muted text-warning"
-    case OrderStatus.Finished:
-      return "bg-muted text-muted-foreground"
-    case OrderStatus.Canceled:
-      return "bg-destructive-muted text-destructive"
-    case OrderStatus.Waiting:
-      return "bg-destructive-muted text-destructive"
-  }
 }
 
 export function OrderDetailsModal({
