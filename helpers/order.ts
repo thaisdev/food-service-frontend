@@ -3,7 +3,7 @@ import { type OrderItem, type Product } from "@/lib/data-schema"
 export type SelectedOrderItem = {
   observation: string
   productId: string
-  quantity: number
+  quantity: number | ""
 }
 
 export function formatTable(table: number) {
@@ -46,7 +46,12 @@ export function createOrderItems(
       return {
         productId: product.id,
         name: product.name,
-        quantity: item.quantity,
+        quantity:
+          typeof item.quantity === "number" &&
+          Number.isFinite(item.quantity) &&
+          item.quantity > 0
+            ? item.quantity
+            : 0,
         valor: product.price,
         observation: item.observation.trim(),
       }

@@ -70,10 +70,11 @@ export function AdminOrderFormModal({
 }: AdminOrderFormModalProps) {
   const router = useRouter()
   const [customer, setCustomer] = useState("")
-  const [table, setTable] = useState(order?.table ?? 1)
+  const [table, setTable] = useState<number | "">(order?.table ?? 1)
   const [status, setStatus] = useState(order?.status ?? OrderStatus.Waiting)
   const [selectedItems, setSelectedItems] = useState<SelectedOrderItem[]>([])
   const [message, setMessage] = useState<string | null>(null)
+  const [isErrorMessage, setIsErrorMessage] = useState(false)
   const [isPending, startTransition] = useTransition()
 
   const orderItems = useMemo(
@@ -90,9 +91,16 @@ export function AdminOrderFormModal({
   )
 
   function updateTable(value: string) {
+    if (!value) {
+      setTable("")
+      return
+    }
+
     const nextTable = Number(value)
 
-    setTable(Number.isInteger(nextTable) && nextTable > 0 ? nextTable : 1)
+    if (Number.isInteger(nextTable) && nextTable > 0) {
+      setTable(nextTable)
+    }
   }
 
   function toggleProduct(product: Product, checked: boolean) {
@@ -128,12 +136,23 @@ export function AdminOrderFormModal({
         }
 
         if (field === "quantity") {
+          if (!value) {
+            return {
+              ...item,
+              quantity: "",
+            }
+          }
+
           const quantity = Number(value)
 
-          return {
-            ...item,
-            quantity: Number.isFinite(quantity) && quantity > 0 ? quantity : 1,
+          if (Number.isFinite(quantity) && quantity > 0) {
+            return {
+              ...item,
+              quantity,
+            }
           }
+
+          return item
         }
 
         return {
@@ -150,32 +169,53 @@ export function AdminOrderFormModal({
     setSelectedItems([])
   }
 
-  function getSubmitAction(event: FormEvent<HTMLFormElement>): SubmitAction {
+function getSubmitAction(event: FormEvent<HTMLFormElement>): SubmitAction {
     const submitter = (event.nativeEvent as SubmitEvent)
       .submitter as HTMLButtonElement | null
 
     return submitter?.value === "continue" ? "continue" : "close"
-  }
+}
+
+function hasInvalidQuantity(items: SelectedOrderItem[]) {
+  return items.some(
+    (item) =>
+      typeof item.quantity !== "number" ||
+      !Number.isFinite(item.quantity) ||
+      item.quantity <= 0
+  )
+}
 
   function submitOrder(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
     setMessage(null)
+    setIsErrorMessage(false)
 
     const submitAction = getSubmitAction(event)
+    const normalizedTable =
+      typeof table === "number" && Number.isInteger(table) && table > 0
+        ? table
+        : 1
     const payload = order
       ? {
           id: order.id,
           status,
-          table,
+          table: normalizedTable,
         }
       : {
           customer: customer.trim(),
           items: orderItems,
-          table,
+          table: normalizedTable,
         }
 
     if (!order && !orderItems.length) {
+      setIsErrorMessage(true)
       setMessage("Selecione ao menos um produto para o pedido.")
+      return
+    }
+
+    if (!order && hasInvalidQuantity(selectedItems)) {
+      setIsErrorMessage(true)
+      setMessage("Informe a quantidade dos produtos selecionados.")
       return
     }
 
@@ -193,6 +233,7 @@ export function AdminOrderFormModal({
 
         if (!order && submitAction === "continue") {
           resetNewOrderForm()
+          setIsErrorMessage(false)
           setMessage("Pedido cadastrado. Você pode cadastrar mais pedidos.")
           return
         }
@@ -200,6 +241,7 @@ export function AdminOrderFormModal({
         router.replace(closeHref)
         router.refresh()
       } catch (error) {
+        setIsErrorMessage(true)
         setMessage(error instanceof Error ? error.message : "Erro inesperado.")
       }
     })
@@ -419,7 +461,13 @@ export function AdminOrderFormModal({
             )}
 
             {message ? (
-              <p className="rounded-md border border-info/20 bg-info-muted/40 px-3 py-2 text-xs text-muted-foreground">
+              <p
+                className={
+                  isErrorMessage
+                    ? "rounded-md border border-destructive/20 bg-destructive-muted/40 px-3 py-2 text-xs text-destructive"
+                    : "rounded-md border border-info/20 bg-info-muted/40 px-3 py-2 text-xs text-muted-foreground"
+                }
+              >
                 {message}
               </p>
             ) : null}
